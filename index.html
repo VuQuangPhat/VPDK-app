@@ -348,6 +348,30 @@ function finMigrate(f){
   (f.jobs||[]).forEach(j=>{if(j.mau&&!j.mg2){j.mg2=1;
     if(!th[j.id]&&j.gia>0){if(j.mau==="ketthuc")j.st="nobg";else if(j.mau==="theodoi")j.st="baogia"}}});
 }
+/* ===== Mã hồ sơ: NĂM-QUẬN-STT (vd 2026-Q1-02) — khóa duy nhất cho hồ sơ, thẻ doanh thu và thửa đất liên kết ===== */
+const CODE_RE=/^\d{4}-[A-Z0-9]+-\d{2,}$/;
+function qNorm(s){let k=String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase().trim();
+  const m=/^(?:quan|q)?\s*\.?\s*(\d{1,2})$/.exec(k);if(m)return String(+m[1]);
+  return k.replace(/\b(quan|huyen|thanh pho|thi xa|tp|tx)\b/g," ").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
+function qAbbr(cfg,name){const k=qNorm(name);if(!k)return"XX";if(/^\d+$/.test(k))return"Q"+(+k);
+  cfg.qabbr=cfg.qabbr||{};if(cfg.qabbr[k])return cfg.qabbr[k];
+  const w=k.split(" "),used=new Set(Object.values(cfg.qabbr)),U=x=>x.toUpperCase(),last=w[w.length-1],ini=w.slice(0,-1).map(x=>x[0]).join("");
+  const c=[U(w.map(x=>x[0]).join(""))];for(let n=2;n<=4;n++)c.push(U(ini+last.slice(0,n)));
+  let a=c.find(x=>!used.has(x));if(!a){let i=2;while(used.has(c[0]+i))i++;a=c[0]+i}
+  cfg.qabbr[k]=a;return a}
+function ensureCodes(d){
+  if(!d||!d.fin)return;d.cfg=d.cfg||{};
+  const jobs=d.fin.jobs||[],cases=d.cases||[],cmap={},jc={},used=new Set(),mx={};
+  cases.forEach(c=>cmap[c.id]=c);jobs.forEach(j=>{if(j.cid)jc[j.cid]=j});
+  const reg=code=>{const m=/^(\d{4}-[A-Z0-9]+)-(\d+)$/.exec(code);if(m)mx[m[1]]=Math.max(mx[m[1]]||0,+m[2])};
+  jobs.forEach(j=>{if(j.code&&CODE_RE.test(j.code)&&!used.has(j.code)){used.add(j.code);reg(j.code)}else j.code=""});
+  cases.forEach(c=>{if(!(c.code&&CODE_RE.test(c.code)))c.code="";const j=jc[c.id];if(j&&!j.code&&c.code&&!used.has(c.code)){j.code=c.code;used.add(c.code);reg(c.code)}});
+  const yr=v=>/^\d{4}$/.test(v)?v:String(new Date().getFullYear());
+  const gen=(y,q)=>{const p=y+"-"+qAbbr(d.cfg,q);const n=(mx[p]||0)+1;mx[p]=n;const code=p+"-"+String(n).padStart(2,"0");used.add(code);return code};
+  jobs.map((j,i)=>[j,i]).filter(x=>!x[0].code).sort((a,b)=>String(a[0].ngay||"").localeCompare(String(b[0].ngay||""))||a[1]-b[1]).forEach(([j])=>{
+    const c=cmap[j.cid];j.code=gen(yr((j.ngay||"").slice(0,4)||String(j.nam||"")),j.quan||(c&&c.p&&c.p.qh))});
+  cases.filter(c=>!jc[c.id]&&c.code).forEach(c=>{if(used.has(c.code))c.code="";else{used.add(c.code);reg(c.code)}});
+  cases.forEach(c=>{const j=jc[c.id];if(j)c.code=j.code;else if(!c.code)c.code=gen(yr((c.ngayKy||"").slice(0,4)),c.p&&c.p.qh)})}
 function norm(d){
   d=d&&typeof d==="object"?d:{};
   d.fin=d.fin&&typeof d.fin==="object"?d.fin:{};d.fin.rows=Array.isArray(d.fin.rows)?d.fin.rows:[];d.fin.done=d.fin.done||{};d.fin.ex=d.fin.ex||{};d.fin.jobs=Array.isArray(d.fin.jobs)?d.fin.jobs:[];d.fin.tx=Array.isArray(d.fin.tx)?d.fin.tx:[];d.fin.refs=d.fin.refs||{};d.fin.alias=d.fin.alias||{};finMigrate(d.fin);
@@ -359,6 +383,7 @@ function norm(d){
   d.cases.forEach(c=>{if(!c.noiNop)c.noiNop="TP";c.tp=c.tp||{};c.cn=c.cn||{};c.ts=c.ts||{};c.docs=c.docs||[];c.fees=c.fees||[];c.log=c.log||[];c.parties=c.parties||[];c.p=c.p||{};c.d=c.d||{};c.mst=c.mst||{pid:"",rows:[]};
     const old=String(c.type||"");if(!TYPES[c.type]){if(/Cấp đổi/.test(old)&&!c.d.loai)c.d.loai="capdoi";c.type=/Tặng/.test(old)?"Tặng cho":/Thừa/.test(old)?"Thừa kế":"Chuyển nhượng"}
     if(!c.d.loai)c.d.loai="capdoi"});
+  try{ensureCodes(d)}catch(e){}
   return d;
 }
 function dest(c){
@@ -366,7 +391,7 @@ function dest(c){
 }
 function brLabel(c){return c.noiNop==="CN"?"Chi nhánh"+(c.cn.ten?" "+c.cn.ten:""):"VPĐK TP"}
 function loadDb(){try{const r=localStorage.getItem(KEY);if(r)return norm(JSON.parse(r))}catch(e){}return norm({})}
-function persist(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){alert("Không lưu được vào trình duyệt. Hãy bấm Sao lưu để giữ dữ liệu.")}}
+function persist(){try{ensureCodes(db)}catch(e){}try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){alert("Không lưu được vào trình duyệt. Hãy bấm Sao lưu để giữ dữ liệu.")}}
 const P=id=>db.people.find(p=>p.id===id)||null;
 const typeNames=()=>Object.keys(TYPES);
 
@@ -405,7 +430,7 @@ function propAddr(c){
   return base;
 }
 function caseTitle(c){return propAddr(c)||"(chưa nhập địa chỉ thửa đất)"}
-function caseSlug(c){return (propAddr(c)||"thua-dat").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48)||"thua-dat"}
+function caseSlug(c){return (c.code?c.code+"-":"")+(propAddr(c)||"thua-dat").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,48)||"thua-dat"}
 
 /* ===== Danh sách thửa đất ===== */
 let tab=1;
@@ -414,7 +439,7 @@ function filtered(){
   return db.cases.filter(c=>{
     if(!q)return true;
     const ids=c.parties.map(x=>{const p=P(x.pid)||{};return [p.name,p.cccd,p.mst].join(" ")}).join(" ");
-    return [propAddr(c),c.p.gcnSo,c.p.soVaoSo,c.p.thua,c.p.to,c.type,c.note,ids].join(" ").toLowerCase().includes(q);
+    return [c.code,propAddr(c),c.p.gcnSo,c.p.soVaoSo,c.p.thua,c.p.to,c.type,c.note,ids].join(" ").toLowerCase().includes(q);
   }).sort((a,b)=>(b.upd||0)-(a.upd||0));
 }
 function renderList(){
@@ -424,7 +449,7 @@ function renderList(){
   $("#list").innerHTML=`<table class="m"><thead><tr><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
     const a=partyNames(c,"A"),b=partyNames(c,"B"),m=missing(c);
     const g=[c.p.gcnSo&&"GCN "+c.p.gcnSo,c.p.thua&&"thửa "+c.p.thua,c.p.to&&"tờ "+c.p.to].filter(Boolean).join(" · ");
-    return `<tr data-id="${c.id}"><td><b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
+    return `<tr data-id="${c.id}"><td>${c.code?`<span class="fc b">${esc(c.code)}</span> `:""}<b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
     <td>${a?esc(a):"<span class='sub'>—</span>"}</td><td>${b?esc(b):"<span class='sub'>—</span>"}</td>
     <td>${esc(c.type)}<small>${esc((LOAI18.find(z=>z[0]===c.d.loai)||[])[1]||"")}</small></td>
     <td>${c.upd?fd(new Date(c.upd).toISOString().slice(0,10)):""}</td></tr>`}).join("")}</tbody></table>`;
@@ -480,7 +505,7 @@ function openCase(id){
   renderCase();renderStrip();$("#cd").showModal();
 }
 function renderCase(){
-  $("#cdt").textContent=caseTitle(cur);
+  {const _c=db.cases.find(x=>x.id===cur.id);$("#cdt").textContent=((_c&&_c.code)?_c.code+" · ":"")+caseTitle(cur)}
   $("#ctabs").innerHTML=CTABS.map(([k,l])=>{
     let extra="";if(k==="par"){const m=missing(cur).length;extra=` (${cur.parties.length})`+(m?`<span class="chip">!</span>`:"")}
     return `<button data-t="${k}" class="${ctab===k?"on":""}">${l}${extra}</button>`}).join("");
@@ -1312,9 +1337,9 @@ function yearData(y,mode,T,S){
   return{inY,gen,thu,chi,hh,ln:thu-chi,no,stale,n:inY.length,lo}}
 const fcs=(j,s,dup)=>issues(j,s,dup).map(i=>'<span class="fc '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("");
 function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
-  return'<tr data-j="'+esc(j.id)+'"><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+dmy(j.ngay||"")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+(j.cid?' <span class="fc b" title="Đã liên kết thửa đất">⛓</span>':'')+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+fnum(t)+'</td><td class="num">'+fnum(c)+'</td><td class="num '+((t-c)<0?'neg':'pos')+'">'+fnum(t-c)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td><td>'+fcs(j,s,dup)+'</td></tr>'}
-function jtable(L,y,mode,dup){L=L.slice().sort((a,b)=>String(b.j.ngay||"").localeCompare(String(a.j.ngay||"")));return'<div class="nt"><table class="m"><tr><th>Quận</th><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
-function matchQ(j){const q=fqv.trim().toLowerCase();return!q||[j.dc,j.chu,j.gt,j.loai,j.nd,j.quan,j.gc].join(" ").toLowerCase().includes(q)}
+  return'<tr data-j="'+esc(j.id)+'"><td style="white-space:nowrap"><b>'+esc(j.code||"")+'</b></td><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+dmy(j.ngay||"")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+(j.cid?' <span class="fc b" title="Đã liên kết thửa đất">⛓</span>':'')+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+fnum(t)+'</td><td class="num">'+fnum(c)+'</td><td class="num '+((t-c)<0?'neg':'pos')+'">'+fnum(t-c)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td><td>'+fcs(j,s,dup)+'</td></tr>'}
+function jtable(L,y,mode,dup){L=L.slice().sort((a,b)=>String(b.j.ngay||"").localeCompare(String(a.j.ngay||"")));return'<div class="nt"><table class="m"><tr><th>Mã</th><th>Quận</th><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
+function matchQ(j){const q=fqv.trim().toLowerCase();return!q||[j.code,j.dc,j.chu,j.gt,j.loai,j.nd,j.quan,j.gc].join(" ").toLowerCase().includes(q)}
 const isVan=(j,s,dup)=>issues(j,s,dup).some(i=>VAN.includes(i[0]));
 function renderFin(){
   const T=txIdx(),yrs=allYears(),mode=fmodeV;
@@ -1408,7 +1433,7 @@ function openJob(id,pre){
   const j=id?fin.jobs.find(x=>x.id===id):null;
   jEdit=j?JSON.parse(JSON.stringify(j)):newJob(pre);
   ["bg","pl","cp","stLog"].forEach(k=>{if(!Array.isArray(jEdit[k]))jEdit[k]=[]});
-  $("#jdt").textContent=j?"Hồ sơ: "+(j.dc||j.loai||j.id):"Hồ sơ mới";$("#jdel").hidden=!j;
+  $("#jdt").textContent=j?(j.code?j.code+" · ":"")+(j.dc||j.loai||j.id):"Hồ sơ mới";$("#jdel").hidden=!j;
   drawJob();$("#jd").showModal()}
 function openJobForCase(c){
   let j=fin.jobs.find(x=>x.cid===c.id);
@@ -1428,7 +1453,7 @@ function drawJob(){
   const r=s.rate,hhO=j.hh||{mode:"",v:0,khi:"dot"};
   $("#jbody").innerHTML='<div class="kp">'+kp.map(([l,v,c])=>'<div><span>'+l+'</span><b class="'+c+'" style="font-size:16px">'+v+'</b></div>').join("")+'</div>'+
    '<div class="sec"><h4>Vòng đời</h4>'+stg+'</div>'+
-   '<div class="sec"><h4>Thông tin hồ sơ</h4><div class="jg">'+f("ngay","Ngày nhận","date")+f("dc","Địa chỉ / khách")+f("quan","Quận")+f("loai","Loại việc")+f("nd","Nội dung")+
+   '<div class="sec"><h4>Thông tin hồ sơ'+(j.code?' <span class="fc b" style="font-size:13px">'+esc(j.code)+'</span> <button id="jrecode" class="ghost" style="font-size:12px" title="Cấp lại mã theo năm/quận hiện tại">Cấp lại mã</button>':' <span class="lg">(mã cấp khi lưu)</span>')+'</h4><div class="jg">'+f("ngay","Ngày nhận","date")+f("dc","Địa chỉ / khách")+f("quan","Quận")+f("loai","Loại việc")+f("nd","Nội dung")+
    '<div><label>Người giới thiệu</label><input data-f="gt" list="rlist" value="'+esc(j.gt||"")+'"><datalist id="rlist">'+[...new Set(fin.jobs.map(x=>canon(x.gt)).filter(Boolean))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
    f("chu","Chủ sử dụng đất")+'<div><label>Liên kết thửa đất (tab Hồ sơ)</label><select data-f="cid"><option value="">— chưa liên kết —</option>'+ca.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===j.cid?' selected':'')+'>'+esc(caseTitle(c))+'</option>').join("")+'</select></div>'+f("gc","Ghi chú")+
    '<div><label>Xóa nợ</label><label style="color:var(--ink)"><input type="checkbox" data-f="mien" style="width:auto" '+(j.mien?"checked":"")+'> Không thu thêm nữa</label></div></div>'+(j.cid&&db.cases.some(c=>c.id===j.cid)?'<p><button id="gocase">Mở hồ sơ thửa đất / in đơn →</button></p>':'')+'</div>'+
@@ -1467,10 +1492,10 @@ function drawJob(){
     t.a=parseAmt(a)||t.a;if(/^\d{4}-\d{2}-\d{2}$/.test(d)){t.d=d;delete t.est}if(n!==null)t.n=n;saveJobInline();drawJob()});
   if($("#gocase"))$("#gocase").onclick=()=>{const id=j.cid;$("#jsave").click();openCase(id)};
 }
-function saveJobInline(){const j=jEdit;if(!fin.jobs.some(x=>x.id===j.id)){const c=JSON.parse(JSON.stringify(j));delete c._new;fin.jobs.push(c);j._new=0;$("#jdel").hidden=false}finSave()}
+function saveJobInline(){const j=jEdit;if(!fin.jobs.some(x=>x.id===j.id)){const c=JSON.parse(JSON.stringify(j));delete c._new;fin.jobs.push(c);j._new=0;$("#jdel").hidden=false}finSave();{const o=fin.jobs.find(x=>x.id===j.id);if(o)j.code=o.code}}
 $("#jnew").onclick=()=>openJob(null);
 $("#jclose").onclick=()=>{$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
-$("#jsave").onclick=()=>{const j=JSON.parse(JSON.stringify(jEdit));delete j._new;
+$("#jsave").onclick=()=>{const j=JSON.parse(JSON.stringify(jEdit));delete j._new;{const o=fin.jobs.find(x=>x.id===j.id);if(o&&!j.code)j.code=o.code}
   if(j.st&&(!j.stLog||!j.stLog.length))j.stLog=[{st:j.st,d:today()}];
   const i=fin.jobs.findIndex(x=>x.id===j.id);if(i>=0)fin.jobs[i]=j;else fin.jobs.push(j);finSave();$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
 $("#jdel").onclick=()=>{if(!confirm("Xóa hồ sơ này và các khoản thu/chi của nó?"))return;fin.jobs=fin.jobs.filter(x=>x.id!==jEdit.id);fin.tx=fin.tx.filter(t=>t.j!==jEdit.id);finSave();$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
@@ -1495,6 +1520,9 @@ function renderStrip(){const el=$("#cstrip");if(!el)return;
   el.querySelectorAll("[data-ss]").forEach(b=>b.onclick=()=>{if(j.st===b.dataset.ss)return;j.st=b.dataset.ss;j.stLog=(j.stLog||[]).concat([{st:j.st,d:today()}]);finSave();renderStrip();renderList()});
   $("#cs_open").onclick=()=>openJob(j.id)}
 function markNop(){const j=caseJob();if(j&&stIdx(j)>=0&&stIdx(j)<3){j.st="nop";j.stLog=(j.stLog||[]).concat([{st:"nop",d:today()}]);finSave();renderStrip();renderList();toast("Đã chuyển hồ sơ sang bước “Soạn & nộp hồ sơ”")}}
+$("#jbody").addEventListener("click",e=>{if(e.target.id!=="jrecode")return;
+  const o=fin.jobs.find(x=>x.id===jEdit.id);if(!o||!confirm("Cấp lại mã cho hồ sơ này? Mã cũ "+o.code+" sẽ bị thay."))return;
+  o.code="";jEdit.code="";const old=db.cases.find(c=>c.id===o.cid);if(old)old.code="";finSave();jEdit.code=o.code;$("#jdt").textContent=o.code+" · "+(o.dc||o.loai||o.id);drawJob();renderFin();renderList()});
 try{renderList()}catch(e){}
 function setTab(n){tab=n;[1,2,3].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});if(n===2)renderPeople();if(n===3)renderFin()}
 $("#t1").onclick=()=>setTab(1);$("#t2").onclick=()=>setTab(2);$("#t3").onclick=()=>setTab(3);
