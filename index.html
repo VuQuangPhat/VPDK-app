@@ -117,14 +117,14 @@ label.ck input{width:auto}
 </head>
 <body>
 <header>
-  <h1>Quản lý hồ sơ của tôi<small>Hồ sơ nộp Văn phòng đăng ký đất đai · dữ liệu chỉ lưu trên trình duyệt này</small></h1>
+  <h1>Quản lý hồ sơ của tôi<small id="bakinfo"></small><small id="ghst"></small></h1>
   <div class="bar">
     <button class="primary" id="addc">+ Hồ sơ mới</button>
     <button id="cfgb">Cài đặt</button>
     <button id="csv">Xuất CSV</button>
     <button id="gh">Đồng bộ GitHub</button><button id="bak">Sao lưu</button>
     <button id="imp">Khôi phục</button>
-    <input type="file" id="file" accept=".json" hidden><span id="ghst" class="sub" style="font-size:12px;align-self:center"></span>
+    <input type="file" id="file" accept=".json" hidden>
   </div>
 </header>
 <nav class="tabs"><button id="t1" class="on">Hồ sơ</button><button id="t2">Danh bạ (người, chủ thể)</button></nav>
@@ -1224,8 +1224,17 @@ async function ghInit(){
     ghApply(d);ghStatus("Đã tải từ GitHub lúc "+new Date().toLocaleTimeString("vi-VN"));
   }catch(e){ghStatus("Lỗi GitHub: "+e.message+" (đang dùng dữ liệu của máy này)",true)}
 }
+const KBK="hsdd_lastbak";
+function bakInfo(){
+  let l="";try{l=localStorage.getItem(KBK)||""}catch(e){}
+  const has=db.cases.length||db.people.length;let t,w=false;
+  if(!l){t=has?"Chưa sao lưu lần nào":"";w=!!has}
+  else{const d=Math.floor((Date.now()-new Date(l))/864e5);t="Sao lưu gần nhất: "+fd(l.slice(0,10))+(d>=7?` (${d} ngày trước)`:"");w=d>=7}
+  const e=$("#bakinfo");e.textContent=[GH?"Dữ liệu đồng bộ với GitHub":"",t].filter(Boolean).join(" | ");e.style.color=w?"var(--seal,#b3261e)":"";
+}
+$("#bak").addEventListener("click",()=>{try{localStorage.setItem(KBK,new Date().toISOString())}catch(e){}bakInfo()});
 const _persist0=persist;
-persist=function(){_persist0();ghSchedule()};
+persist=function(){_persist0();ghSchedule();bakInfo()};
 const ghDlg=document.createElement("dialog");
 ghDlg.innerHTML=`<h2 style="margin:0 0 8px;font-size:16px">Đồng bộ dữ liệu với GitHub</h2>
 <p class="hint" style="margin:0 0 10px">Toàn bộ hồ sơ và danh bạ được lưu thành một file JSON trong repo GitHub của bạn (vd. <b>VPDK-data</b>). Dữ liệu có thông tin cá nhân nên <b>bắt buộc dùng repo private</b>. Token chỉ lưu trong trình duyệt này.</p>
@@ -1258,13 +1267,14 @@ ghDlg.querySelector("#gh_save").onclick=async()=>{
       if(!(db.cases.length||db.people.length)||confirm("Tìm thấy dữ liệu trên GitHub ("+n+" hồ sơ).\nOK = dùng dữ liệu GitHub thay cho dữ liệu máy này.\nCancel = đẩy dữ liệu máy này lên, ghi đè GitHub.")){ghApply(d);ghStatus("Đã tải từ GitHub lúc "+new Date().toLocaleTimeString("vi-VN"))}
       else{await ghPush()}
     }
-    localStorage.setItem(KGH,JSON.stringify(GH));ghDlg.close();
+    localStorage.setItem(KGH,JSON.stringify(GH));bakInfo();ghDlg.close();
   }catch(e){GH=old;ghStatus("Lỗi GitHub: "+e.message,true);alert("Không kết nối được: "+e.message+"\nKiểm tra owner, tên repo, nhánh, token và quyền Contents.")}
 };
 ghDlg.querySelector("#gh_pull").onclick=async()=>{if(!GH)return alert("Chưa kết nối.");if(!confirm("Thay toàn bộ dữ liệu máy này bằng bản trên GitHub?"))return;try{await ghPull();ghDlg.close()}catch(e){ghStatus("Lỗi GitHub: "+e.message,true)}};
 ghDlg.querySelector("#gh_push").onclick=async()=>{if(!GH)return alert("Chưa kết nối.");if(!confirm("Ghi đè dữ liệu trên GitHub bằng bản của máy này?"))return;await ghForcePush();ghDlg.close()};
-ghDlg.querySelector("#gh_off").onclick=()=>{if(!confirm("Ngắt kết nối GitHub? Dữ liệu trên máy này vẫn giữ nguyên."))return;GH=null;localStorage.removeItem(KGH);localStorage.removeItem(KDIRTY);ghStatus("");ghDlg.close()};
+ghDlg.querySelector("#gh_off").onclick=()=>{if(!confirm("Ngắt kết nối GitHub? Dữ liệu trên máy này vẫn giữ nguyên."))return;GH=null;localStorage.removeItem(KGH);localStorage.removeItem(KDIRTY);ghStatus("");bakInfo();ghDlg.close()};
 window.addEventListener("beforeunload",e=>{if(GH&&localStorage.getItem(KDIRTY)){e.preventDefault();e.returnValue=""}});
+bakInfo();
 ghInit();
 
 </script>
