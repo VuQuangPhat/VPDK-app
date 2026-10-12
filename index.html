@@ -186,6 +186,7 @@ label.ck input{width:auto}
 <!-- Hồ sơ -->
 <dialog id="cd">
   <h2 id="cdt">Thửa đất</h2>
+  <div id="cstrip" class="sec" style="margin:0 0 8px"></div>
   <nav class="ctabs" id="ctabs"></nav>
   <div id="cbody"></div>
   <div class="foot">
@@ -334,7 +335,9 @@ function finMigrate(f){
     const sm=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
     f.rows.forEach(r=>{if(f.ex[r.id])return;
       const th=sm(r.thu),j={st:"",bg:[],pl:[],cp:[],stLog:[],lephi:0,cid:"",id:r.id,ngay:r.ngay||"",nam:r.nam,dc:r.dc||"",quan:r.quan||"",loai:r.loai||"",nd:r.nd||"",gt:r.gt||"",chu:r.chu||"",gia:r.dv||0,gc:r.gc||"",tt:"dang",mien:!!f.done[r.id],src:r.so||""};
-      if(j.gia>0&&th>=j.gia)j.tt="xong";f.jobs.push(j);
+      if(j.gia>0&&th>=j.gia)j.tt="xong";
+      const m=r.mau;if(m){j.st=m==="huy"?"huy":m==="fail"?"fail":m==="ketthuc"?"dong":(j.tt==="xong"?"bangiao":"cho");if(m==="ketthuc"&&j.gia>th)j.mien=true;j.mau=m}
+      f.jobs.push(j);
       const d=r.ngay||(r.nam+"-01-01");
       (r.thu||[]).forEach((a,i)=>{if(a>0)f.tx.push({id:"m"+r.id+"t"+i,j:r.id,k:"thu",a,d,n:"Thu đợt "+(i+1),est:1})});
       (r.chi||[]).forEach((a,i)=>{if(a>0)f.tx.push({id:"m"+r.id+"c"+i,j:r.id,k:"chi",a,d,n:"Chi đợt "+(i+1),est:1})});});
@@ -470,7 +473,7 @@ const CTABS=[["prop","1. Thửa đất (GCN)"],["par","2. Các bên"],["deal","3
 function openCase(id){
   isNew=!id;cur=id?JSON.parse(JSON.stringify(db.cases.find(c=>c.id===id))):newCase();
   ctab=id?"print":"prop";orig=JSON.stringify(cur);$("#cdel").hidden=isNew;$("#cdup").hidden=isNew;$("#cfin").hidden=isNew;
-  renderCase();$("#cd").showModal();
+  renderCase();renderStrip();$("#cd").showModal();
 }
 function renderCase(){
   $("#cdt").textContent=caseTitle(cur);
@@ -632,10 +635,10 @@ $("#cbody").addEventListener("click",e=>{
   else if(a==="newp"){const role=$("#addrole").value;openPerson(null,id=>{cur.parties.push({pid:id,role,ratio:""});renderCase()});return}
   else if(a==="editp"){openPerson(cur.parties[i].pid,()=>renderCase());return}
   else if(a==="showform"){showForms([b.dataset.f]);return}
-  else if(a==="pdf"){ovExport([b.dataset.f]);return}
-  else if(a==="pdfsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");ovExport(l);return}
-  else if(a==="docx"){exportDocx([b.dataset.f]);return}
-  else if(a==="docxsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");exportDocx(l);return}
+  else if(a==="pdf"){ovExport([b.dataset.f]);markNop();return}
+  else if(a==="pdfsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");ovExport(l);markNop();return}
+  else if(a==="docx"){exportDocx([b.dataset.f]);markNop();return}
+  else if(a==="docxsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");exportDocx(l);markNop();return}
   else if(a==="showsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");showForms(l);return}
   else return;
   renderCase();
@@ -1234,9 +1237,9 @@ $("#sdemo").onclick=()=>{
 let fin=db.fin;
 const STAGES=[["tiepnhan","Tiếp nhận"],["baogia","Báo giá"],["kyhd","Ký hợp đồng"],["nop","Soạn & nộp hồ sơ"],["cho","Chờ kết quả"],["nhan","Nhận kết quả"],["bangiao","Bàn giao khách"],["dong","Đóng hồ sơ"]];
 const stIdx=j=>STAGES.findIndex(x=>x[0]===j.st);
-const stName=j=>j.st==="huy"?"Hủy":(STAGES[stIdx(j)]||[0,"—"])[1];
-const isHuy=j=>j.st==="huy",isDone=j=>stIdx(j)>=6;
-const stCls=j=>isHuy(j)?"":isDone(j)?"g":"b";
+const stName=j=>j.st==="huy"?"Hủy":j.st==="fail"?"Fail":(STAGES[stIdx(j)]||[0,"—"])[1];
+const isHuy=j=>j.st==="huy",isFail=j=>j.st==="fail",isDone=j=>stIdx(j)>=6,isDangTD=j=>stIdx(j)>=0&&stIdx(j)<6;
+const stCls=j=>isHuy(j)?"":isFail(j)?"r":isDone(j)?"g":"b";
 const HHMODE=[["","Chưa có"],["phi","% phí dịch vụ"],["lai","% lãi (báo khách − chi)"],["cd","Số tiền cố định"]];
 const fsum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
 const fnum=n=>Math.round(n).toLocaleString("vi-VN");
@@ -1254,14 +1257,14 @@ function txIdx(){const T={};fin.tx.forEach(t=>{(T[t.j||""]=T[t.j||""]||[]).push(
 function refRate(j){if(j.hh&&j.hh.mode)return j.hh;const r=fin.refs[canon(j.gt)];if(r&&r.mode&&(!r.tu||(j.ngay||"")>=r.tu))return r;return null}
 function jstat(j,T,y){const L=T[j.id]||[];let thu=0,chi=0,hhP=0,yt=0,yc=0,yh=0;
   L.forEach(t=>{const inY=y&&t.d.slice(0,4)===y;if(t.k==="thu"){thu+=t.a;if(inY)yt+=t.a}else{chi+=t.a;if(t.cat==="hh")hhP+=t.a;if(inY){yc+=t.a;if(t.cat==="hh")yh+=t.a}}});
-  const chiN=chi-hhP,tong=(+j.gia||0)+(+j.lephi||0),huy=isHuy(j),no=(j.mien||huy)?0:Math.max(0,tong-thu),age=ageM(j),r=refRate(j);
+  const chiN=chi-hhP,tong=(+j.gia||0)+(+j.lephi||0),huy=isHuy(j)||isFail(j),no=(j.mien||huy)?0:Math.max(0,tong-thu),age=ageM(j),r=refRate(j);
   let hhT=0;if(r&&r.mode){const v=+r.v||0;hhT=r.mode==="phi"?(+j.gia||0)*v/100:r.mode==="lai"?Math.max(0,tong-chiN)*v/100:v}hhT=Math.round(hhT);
   const due=!r?0:(r.khi==="dot"?hhT*Math.min(1,tong?thu/tong:0):(no===0&&thu>0?hhT:0));
   const hhOwe=Math.max(0,Math.round(due)-hhP),hhOver=hhT>0&&hhP>hhT+1;
   let rem=thu,dueUnpaid=0,over=false;
   const pl=(j.pl||[]).map(p=>{const cov=Math.min(p.a,rem);rem-=cov;const ti=STAGES.findIndex(x=>x[0]===p.tr),d=!huy&&(!p.tr||stIdx(j)>=ti),ov=!!(p.han&&p.han<today()&&cov<p.a&&!huy);if(d&&cov<p.a)dueUnpaid+=p.a-cov;if(ov)over=true;return{...p,cov,due:d,ov}});
   const cpDK=fsum((j.cp||[]).map(x=>x.a)),chiDK=Math.max(chiN,cpDK);
-  return{thu,chi,chiN,hhP,hhT,hhOwe,hhOver,lai:thu-chi,yt,yc,yh,tong,no,age,pl,dueUnpaid,over,cpDK,chiDK,laiDK:tong-chiDK-hhT,rate:r,stale:no>0&&thu===0&&!isDone(j)&&!huy&&age!=null&&age>=12}}
+  return{thu,chi,chiN,hhP,hhT,hhOwe,hhOver,lai:thu-chi,yt,yc,yh,tong,no,age,pl,dueUnpaid,over,cpDK,chiDK,laiDK:tong-chiDK-hhT,rate:r,stale:no>0&&thu===0&&isDangTD(j)&&age!=null&&age>=12}}
 function dupSet(S){const g={},g2={},out=new Set();
   S.forEach(({j,s})=>{if(!j.gia&&!s.thu&&!s.chi)return;const k=[j.ngay,fnd(j),(j.loai||"").toLowerCase(),j.gia,s.thu,s.chi].join("|");(g[k]=g[k]||[]).push(j);
     if(j.gia>=1e7&&fnd(j).length>=8)(g2[fnd(j)+"|"+j.gia]=g2[fnd(j)+"|"+j.gia]||[]).push(j)});
@@ -1271,7 +1274,7 @@ function dupSet(S){const g={},g2={},out=new Set();
 const VAN=["lo","vuot","stale","thieu","trung","dh","hh","hhq"];
 function issues(j,s,dup){const o=[];
   if(!isHuy(j)){
-    if(s.lai<0&&(s.no===0||isDone(j)))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
+    if(s.lai<0&&(s.no===0||isDone(j)||isFail(j)))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
     else if(s.chi>s.thu&&s.no>0)o.push(["vuot","Chi vượt thu "+fnum(s.chi-s.thu),"y"]);
     if(s.stale)o.push(["stale","Chưa thu đồng nào, trên 1 năm — xem lại","r"]);
     else if(s.no>0)o.push(["no","Còn nợ "+fnum(s.no),"y"]);
@@ -1299,7 +1302,7 @@ function yearData(y,mode,T,S){
   inY.forEach(({s})=>{thu+=mode==="rec"?s.thu:s.yt;chi+=mode==="rec"?s.chi:s.yc;hh+=mode==="rec"?s.hhP:s.yh});
   gen.forEach(t=>{if(t.k==="thu")thu+=t.a;else{chi+=t.a;if(t.cat==="hh")hh+=t.a}});
   const no=inY.filter(x=>!x.s.stale).reduce((a,x)=>a+x.s.no,0),stale=inY.filter(x=>x.s.stale).reduce((a,x)=>a+x.s.no,0);
-  const lo=inY.filter(({j,s})=>!isHuy(j)&&s.lai<0&&(s.no===0||isDone(j))).length;
+  const lo=inY.filter(({j,s})=>!isHuy(j)&&s.lai<0&&(s.no===0||isDone(j)||isFail(j))).length;
   return{inY,gen,thu,chi,hh,ln:thu-chi,no,stale,n:inY.length,lo}}
 const fcs=(j,s,dup)=>issues(j,s,dup).map(i=>'<span class="fc '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("");
 function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
@@ -1323,19 +1326,19 @@ function renderFin(){
     const rows=yrs.map(y=>({key:y,...yearData(y,mode,T,S)}));
     const tot={thu:fsum(rows.map(r=>r.thu)),chi:fsum(rows.map(r=>r.chi)),hh:fsum(rows.map(r=>r.hh)),no:fsum(S.filter(x=>!x.s.stale).map(x=>x.s.no)),stale:fsum(S.filter(x=>x.s.stale).map(x=>x.s.no)),due:fsum(S.map(x=>x.s.dueUnpaid)),hhO:fsum(S.map(x=>x.s.hhOwe))};
     const stg=STAGES.map(([k,n])=>{const a=S.filter(x=>x.j.st===k);return{k,n,c:a.length,tong:fsum(a.map(x=>x.s.tong)),thu:fsum(a.map(x=>x.s.thu)),no:fsum(a.filter(x=>!x.s.stale).map(x=>x.s.no)),due:fsum(a.map(x=>x.s.dueUnpaid))}});
-    const hu=S.filter(x=>x.j.st==="huy");
-    box.innerHTML=note+kp([["Hồ sơ",fin.jobs.length],["Tổng thu",fshort(tot.thu)],["Tổng chi",fshort(tot.chi)],["Lãi",fshort(tot.thu-tot.chi),tot.thu-tot.chi<0?"neg":"pos"],["Hoa hồng đã trả",fshort(tot.hh)],["Hoa hồng còn phải trả",fshort(tot.hhO),tot.hhO?"neg":""],["Còn nợ (đáng thu)",fshort(tot.no),"neg"],["Đến hạn thu chưa thu",fshort(tot.due),tot.due?"neg":""],["Nghi không thu được",fshort(tot.stale)]])+
+    const hu=S.filter(x=>x.j.st==="huy"),fl=S.filter(x=>x.j.st==="fail");
+    box.innerHTML=note+kp([["Hồ sơ",fin.jobs.length],["Đang theo dõi (vàng)",S.filter(x=>isDangTD(x.j)).length],["Tổng thu",fshort(tot.thu)],["Tổng chi",fshort(tot.chi)],["Lãi",fshort(tot.thu-tot.chi),tot.thu-tot.chi<0?"neg":"pos"],["Hoa hồng đã trả",fshort(tot.hh)],["Hoa hồng còn phải trả",fshort(tot.hhO),tot.hhO?"neg":""],["Còn nợ (đáng thu)",fshort(tot.no),"neg"],["Đến hạn thu chưa thu",fshort(tot.due),tot.due?"neg":""],["Nghi không thu được",fshort(tot.stale)]])+
       chart(rows)+'<div class="nt"><table class="m"><tr><th>Năm (bấm để xem chi tiết)</th><th class="num">Số HS</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Trong đó hoa hồng</th><th class="num">Lãi</th><th class="num">Biên lãi</th><th class="num">HS lỗ</th><th class="num">Còn nợ</th><th class="num">Nghi không thu được</th></tr>'+
       rows.slice().reverse().map(r=>'<tr data-y="'+r.key+'" style="cursor:pointer"><td><b>'+r.key+'</b></td><td class="num">'+r.n+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chi)+'</td><td class="num">'+fnum(r.hh)+'</td><td class="num '+(r.ln<0?'neg':'pos')+'">'+fnum(r.ln)+'</td><td class="num">'+(r.thu?Math.round(r.ln/r.thu*100)+"%":"–")+'</td><td class="num">'+(r.lo||"–")+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.stale)+'</td></tr>').join("")+'</table></div>'+
       '<h3 class="fh">Vòng đời hồ sơ — đang ở bước nào (bấm để xem danh sách)</h3><div class="nt"><table class="m"><tr><th>Bước</th><th class="num">Số HS</th><th class="num">Báo khách</th><th class="num">Đã thu</th><th class="num">Còn nợ</th><th class="num">Đến hạn thu chưa thu</th></tr>'+
       stg.map(r=>'<tr data-st="'+r.k+'" style="cursor:pointer"><td>'+esc(r.n)+'</td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.tong)+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.due)+'</td></tr>').join("")+
-      (hu.length?'<tr data-st="huy" style="cursor:pointer"><td>Hủy</td><td class="num">'+hu.length+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+'</table></div>'+
-      '<p class="lg">Hồ sơ cũ nhập từ Excel mặc định ở bước “Chờ kết quả” (chưa xong) hoặc “Bàn giao khách” (đã thu đủ). Bạn chỉnh bước khi mở từng hồ sơ.</p>';
+      (fl.length?'<tr data-st="fail" style="cursor:pointer"><td>Fail (thất bại)</td><td class="num">'+fl.length+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+(hu.length?'<tr data-st="huy" style="cursor:pointer"><td>Hủy</td><td class="num">'+hu.length+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+'</table></div>'+
+      '<p class="lg">Hồ sơ cũ lấy từ màu trong Excel: vàng → đang theo dõi (Chờ kết quả); trắng → Đóng hồ sơ (phần chưa thu coi như đã xóa nợ); xanh → Hủy; đỏ → Fail. Bạn chỉnh bước khi mở từng hồ sơ.</p>';
     box.querySelectorAll("[data-y]").forEach(e=>e.onclick=()=>{fv=e.dataset.y;renderFin();scrollTo(0,0)});
     box.querySelectorAll("[data-st]").forEach(e=>e.onclick=()=>{fv="st:"+e.dataset.st;renderFin();scrollTo(0,0)});
   }else if(fv.startsWith("st:")){
     const k=fv.slice(3),L=S.filter(x=>x.j.st===k&&matchQ(x.j)).sort((a,b)=>b.s.no-a.s.no);
-    box.innerHTML='<p><button id="back">← Tổng quan</button> &nbsp;<b>Bước: '+esc(k==="huy"?"Hủy":(STAGES.find(x=>x[0]===k)||[0,k])[1])+'</b> ('+L.length+' hồ sơ, xếp theo còn nợ giảm dần)</p>'+jtable(L,"",mode,dup);
+    box.innerHTML='<p><button id="back">← Tổng quan</button> &nbsp;<b>Bước: '+esc(k==="huy"?"Hủy":k==="fail"?"Fail":(STAGES.find(x=>x[0]===k)||[0,k])[1])+'</b> ('+L.length+' hồ sơ, xếp theo còn nợ giảm dần)</p>'+jtable(L,"",mode,dup);
     $("#back").onclick=()=>{fv="all";renderFin()};
   }else if(fv==="ref"){
     renderRefs(box,S,T,dup);return;
@@ -1412,8 +1415,8 @@ function drawJob(){
   const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
   const kp=[["Báo khách",fnum(s.tong),""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""]];
   const si=stIdx(j);
-  const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'" style="margin-left:auto">Hủy</button></div>'+
-    (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
+  const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="fail" class="'+(j.st==="fail"?"cur":"")+'" style="margin-left:auto;color:var(--seal)">Fail</button><button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
+    (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st==="fail"?"Fail":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
   const trOpts=sel=>'<option value="">Ngay khi nhận</option>'+STAGES.map(([k,n])=>'<option value="'+k+'"'+(sel===k?' selected':'')+'>Khi tới bước: '+n+'</option>').join("");
   const plSum=fsum((j.pl||[]).map(p=>p.a));
   const r=s.rate,hhO=j.hh||{mode:"",v:0,khi:"dot"};
@@ -1460,11 +1463,11 @@ function drawJob(){
 }
 function saveJobInline(){const j=jEdit;if(!fin.jobs.some(x=>x.id===j.id)){const c=JSON.parse(JSON.stringify(j));delete c._new;fin.jobs.push(c);j._new=0;$("#jdel").hidden=false}finSave()}
 $("#jnew").onclick=()=>openJob(null);
-$("#jclose").onclick=()=>{$("#jd").close();renderFin();renderList()};
+$("#jclose").onclick=()=>{$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
 $("#jsave").onclick=()=>{const j=JSON.parse(JSON.stringify(jEdit));delete j._new;
   if(j.st&&(!j.stLog||!j.stLog.length))j.stLog=[{st:j.st,d:today()}];
-  const i=fin.jobs.findIndex(x=>x.id===j.id);if(i>=0)fin.jobs[i]=j;else fin.jobs.push(j);finSave();$("#jd").close();renderFin();renderList()};
-$("#jdel").onclick=()=>{if(!confirm("Xóa hồ sơ này và các khoản thu/chi của nó?"))return;fin.jobs=fin.jobs.filter(x=>x.id!==jEdit.id);fin.tx=fin.tx.filter(t=>t.j!==jEdit.id);finSave();$("#jd").close();renderFin();renderList()};
+  const i=fin.jobs.findIndex(x=>x.id===j.id);if(i>=0)fin.jobs[i]=j;else fin.jobs.push(j);finSave();$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
+$("#jdel").onclick=()=>{if(!confirm("Xóa hồ sơ này và các khoản thu/chi của nó?"))return;fin.jobs=fin.jobs.filter(x=>x.id!==jEdit.id);fin.tx=fin.tx.filter(t=>t.j!==jEdit.id);finSave();$("#jd").close();renderFin();renderList();try{renderStrip()}catch(_){}};
 $("#fmode").onchange=e=>{fmodeV=e.target.value;renderFin()};
 $("#fqs").oninput=e=>{fqv=e.target.value;const p=e.target.selectionStart;renderFin();const q=$("#fqs");q.focus();try{q.setSelectionRange(p,p)}catch(_){}};
 $("#finimp").onclick=()=>$("#finfile").click();
@@ -1473,6 +1476,19 @@ $("#finfile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new F
   if((fin.jobs.length||fin.tx.length)&&!confirm("Thay toàn bộ hồ sơ và thu chi hiện có bằng file này?"))return;
   finMigrate(nf);fin=nf;fv="all";finSave();renderFin();renderList()}catch(_){alert("File không đúng định dạng.")}};rd.readAsText(f);e.target.value=""};
 $("#finexp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({jobs:fin.jobs,tx:fin.tx,refs:fin.refs,alias:fin.alias})],{type:"application/json"}));a.download="so-ho-so-doanh-thu.json";a.click()};
+/* ----- thanh vòng đời trong hộp thoại thửa đất ----- */
+function caseJob(){return cur&&!isNew?fin.jobs.find(x=>x.cid===cur.id):null}
+function renderStrip(){const el=$("#cstrip");if(!el)return;
+  if(isNew){el.innerHTML='<span class="lg">Lưu thửa đất xong sẽ theo dõi được vòng đời và doanh thu tại đây.</span>';return}
+  const j=caseJob();
+  if(!j){el.innerHTML='<button id="cs_new" class="primary">+ Theo dõi vòng đời &amp; doanh thu hồ sơ này</button> <span class="lg">Điền đơn xong vẫn biết hồ sơ đang ở bước nào, còn thu bao nhiêu.</span>';
+    $("#cs_new").onclick=()=>{const n=newJob({dc:propAddr(cur)||caseTitle(cur),loai:cur.type||"",ngay:cur.ngayKy||today(),cid:cur.id});delete n._new;fin.jobs.push(n);finSave();renderStrip();renderList()};return}
+  const s=jstat(j,txIdx(),""),si=stIdx(j);
+  el.innerHTML='<div class="stg" style="margin:0">'+STAGES.map(([k,n],i)=>'<button data-ss="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-ss="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-ss="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
+   '<div style="margin-top:6px"><span class="fc b">Báo khách '+fnum(s.tong)+'</span><span class="fc g">Đã thu '+fnum(s.thu)+'</span>'+(s.no?'<span class="fc y">Còn nợ '+fnum(s.no)+'</span>':'')+'<span class="fc">Chi '+fnum(s.chi)+'</span> <button id="cs_open">Mở thẻ doanh thu</button></div>';
+  el.querySelectorAll("[data-ss]").forEach(b=>b.onclick=()=>{if(j.st===b.dataset.ss)return;j.st=b.dataset.ss;j.stLog=(j.stLog||[]).concat([{st:j.st,d:today()}]);finSave();renderStrip();renderList()});
+  $("#cs_open").onclick=()=>openJob(j.id)}
+function markNop(){const j=caseJob();if(j&&stIdx(j)>=0&&stIdx(j)<3){j.st="nop";j.stLog=(j.stLog||[]).concat([{st:"nop",d:today()}]);finSave();renderStrip();renderList();toast("Đã chuyển hồ sơ sang bước “Soạn & nộp hồ sơ”")}}
 try{renderList()}catch(e){}
 function setTab(n){tab=n;[1,2,3].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});if(n===2)renderPeople();if(n===3)renderFin()}
 $("#t1").onclick=()=>setTab(1);$("#t2").onclick=()=>setTab(2);$("#t3").onclick=()=>setTab(3);
