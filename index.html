@@ -24,6 +24,7 @@ button.link{border:0;background:none;color:var(--seal);padding:2px 6px}
 .tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 14px;white-space:nowrap}
 .tabs button.on{border-bottom-color:var(--brand);font-weight:600}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:10px 24px}
+.overview{margin:0 24px 8px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}.overview-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.overview-head h2{font-size:14px;margin:0}.ov-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin:10px 0}.ov-card{border:1px solid var(--line);border-radius:var(--r);padding:8px 10px}.ov-card b{display:block;font-size:20px}.ov-card span{font-size:12px;color:var(--mute)}.ov-queue{width:100%;border-collapse:collapse}.ov-queue th,.ov-queue td{padding:7px 8px;text-align:left;border-top:1px solid var(--line);vertical-align:top}.ov-queue th{font-size:11px;color:var(--mute)}.ov-queue tr[data-oid]{cursor:pointer}.ov-queue tr[data-oid]:hover{background:color-mix(in srgb,var(--brand) 6%,var(--card))}.ov-empty{padding:10px;color:var(--ok);font-size:13px}.preflight{border:1px solid var(--line);border-radius:var(--r);padding:10px;margin:10px 0;background:var(--card)}.preflight h3{font-size:13px;margin:0 0 6px}.preflight ul{margin:4px 0;padding-left:20px}.preflight li{margin:3px 0}.pf-ok{color:var(--ok)}.pf-warn{color:var(--warn)}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;text-align:left;cursor:pointer}
 .stat.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
 .stat b{display:block;font-size:24px;font-weight:600;line-height:1.2}
@@ -91,7 +92,7 @@ label.ck input{width:auto}
 .fgrp .nm{flex:1;min-width:220px}
 #toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:99}
 #toast.on{opacity:1}
-@media(max-width:700px){.choose{grid-template-columns:1fr}.brtabs{padding-left:12px;padding-right:12px}.grid,.grid.g3{grid-template-columns:1fr}.grid label.sp2{grid-column:auto}header,.stats,.filters,.wrap,.tabs{padding-left:12px;padding-right:12px}
+@media(max-width:700px){.overview{margin-left:12px;margin-right:12px}.ov-queue{min-width:650px}.choose{grid-template-columns:1fr}.brtabs{padding-left:12px;padding-right:12px}.grid,.grid.g3{grid-template-columns:1fr}.grid label.sp2{grid-column:auto}header,.stats,.filters,.wrap,.tabs{padding-left:12px;padding-right:12px}
 .it.party,.it.doc,.it.fee,.it.log,.it.mst{grid-template-columns:1fr 1fr}}
 /* ===== Mẫu in ===== */
 #pd{width:min(900px,97vw)}
@@ -113,6 +114,8 @@ label.ck input{width:auto}
 #proot{display:none}
 @page{size:A4;margin:12mm}
 @media print{body>*:not(#proot){display:none!important}#proot{display:block}#proot .fd{box-shadow:none;margin:0;padding:0;max-width:none;page-break-after:always}#proot .fd:last-child{page-break-after:auto}#proot .fd .v{color:#000}}.mp{position:relative;overflow:hidden;background:#fff;margin:0 auto;page-break-after:always;break-after:page}.mp:last-child{page-break-after:auto;break-after:auto}.mp img{position:absolute;left:0;top:0}.mr{position:absolute;white-space:nowrap;color:#000;line-height:1}.mr.c{transform:translateX(-50%)}.ovb .mp{border:1px solid var(--line);margin:0 auto 10px;zoom:.85}.ovb{background:#cfcfcf;padding:8px;overflow:auto}@media print{#proot .mp{zoom:1;border:0;margin:0}#proot .ovb{padding:0;background:#fff}@page{size:A4;margin:0}}
+
+.fd-dkbd{font-size:16px;line-height:1.42;padding:34px 38px}.fd-dkbd .recipient{text-align:center;margin:4px 0 30px;font-weight:normal}.fd-dkbd .sec{font-weight:normal;margin-top:7px}.fd-dkbd .att{margin:5px 0}.fd-dkbd .declaration{margin-top:8px}
 </style>
 </head>
 <body>
@@ -132,6 +135,7 @@ label.ck input{width:auto}
 <div id="v1">
   <div class="brtabs" id="brtabs"></div>
   <section class="stats" id="stats"></section>
+  <section class="overview" id="overview" aria-live="polite"></section>
   <section class="filters">
     <input id="q" type="search" placeholder="Tìm theo mã, tên, số GCN, thửa đất, biên nhận…">
     <select id="ft"></select>
@@ -212,7 +216,7 @@ label.ck input{width:auto}
 <dialog id="pd">
   <h2 id="pdt">Xem trước</h2>
   <div id="pbody"></div>
-  <p class="hint" id="phint">Phần chữ xanh là dữ liệu tự điền. Bấm In rồi chọn “Lưu thành PDF” nếu muốn xuất file. Mẫu dựng lại theo bố cục file mẫu; hãy đối chiếu với mẫu hiện hành mà VPĐK yêu cầu.</p>
+  <p class="hint" id="phint">Phần chữ xanh là dữ liệu tự điền. Bấm In rồi chọn “Lưu thành PDF” nếu muốn xuất file. Mẫu xem nhanh để tham khảo; ưu tiên Xuất PDF để điền trên nền mẫu gốc. Đối chiếu biểu mẫu và yêu cầu hiện hành trước khi nộp.</p>
   <div class="foot"><button id="pclose2">Đóng</button><button class="primary" id="pprint">In / Lưu PDF</button></div>
 </dialog>
 
@@ -382,6 +386,29 @@ function renderStats(){
   const S=[["", "Tất cả",base.length,""],["Chuẩn bị","Đang chuẩn bị",base.filter(c=>c.status==="Chuẩn bị").length,""],["Đã nộp","Đã nộp, chờ xử lý",base.filter(c=>c.status==="Đã nộp").length,""],["Cần bổ sung","Cần bổ sung",base.filter(c=>c.status==="Cần bổ sung").length,""],["__late","Quá hẹn trả",open.filter(isLate).length,"late"],["Có kết quả","Có kết quả, chưa nhận",base.filter(c=>c.status==="Có kết quả").length,""],["Hoàn thành","Hoàn thành",base.filter(c=>c.status==="Hoàn thành").length,""]];
   $("#stats").innerHTML=S.map(s=>`<button class="stat ${s[3]} ${statF===s[0]?"on":""}" data-f="${s[0]}"><b>${s[2]}</b><span>${s[1]}</span></button>`).join("");
 }
+function renderOverview(){
+  const base=db.cases.filter(inBr), open=base.filter(isOpen);
+  const count=(fn)=>base.filter(fn).length;
+  const urgent=open.filter(c=>isLate(c)||c.status==="Cần bổ sung"||c.status==="Có kết quả"||c.status==="Đã nộp").sort((a,b)=>{
+    const rank=c=>isLate(c)?0:c.status==="Cần bổ sung"?1:c.status==="Có kết quả"?2:c.status==="Đã nộp"?3:4;
+    const d=rank(a)-rank(b);if(d)return d;return (a.ngayHen||"9999").localeCompare(b.ngayHen||"9999");
+  }).slice(0,8);
+  const cards=[
+    ["Cần bổ sung",count(c=>c.status==="Cần bổ sung"),"bad"],
+    ["Quá hạn",count(c=>isOpen(c)&&isLate(c)),"bad"],
+    ["Có kết quả – chờ hoàn tất",count(c=>c.status==="Có kết quả"),"info"],
+    ["Đã nộp – đang xử lý",count(c=>c.status==="Đã nộp"),"warn"],
+    ["Thiếu giấy tờ",count(c=>isOpen(c)&&docStat(c).total>docStat(c).done),""],
+    ["Hoàn thành",count(c=>c.status==="Hoàn thành"),"ok"]
+  ];
+  const rows=urgent.map(c=>{
+    const next=isLate(c)?`Quá hạn ${Math.abs(daysTo(c.ngayHen))} ngày`:c.status==="Cần bổ sung"?"Bổ sung giấy tờ / cập nhật phản hồi":c.status==="Có kết quả"?"Kiểm tra và ghi nhận việc nhận kết quả":c.status==="Đã nộp"?"Theo dõi tiến độ, ngày hẹn trả":"Rà soát hồ sơ";
+    return `<tr data-oid="${c.id}"><td><b>${esc(c.code||"(chưa có mã)")}</b><small>${esc(c.type)}</small></td><td>${esc(c.client||partyNames(c,"B")||"—")}<small>${esc(propAddr(c)||"")}</small></td><td>${esc(c.status)}${c.ngayHen?`<small>Hẹn: ${fd(c.ngayHen)}</small>`:""}</td><td>${esc(next)}</td><td>${docStat(c).done}/${docStat(c).total}</td></tr>`;
+  }).join("");
+  $("#overview").innerHTML=`<div class="overview-head"><h2>Tổng quan xử lý hồ sơ</h2><span class="hint" style="margin:0">${base.length} hồ sơ trong phạm vi đang chọn</span></div><div class="ov-cards">${cards.map(([label,n,cl])=>`<div class="ov-card"><b class="${cl}">${n}</b><span>${label}</span></div>`).join("")}</div>${urgent.length?`<div style="overflow-x:auto"><table class="ov-queue"><thead><tr><th>Hồ sơ</th><th>Chủ hồ sơ / tài sản</th><th>Trạng thái / hạn</th><th>Việc nên xử lý tiếp</th><th>Giấy tờ</th></tr></thead><tbody>${rows}</tbody></table></div>`:`<div class="ov-empty">Không có hồ sơ cần ưu tiên xử lý theo các trạng thái hiện tại.</div>`}`;
+}
+$("#overview").addEventListener("click",e=>{const r=e.target.closest("[data-oid]");if(r)openCase(r.dataset.oid)});
+
 function filtered(){
   const q=$("#q").value.trim().toLowerCase(),t=$("#ft").value,hide=$("#hideDone").checked;
   return db.cases.filter(c=>{
@@ -398,7 +425,7 @@ function filtered(){
   });
 }
 function renderList(){
-  renderBr();renderStats();$("#cnopts").innerHTML=db.cfg.cnList.map(x=>`<option value="${esc(x)}">`).join("");
+  renderBr();renderStats();renderOverview();$("#cnopts").innerHTML=db.cfg.cnList.map(x=>`<option value="${esc(x)}">`).join("");
   const l=filtered();
   if(!db.cases.length){$("#list").innerHTML=`<div class="empty">Chưa có hồ sơ nào. Bấm <b>+ Hồ sơ mới</b>, hoặc vào <b>Cài đặt → Nạp hồ sơ mẫu</b> để xem thử.</div>`;return}
   if(!l.length){$("#list").innerHTML=`<div class="empty">Không có hồ sơ phù hợp bộ lọc.</div>`;return}
@@ -490,6 +517,41 @@ function missing(c){
   c.parties.forEach(x=>{const p=P(x.pid);if(!p)return;const w=[];if(isOrg(p)){if(!p.mst)w.push("MST");if(!p.dd)w.push("người đại diện")}else if(!p.cccd)w.push("CCCD");if(!p.dc&&!p.px)w.push("địa chỉ");if(w.length)m.push(`${p.name}: thiếu ${w.join(", ")}`)});
   if(!c.parties.some(x=>x.role==="B"))m.push("chưa chọn bên nhận");
   return m;
+}
+function formWarnings(c,k){
+  const w=[],x=ctx(c),p=c.p||{},d=c.d||{},b=x.b,a=x.a;
+  const add=(ok,msg)=>{if(!ok)w.push(msg)};
+  if(["don18","lptb","tncn","pnn","tsdd","mst"].includes(k))add(!!(b&&b.name),"Chưa khai báo người sử dụng đất/bên nhận hoặc người nộp thuế ở tab Các bên.");
+  if(["don18","lptb","tncn","pnn","tsdd"].includes(k))add(!!(propAddr(c)||p.thua||p.to),"Thiếu thông tin vị trí tài sản/thửa đất.");
+  if(["don18","lptb","tncn","pnn","tsdd"].includes(k))add(!!(p.gcnSo||p.soVaoSo),"Chưa có số Giấy chứng nhận hoặc số vào sổ (nếu thủ tục yêu cầu).");
+  if(k==="don18"){
+    add(!!(d.nd||c.type),"Chưa có nội dung biến động cụ thể; cần rà soát nội dung mặc định.");
+    add(!!(d.kem||c.docs.some(z=>z.s!=="Không áp dụng"&&!/^Đơn/i.test(z.n))),"Chưa có danh sách giấy tờ kèm theo.");
+  }
+  if(k==="lptb"){
+    add(!!d.gia,"Chưa nhập giá trị giao dịch/giá tính lệ phí trước bạ.");
+    add(!!(p.kind&&p.kind!=="Khác"||p.dtRieng||p.dtXD),"Thiếu loại tài sản hoặc diện tích.");
+  }
+  if(k==="tncn"){
+    add(!!(a&&a.name),"Chưa khai báo bên chuyển nhượng/người có thu nhập.");
+    add(!!d.gia,"Chưa nhập giá chuyển nhượng/giá tính thuế.");
+    add(!!(d.hdNgayCT||d.hdNgay),"Chưa nhập ngày hợp đồng/công chứng.");
+  }
+  if(k==="pnn")add(!!(b&&b.name&&b.cccd||b&&b.mst),"Kiểm tra CCCD/MST của người nộp thuế.");
+  if(k==="tsdd")add(!!(p.dt||p.dtRieng||c.ts&&c.ts.dtDT),"Chưa nhập diện tích đất/tài sản liên quan.");
+  if(k==="mst")add(!!((c.mst&&c.mst.rows||[]).some(r=>r.k||r.o||r.n)),"Chưa có chỉ tiêu/thông tin đăng ký thuế cần điều chỉnh.");
+  if(k==="phieu"||k==="cover"){
+    const ds=docStat(c);add(ds.done===ds.total&&ds.total>0,"Còn giấy tờ chưa đánh dấu đã có/đã nộp hoặc không áp dụng.");
+  }
+  if(!c.ngayKy)add("","Chưa chọn ngày ghi trên tờ khai (ngày ký)." );
+  return w;
+}
+function renderPreflight(){
+  const selected=[...document.querySelectorAll(".fsel:checked")].map(e=>e.value);
+  if(!selected.length)return `<div class="preflight"><h3>Kiểm tra trước khi xuất</h3><p class="hint">Chọn ít nhất một mẫu để kiểm tra dữ liệu.</p></div>`;
+  const all=selected.map(k=>({k,label:FORMS_LAB[k],w:formWarnings(cur,k)}));
+  const n=all.reduce((s,x)=>s+x.w.length,0);
+  return `<div class="preflight"><h3>Kiểm tra dữ liệu trước khi xuất ${n?`<span class="pf-warn">· ${n} lưu ý</span>`:`<span class="pf-ok">· Không phát hiện thiếu sót theo kiểm tra cơ bản</span>`}</h3><p class="hint">Đây là kiểm tra hỗ trợ nhập liệu, không xác nhận hồ sơ đủ điều kiện pháp lý. Hãy đối chiếu từng mẫu và yêu cầu tiếp nhận thực tế.</p>${all.map(x=>`<details ${x.w.length?"open":""}><summary>${esc(x.label)} — ${x.w.length?`<span class="pf-warn">${x.w.length} lưu ý</span>`:`<span class="pf-ok">Đã qua kiểm tra cơ bản</span>`}</summary>${x.w.length?`<ul>${x.w.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:`<p class="hint">Không phát hiện trường dữ liệu trống trong các kiểm tra cơ bản của mẫu này.</p>`}</details>`).join("")}</div>`;
 }
 const TABS={
  gen:()=>{
@@ -586,7 +648,8 @@ const TABS={
   const mp=cur.mst;
   return `<p class="hint" style="margin-top:0">Chọn các mẫu cần in cho hồ sơ này. Dữ liệu lấy từ các tab Các bên, Tài sản, Giao dịch.</p>
   ${Object.entries(FORMS_LAB).filter(([k])=>k==="phieu"?tpb:k==="cover"?!tpb:true).map(([k,l])=>`<div class="fgrp"><label class="ck nm"><input type="checkbox" class="fsel" value="${k}" ${sel.includes(k)?"checked":""}> ${l}</label>${DOCX_FORMS[k]?`<button class="primary" data-a="docx" data-f="${k}">Xuất Word</button><button data-a="pdf" data-f="${k}">Xuất PDF</button>`:""}<button data-a="showform" data-f="${k}">Xem nhanh / in</button></div>`).join("")}
-  <div class="foot" style="margin-top:6px"><button class="primary" data-a="docxsel">Xuất Word các mẫu đã chọn</button><button data-a="pdfsel">Xuất PDF các mẫu đã chọn</button><button data-a="showsel">Xem nhanh các mẫu đã chọn</button></div>
+  <div class="foot" style="margin-top:6px"><button class="primary" data-a="docxsel">Xuất Word các mẫu đã chọn</button><button data-a="pdfsel">Xuất PDF các mẫu đã chọn</button><button data-a="showsel">Xem nhanh các mẫu đã chọn</button><button data-a="preflight">Kiểm tra dữ liệu</button></div>
+  <div id="preflightBox">${renderPreflight()}</div>
   <p class="hint">“Xuất Word” điền dữ liệu vào đúng file mẫu gốc (giữ nguyên bố cục, bảng, ô mã số thuế); mở bằng Word để kiểm tra và in. Nhiều mẫu sẽ nén vào một file .zip. “Xuất PDF” mở bản in giữ nguyên mẫu gốc (nền là trang mẫu, chữ điền đúng vị trí): bấm “In / Lưu PDF” rồi chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”; có thể bấm vào chữ để sửa trước khi in. “Xem nhanh” chỉ là bản dựng lại để tham khảo, không phải mẫu gốc. Các ô tick nằm trong khung nổi của mẫu (như [02] Lần đầu của PNN/TSDD) cần tick tay.</p>
   <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Dữ liệu cho tờ khai tiền sử dụng đất (01/TSDD)</summary>
   <div class="grid" style="margin-top:8px">
@@ -657,9 +720,11 @@ $("#cbody").addEventListener("click",e=>{
   else if(a==="docx"){exportDocx([b.dataset.f]);return}
   else if(a==="docxsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");exportDocx(l);return}
   else if(a==="showsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");showForms(l);return}
+  else if(a==="preflight"){const box=$("#preflightBox");if(box)box.innerHTML=renderPreflight();toast("Đã kiểm tra dữ liệu cho các mẫu đang chọn");return}
   else return;
   renderCase();
 });
+document.addEventListener("change",e=>{if(e.target&&e.target.classList&&e.target.classList.contains("fsel")){const box=$("#preflightBox");if(box&&cur&&ctab==="print")box.innerHTML=renderPreflight()}});
 function commit(){
   cur.upd=Date.now();
   if(!cur.code){const y=new Date().getFullYear();db.seq[y]=(db.seq[y]||0)+1;cur.code=`HS-${y}-${String(db.seq[y]).padStart(3,"0")}`}
@@ -918,18 +983,20 @@ const FORMS={
   let nd=x.d.nd;
   if(!nd){nd=c.type+(propAddr(c)?" – "+propAddr(c):"");
     if(/^Cấp đổi/.test(c.type))nd="Cấp đổi Giấy chứng nhận"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?", số vào sổ cấp Giấy chứng nhận: "+p.soVaoSo:"")+(p.gcnNgay?" ngày "+fd(p.gcnNgay):"")+(p.gcnCQ?" do "+p.gcnCQ+" cấp":"")}
-  const att=x.d.kem&&x.d.kem.trim()?x.d.kem.split("\n").map(t=>t.trim()).filter(Boolean).map(t=>`<p><span class="v">- ${esc(t)}</span></p>`).join(""):c.docs.filter(d=>d.s!=="Không áp dụng"&&!/^Đơn/i.test(d.n)).map((d,i)=>`<p>(${i+1}) ${esc(d.n)};</p>`).join("");
-  return `<div class="fd"><div class="r i b">Mẫu số 18</div><div class="i sm">(Xem kỹ hướng dẫn viết đơn trước khi kê khai; không tẩy xóa, sửa chữa trên đơn)</div>
+  const att=x.d.kem&&x.d.kem.trim()?x.d.kem.split("\n").map(t=>t.trim()).filter(Boolean).map(t=>`<p class="att">- <span class="v">${esc(t)};</span></p>`).join(""):c.docs.filter(d=>d.s!=="Không áp dụng"&&!/^Đơn/i.test(d.n)).map(d=>`<p class="att">- ${esc(d.n)};</p>`).join("");
+  return `<div class="fd fd-dkbd"><div class="r i b">Mẫu số 18</div>
   ${head("ĐƠN ĐĂNG KÝ BIẾN ĐỘNG ĐẤT ĐAI, TÀI SẢN GẮN LIỀN VỚI ĐẤT")}
-  <p><b>Kính gửi:</b> Văn phòng đăng ký đất đai ${v(dest(c),24)} (1)</p>
+  <p class="recipient">Kính gửi: Văn phòng đăng ký đất đai ${v(dest(c),24)} (1)</p>
   <p class="sec">1. Người sử dụng đất, chủ sở hữu tài sản gắn liền với đất, người quản lý đất:</p>
   <p class="ind">a) Tên (2): ${v(x.B.map(q=>q.name).join(" - "),40)}</p>
   <p class="ind">b) Giấy tờ nhân thân/pháp nhân (2): ${v(x.B.map(idText).filter(Boolean).join(" - "),40)}</p>
   <p class="ind">c) Địa chỉ (2): ${v(x.B.map(adr).filter((s,i,a)=>s&&a.indexOf(s)===i).join(" ; "),50)}</p>
-  <p class="ind">d) Điện thoại liên hệ (nếu có): ${v(x.b.phone,16)} Hộp thư điện tử (nếu có): ${v(x.b.email,20)}</p>
-  <p class="sec">2. Nội dung biến động (3):</p><p class="ind">- ${v(nd,60)}</p>
-  <p class="sec">3. Giấy tờ liên quan đến nội dung biến động nộp kèm theo đơn này gồm có (4):</p>${att||`<p>(1) ${v("",50)};</p>`}
-  <p>Cam đoan nội dung kê khai trên đơn là đúng sự thật và chịu trách nhiệm trước pháp luật.</p>
+  <p class="ind">d) Điện thoại liên hệ (nếu có): ${v(x.b.phone,16)}</p>
+  <p class="ind">Hộp thư điện tử (nếu có): ${v(x.b.email,30)}</p>
+  <p class="sec">2. Nội dung biến động (3): ${v(nd,60)}</p>
+  <p class="sec">3. Giấy tờ liên quan đến nội dung biến động nộp kèm theo đơn này gồm có (4):</p>
+  ${att||`<p class="att">- ${v("",50)}</p>`}
+  <p class="declaration">Cam đoan nội dung kê khai trên đơn là đúng sự thật và chịu trách nhiệm trước pháp luật.</p>
   ${sig("", `${sdate(c,x.place)}<br><b>Người viết đơn</b><br><i class="sm">(Ký, ghi rõ họ tên và đóng dấu nếu có)</i>`,signer(x),signT(x))}</div>`;
  },
  lptb(c){
@@ -1181,7 +1248,9 @@ function showForms(list){
   $("#pbody").classList.remove("ovb");$("#pbody").contentEditable="false";$("#phint").textContent="Phần chữ xanh là dữ liệu tự điền. Mẫu dựng lại theo bố cục file mẫu; hãy đối chiếu với mẫu hiện hành mà VPĐK yêu cầu.";$("#pbody").innerHTML=html;$("#pdt").textContent=list.length===1?FORMS_LAB[list[0]]:`Xem trước ${list.length} mẫu`;
   $("#pd").showModal();
 }
-$("#pprint").onclick=()=>{$("#proot").innerHTML=$("#pbody").innerHTML;window.print()};
+let _printTitle="";
+$("#pprint").onclick=()=>{$("#proot").innerHTML=$("#pbody").innerHTML;_printTitle=document.title;const name=[cur&&cur.code||"ho-so-dat-dai",($("#pdt").textContent||"to-khai").replace(/[\/:*?"<>|]+/g,"-")].join("_");document.title=name;window.print()};
+window.addEventListener("afterprint",()=>{if(_printTitle){document.title=_printTitle;_printTitle=""}});
 $("#pclose2").onclick=()=>$("#pd").close();
 
 /* ===== Cài đặt, sao lưu ===== */
