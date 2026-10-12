@@ -250,7 +250,7 @@ table.jt th:nth-child(11),table.jt td:nth-child(11){min-width:180px}
     <input type="file" id="file" accept=".json" hidden>
   </div>
 </header>
-<nav class="tabs"><button id="t4">Nhắc việc</button><button id="t1" class="on">Hồ sơ</button><button id="t2">Danh bạ (người, chủ thể)</button><button id="t3">Hồ sơ &amp; doanh thu</button></nav>
+<nav class="tabs"><button id="t4">Nhắc việc</button><button id="t1" class="on">Điền đơn</button><button id="t2">Danh bạ (người, chủ thể)</button><button id="t3">Hồ sơ &amp; doanh thu</button></nav>
 
 <div id="v1">
   <section class="filters">
@@ -1599,7 +1599,7 @@ function drawJob(){
    '<div class="sec"><h4>Vòng đời</h4>'+stg+'</div>'+
    '<div class="sec"><h4>Thông tin hồ sơ'+(j.code?' <span class="fc b" style="font-size:13px">'+esc(j.code)+'</span> <button id="jrecode" class="ghost" style="font-size:12px" title="Cấp lại mã theo năm/quận hiện tại">Cấp lại mã</button>':' <span class="lg">(mã cấp khi lưu)</span>')+'</h4><div class="jg">'+f("ngay","Ngày nhận","date")+f("dc","Địa chỉ / khách")+f("quan","Quận")+f("loai","Loại việc")+f("nd","Nội dung")+
    '<div><label>Người giới thiệu</label><input data-f="gt" list="rlist" value="'+esc(j.gt||"")+'"><datalist id="rlist">'+[...new Set(fin.jobs.map(x=>canon(x.gt)).filter(Boolean))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
-   f("chu","Chủ sử dụng đất")+'<div><label>Liên kết thửa đất (tab Hồ sơ)</label><select data-f="cid"><option value="">— chưa liên kết —</option>'+ca.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===j.cid?' selected':'')+'>'+esc(caseTitle(c))+'</option>').join("")+'</select></div>'+f("gc","Ghi chú")+
+   f("chu","Chủ sử dụng đất")+'<div><label>Liên kết thửa đất (tab Điền đơn)</label><select data-f="cid"><option value="">— chưa liên kết —</option>'+ca.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===j.cid?' selected':'')+'>'+esc(caseTitle(c))+'</option>').join("")+'</select></div>'+f("gc","Ghi chú")+
    '<div><label>Xóa nợ</label><label style="color:var(--ink)"><input type="checkbox" data-f="mien" style="width:auto" '+(j.mien?"checked":"")+'> Không thu thêm nữa</label></div></div>'+(j.cid&&db.cases.some(c=>c.id===j.cid)?'<p><button id="gocase">Mở hồ sơ thửa đất / in đơn →</button></p>':'')+'</div>'+
    '<div class="sec"><h4>Báo khách</h4><div class="jg"><div><label>Phí dịch vụ chốt (đ)</label><input data-f="gia" inputmode="numeric" value="'+(j.gia?Number(j.gia).toLocaleString("vi-VN"):"")+'"></div><div><label>Lệ phí / thuế khách đóng hộ (đ)</label><input data-f="lephi" inputmode="numeric" value="'+(j.lephi?Number(j.lephi).toLocaleString("vi-VN"):"")+'"></div></div>'+
    '<p class="lg">Lịch sử báo giá: '+(j.bg.length?j.bg.map((b,i)=>dmy(b.d)+" · <b>"+fnum(b.a)+"</b>"+(b.n?" ("+esc(b.n)+")":"")+' <a href="#" data-bgc="'+i+'">chốt</a> <a href="#" data-bgd="'+i+'">xóa</a>').join(" &nbsp;|&nbsp; "):"chưa có")+'</p>'+
@@ -1672,34 +1672,38 @@ let tdF="open";
 const addDays=(iso,n)=>{const d=new Date((iso||today())+"T00:00:00");d.setDate(d.getDate()+n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 function todoItems(){
   db.todo=db.todo||[];db.todoSnz=db.todoSnz||{};const out=[],T=txIdx(),td=today(),snz=k=>(db.todoSnz[k]||"")>td;
-  const codeOf=j=>j.code||"";
-  fin.jobs.forEach(j=>{if(!isDangTD(j))return;const s=jstat(j,T,"");
+  const codeOf=j=>j.code||"",Y=new Date().getFullYear(),yOf=j=>+((j.ngay||"").slice(0,4)||j.nam||Y);
+  const prev=[];
+  fin.jobs.forEach(j=>{if(!isDangTD(j))return;const s=jstat(j,T,""),y=yOf(j);
+    if(y<Y-1)return;
+    if(y===Y-1){const key="ton:"+j.id;if(!snz(key)){const ev=(s.pl||[]).filter(p=>p.han&&p.cov<p.a).map(p=>p.han).sort()[0]||"";prev.push({key,src:"auto",ton:Y-1,t:"Tồn từ năm "+(Y-1)+" — đang ở bước “"+stName(j)+"”"+(s.no?", còn nợ "+fnum(s.no):"")+(s.tong&&!s.thu?", chưa thu đồng nào":""),sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:ev,code:codeOf(j),open:()=>openJob(j.id)})}return}
     (s.pl||[]).forEach((p,i)=>{if(p.han&&p.cov<p.a){const key="pl:"+j.id+":"+(p.n||i);if(!snz(key))out.push({key,src:"auto",t:"Thu đợt "+(p.n||i+1)+" — còn "+fnum(p.a-p.cov),sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:p.han,code:codeOf(j),open:()=>openJob(j.id)})}});
     if(stIdx(j)<=1&&j.ngay){const dn=-daysTo(j.ngay);if(dn>=0&&dn<=120){const key="bg:"+j.id;if(!snz(key))out.push({key,src:"auto",t:"Gọi lại khách về báo giá "+fshort(s.tong)+" ("+dn+" ngày chưa chốt)",sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:addDays(j.ngay,7),code:codeOf(j),open:()=>openJob(j.id)})}}});
-  db.cases.forEach(c=>{if(c.ngayHen&&!c.ngayNhan&&!c.ketQua&&["Đã nộp","Cần bổ sung"].includes(c.status)){const key="hen:"+c.id;if(snz(key))return;const j=fin.jobs.find(x=>x.cid===c.id);
-    out.push({key,src:"auto",t:(c.status==="Cần bổ sung"?"Bổ sung hồ sơ — ":"")+"Hẹn trả kết quả"+(c.bienNhan?" (biên nhận "+c.bienNhan+")":""),sub:caseTitle(c),d:c.ngayHen,code:c.code||(j&&j.code)||"",open:()=>openCase(c.id)})}});
+  out.push(...prev);
+  db.cases.forEach(c=>{const cy=+((c.code||"").slice(0,4)||(c.ngayKy||"").slice(0,4)||Y);if(cy<Y-1)return;if(cy===Y-1&&!(c.ngayHen&&!c.ngayNhan&&!c.ketQua))return;if(c.ngayHen&&!c.ngayNhan&&!c.ketQua&&["Đã nộp","Cần bổ sung"].includes(c.status)){const key="hen:"+c.id;if(snz(key))return;const j=fin.jobs.find(x=>x.cid===c.id);
+    out.push({key,src:"auto",ton:cy===Y-1?Y-1:0,t:(c.status==="Cần bổ sung"?"Bổ sung hồ sơ — ":"")+"Hẹn trả kết quả"+(c.bienNhan?" (biên nhận "+c.bienNhan+")":""),sub:caseTitle(c),d:c.ngayHen,code:c.code||(j&&j.code)||"",open:()=>openCase(c.id)})}});
   db.todo.forEach(m=>{const j=fin.jobs.find(x=>x.code&&x.code===m.ref),c=db.cases.find(x=>x.code&&x.code===m.ref);
     out.push({key:"m:"+m.id,src:"man",m,done:!!m.done,t:m.t,sub:j?j.dc:c?caseTitle(c):(m.ref||""),d:m.d||"",code:m.ref||"",open:j?()=>openJob(j.id):c?()=>openCase(c.id):null})});
   return out}
-function todoGroup(it){if(it.done)return"done";if(!it.d)return"none";const x=daysTo(it.d);return x<0?"late":x===0?"today":x<=7?"week":"later"}
-function todoBadge(){try{const n=todoItems().filter(i=>{const g=todoGroup(i);return g==="late"||g==="today"}).length,b=$("#t4");if(b)b.innerHTML="Nhắc việc"+(n?' <span class="fc r" style="margin:0 0 0 4px">'+n+'</span>':"")}catch(e){}}
+function todoGroup(it){if(it.done)return"done";if(it.ton)return"ton";if(!it.d)return"none";const x=daysTo(it.d);return x<0?"late":x===0?"today":x<=7?"week":"later"}
+function todoBadge(){try{const n=todoItems().filter(i=>{const g=todoGroup(i);return g==="late"||g==="today"||g==="ton"}).length,b=$("#t4");if(b)b.innerHTML="Nhắc việc"+(n?' <span class="fc r" style="margin:0 0 0 4px">'+n+'</span>':"")}catch(e){}}
 function renderTodo(){
-  const box=$("#todo");if(!box)return;const all=todoItems(),G={late:[],today:[],week:[],later:[],none:[],done:[]};all.forEach(i=>G[todoGroup(i)].push(i));
-  ["late","week","later"].forEach(k=>G[k].sort((a,b)=>a.d.localeCompare(b.d)));G.done.sort((a,b)=>String(b.m.doneAt||"").localeCompare(String(a.m.doneAt||"")));
-  const names={late:"Trễ hạn",today:"Hôm nay",week:"7 ngày tới",later:"Sau đó",none:"Chưa đặt hạn",done:"Đã xong"},cls={late:"r",today:"y",week:"b",later:"",none:"",done:"g"};
-  const chips=[["open","Đang mở ("+(all.length-G.done.length)+")"],["late","Trễ ("+G.late.length+")"],["today","Hôm nay ("+G.today.length+")"],["week","7 ngày ("+G.week.length+")"],["later","Sau đó ("+(G.later.length+G.none.length)+")"],["done","Đã xong ("+G.done.length+")"]];
-  const show=tdF==="open"?["late","today","week","later","none"]:tdF==="later"?["later","none"]:[tdF];
+  const box=$("#todo");if(!box)return;const all=todoItems(),G={late:[],today:[],week:[],later:[],ton:[],none:[],done:[]};all.forEach(i=>G[todoGroup(i)].push(i));
+  ["ton"].forEach(k=>G[k].sort((a,b)=>(a.d||"9").localeCompare(b.d||"9")));["late","week","later"].forEach(k=>G[k].sort((a,b)=>a.d.localeCompare(b.d)));G.done.sort((a,b)=>String(b.m.doneAt||"").localeCompare(String(a.m.doneAt||"")));
+  const names={late:"Trễ hạn",today:"Hôm nay",week:"7 ngày tới",later:"Sau đó",ton:"Hồ sơ tồn năm "+(new Date().getFullYear()-1),none:"Chưa đặt hạn",done:"Đã xong"},cls={late:"r",today:"y",week:"b",later:"",ton:"y",none:"",done:"g"};
+  const chips=[["open","Đang mở ("+(all.length-G.done.length)+")"],["late","Trễ ("+G.late.length+")"],["today","Hôm nay ("+G.today.length+")"],["week","7 ngày ("+G.week.length+")"],["later","Sau đó ("+(G.later.length+G.none.length)+")"],...(G.ton.length?[["ton","Tồn năm "+(new Date().getFullYear()-1)+" ("+G.ton.length+")"]]:[]),["done","Đã xong ("+G.done.length+")"]];
+  const show=tdF==="open"?["late","today","week","later","ton","none"]:tdF==="later"?["later","none"]:[tdF];
   const dl=[...fin.jobs.filter(j=>j.code).sort((a,b)=>b.code.localeCompare(a.code)).slice(0,300).map(j=>'<option value="'+esc(j.code)+'">'+esc(j.dc||j.loai||"")+'</option>')].join("");
   const row=it=>{const dd=it.d?daysTo(it.d):null,rel=dd==null?"":dd<0?"trễ "+(-dd)+" ngày":dd===0?"hôm nay":"còn "+dd+" ngày";
     return'<div class="tdr" data-k="'+esc(it.key)+'">'+(it.src==="man"?'<input type="checkbox" class="tdck" '+(it.done?"checked":"")+' title="Đánh dấu xong">':'<span class="tdck tdauto" title="Việc tự sinh từ hồ sơ">⚑</span>')+
      '<div class="tdm"><div class="tdt'+(it.done?" dn":"")+'">'+esc(it.t)+'</div><div class="lg">'+(it.code?'<span class="fc b">'+esc(it.code)+'</span> ':"")+esc(it.sub||"")+'</div></div>'+
-     '<div class="tdd">'+(it.d?dmy(it.d):"")+(rel?'<br><span class="fc '+cls[todoGroup(it)]+'">'+rel+'</span>':"")+'</div>'+
+     '<div class="tdd">'+(it.d?dmy(it.d):"")+(rel?'<br><span class="fc '+(dd<0?"r":dd===0?"y":"b")+'">'+rel+'</span>':"")+'</div>'+
      '<div class="tda">'+(it.open?'<button data-a="open">Mở</button>':"")+(it.done?"":'<button data-a="s1" title="Hoãn 1 ngày">+1 ngày</button><button data-a="s7" title="Hoãn 7 ngày">+7 ngày</button>')+(it.src==="man"?'<button class="link" data-a="del">Xóa</button>':"")+'</div></div>'};
   box.innerHTML='<div class="tdadd"><input id="td_t" placeholder="Việc cần nhớ (vd: gọi khách bổ sung CCCD, nhắc VPĐK…)" style="flex:1;min-width:240px"><input id="td_d" type="date" value="'+today()+'"><input id="td_r" list="td_dl" placeholder="Mã hồ sơ (tùy chọn)" style="width:170px"><datalist id="td_dl">'+dl+'</datalist><button class="primary" id="td_ok">Thêm việc</button></div>'+
    '<p>'+chips.map(([k,t])=>'<button data-f="'+k+'" class="'+(tdF===k?"primary":"")+'">'+t+'</button>').join(" ")+'</p>'+
    show.map(k=>{const L=G[k];if(!L.length)return"";return'<h3 class="fh">'+names[k]+' <span class="lg">· '+L.length+'</span></h3><div class="tdl">'+L.map(row).join("")+'</div>'}).join("")+
    (show.every(k=>!G[k].length)?'<div class="empty">Không có việc nào ở mục này.</div>':"")+
-   '<p class="hint">Việc có biểu tượng ⚑ tự sinh từ hồ sơ: hạn thu đợt chưa thu đủ, hẹn trả kết quả, báo giá chưa chốt trong 120 ngày. Bấm “+1/+7 ngày” để ẩn tạm; việc sẽ hiện lại khi đến ngày.</p>';
+   '<p class="hint">Việc có biểu tượng ⚑ tự sinh từ hồ sơ: hạn thu đợt chưa thu đủ, hẹn trả kết quả, báo giá chưa chốt trong 120 ngày. Chỉ lấy hồ sơ của năm hiện tại; sang năm mới, hồ sơ năm vừa rồi chưa xong sẽ hiện ở mục “Hồ sơ tồn”. Bấm “+1/+7 ngày” để ẩn tạm; việc sẽ hiện lại khi đến ngày.</p>';
   const byKey=k=>all.find(i=>i.key===k);
   const add=()=>{const t=$("#td_t").value.trim();if(!t)return toast("Nhập nội dung việc");const r=$("#td_r").value.trim();db.todo.push({id:uid(),t,d:$("#td_d").value||"",ref:r,done:false});persist();renderTodo()};
   $("#td_ok").onclick=add;$("#td_t").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
