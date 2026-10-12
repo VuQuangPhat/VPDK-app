@@ -559,6 +559,7 @@ function filtered(){
   }).sort((a,b)=>(b.upd||0)-(a.upd||0));
 }
 function renderList(){
+  try{if(tab===4&&typeof renderTodo==='function')renderTodo()}catch(e){}
   if(!db.cases.length){$("#list").innerHTML=`<div class="empty">Chưa có thửa đất nào. Bấm <b>+ Thửa đất mới</b>, hoặc vào <b>Cài đặt → Nạp hồ sơ mẫu</b> để xem thử.</div>`;return}
   const l=filtered();
   if(!l.length){$("#list").innerHTML=`<div class="empty">Không tìm thấy.</div>`;return}
@@ -1686,8 +1687,7 @@ function todoItems(){
     if(y===Y-1){const key="ton:"+j.id;if(!snz(key)){const ev=(s.pl||[]).filter(p=>p.han&&p.cov<p.a).map(p=>p.han).sort()[0]||"";prev.push({key,src:"auto",ton:Y-1,t:"Tồn từ năm "+(Y-1)+" — đang ở bước “"+stName(j)+"”"+(s.no?", còn nợ "+fnum(s.no):"")+(s.tong&&!s.thu?", chưa thu đồng nào":""),sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:ev,code:codeOf(j),open:()=>openJob(j.id)})}return}
     (s.pl||[]).forEach((p,i)=>{if(p.han&&p.cov<p.a){const key="pl:"+j.id+":"+(p.n||i);if(!snz(key))out.push({key,src:"auto",t:"Thu đợt "+(p.n||i+1)+" — còn "+fnum(p.a-p.cov),sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:p.han,code:codeOf(j),open:()=>openJob(j.id)})}});
     if(stIdx(j)<=1&&j.ngay){const dn=-daysTo(j.ngay);if(dn>=0&&dn<=120){const key="bg:"+j.id;if(!snz(key))out.push({key,src:"auto",t:"Gọi lại khách về báo giá "+fshort(s.tong)+" ("+dn+" ngày chưa chốt)",sub:(j.dc||"")+(j.chu?" · "+j.chu:""),d:addDays(j.ngay,7),code:codeOf(j),open:()=>openJob(j.id)})}}});
-  out.push(...prev);
-  db.cases.forEach(c=>{const cy=+((c.code||"").slice(0,4)||(c.ngayKy||"").slice(0,4)||Y);if(cy<Y-1)return;if(cy===Y-1&&!(c.ngayHen&&!c.ngayNhan&&!c.ketQua))return;if(c.ngayHen&&!c.ngayNhan&&!c.ketQua&&["Đã nộp","Cần bổ sung"].includes(c.status)){const key="hen:"+c.id;if(snz(key))return;const j=fin.jobs.find(x=>x.cid===c.id);
+  db.cases.forEach(c=>{const cy=+((c.code||"").slice(0,4)||(c.ngayKy||"").slice(0,4)||Y);if(cy<Y)return;if(c.ngayHen&&!c.ngayNhan&&!c.ketQua&&["Đã nộp","Cần bổ sung"].includes(c.status)){const key="hen:"+c.id;if(snz(key))return;const j=fin.jobs.find(x=>x.cid===c.id);
     out.push({key,src:"auto",ton:cy===Y-1?Y-1:0,t:(c.status==="Cần bổ sung"?"Bổ sung hồ sơ — ":"")+"Hẹn trả kết quả"+(c.bienNhan?" (biên nhận "+c.bienNhan+")":""),sub:caseTitle(c),d:c.ngayHen,code:c.code||(j&&j.code)||"",open:()=>openCase(c.id)})}});
   db.todo.forEach(m=>{const j=fin.jobs.find(x=>x.code&&x.code===m.ref),c=db.cases.find(x=>x.code&&x.code===m.ref);
     out.push({key:"m:"+m.id,src:"man",m,done:!!m.done,t:m.t,sub:j?j.dc:c?caseTitle(c):(m.ref||""),d:m.d||"",code:m.ref||"",open:j?()=>openJob(j.id):c?()=>openCase(c.id):null})});
@@ -1744,13 +1744,13 @@ function renderTodo(){
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
 try{renderList()}catch(e){}
-try{setTab(4)}catch(e){}
 let dsub="hs";
 function setTab(n){if(n===2){n=1;dsub="db"}tab=n;[1,3,4].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});
   $("#v2").hidden=!(n===1&&dsub==="db");$("#v1b").hidden=dsub==="db";document.querySelectorAll("#dsub button").forEach(b=>b.classList.toggle("on",b.dataset.d===dsub));
   if(n===1&&dsub==="db")renderPeople();if(n===3)renderFin();if(n===4)renderTodo()}
 document.querySelectorAll("#dsub button").forEach(b=>b.onclick=()=>{dsub=b.dataset.d;setTab(1)});
 $("#t1").onclick=()=>setTab(1);$("#t3").onclick=()=>setTab(3);
+try{setTab(4)}catch(e){console.error(e)}
 ["cd","pe","sd","pd"].forEach(i=>$("#"+i).addEventListener("cancel",e=>{if(i==="cd"){e.preventDefault();$("#cclose").click()}}));
 renderList();
 /* ===== Danh bạ: nhập / xuất CSV ===== */
