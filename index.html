@@ -115,7 +115,7 @@ label.ck input{width:auto}
 @page{size:A4;margin:12mm}
 @media print{body>*:not(#proot){display:none!important}#proot{display:block}#proot .fd{box-shadow:none;margin:0;padding:0;max-width:none;page-break-after:always}#proot .fd:last-child{page-break-after:auto}#proot .fd .v{color:#000}}.mp{position:relative;overflow:hidden;background:#fff;margin:0 auto;page-break-after:always;break-after:page}.mp:last-child{page-break-after:auto;break-after:auto}.mp img{position:absolute;left:0;top:0}.mr{position:absolute;white-space:nowrap;color:#000;line-height:1}.mr.c{transform:translateX(-50%)}.ovb .mp{border:1px solid var(--line);margin:0 auto 10px;zoom:.85}.ovb{background:#cfcfcf;padding:8px;overflow:auto}@media print{#proot .mp{zoom:1;border:0;margin:0}#proot .ovb{padding:0;background:#fff}@page{size:A4;margin:0}}
 
-.fd-dkbd{font-size:16px;line-height:1.42;padding:34px 38px}.fd-dkbd .recipient{text-align:center;margin:4px 0 30px;font-weight:normal}.fd-dkbd .sec{font-weight:normal;margin-top:7px}.fd-dkbd .att{margin:5px 0}.fd-dkbd .declaration{margin-top:8px}
+.fd-dkbd{font-size:17px;line-height:1.5;padding:34px 44px}.fd-dkbd p{margin:8px 0}.fd-dkbd h2{font-size:17px;margin:14px 0 14px}.fd-dkbd .recipient{text-align:center;margin:6px 0 26px;font-weight:normal}.fd-dkbd .sec,.fd-dkbd .ind{font-weight:normal;padding-left:0;margin:9px 0}.fd-dkbd .v{color:#000}.fd-dkbd sup{font-size:11px;line-height:0}.fd-dkbd .att{margin:6px 0}.fd-dkbd .declaration{margin:10px 0 28px}.fd-dkbd .sig{display:block;margin-top:0;text-align:center}.fd-dkbd .sig>div:first-child{display:none}.fd-dkbd .sig>div:last-child{margin-left:44%;font-style:italic}.fd-dkbd .sig b{font-style:normal}.fd-dkbd .sig .v{font-style:normal}
 </style>
 </head>
 <body>
@@ -216,7 +216,7 @@ label.ck input{width:auto}
 <dialog id="pd">
   <h2 id="pdt">Xem trước</h2>
   <div id="pbody"></div>
-  <p class="hint" id="phint">Phần chữ xanh là dữ liệu tự điền. Bấm In rồi chọn “Lưu thành PDF” nếu muốn xuất file. Mẫu xem nhanh để tham khảo; ưu tiên Xuất PDF để điền trên nền mẫu gốc. Đối chiếu biểu mẫu và yêu cầu hiện hành trước khi nộp.</p>
+  <p class="hint" id="phint">Chữ điền sẵn từ dữ liệu hồ sơ. Bấm In / Lưu PDF rồi chọn “Lưu dưới dạng PDF” nếu muốn xuất file. Mẫu xem nhanh để tham khảo; ưu tiên Xuất PDF để điền trên nền mẫu gốc. Đối chiếu biểu mẫu và yêu cầu hiện hành trước khi nộp.</p>
   <div class="foot"><button id="pclose2">Đóng</button><button class="primary" id="pprint">In / Lưu PDF</button></div>
 </dialog>
 
@@ -794,12 +794,9 @@ function docxVals(c,form){
   });
   /* chia theo mẫu */
   if(form==="don18"){
-    let nd=d.nd;
-    if(!nd){nd=c.type+(propAddr(c)?" – "+propAddr(c):"");
-      if(/^Cấp đổi/.test(c.type))nd="Cấp đổi Giấy chứng nhận"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?", số vào sổ cấp Giấy chứng nhận: "+p.soVaoSo:"")+(p.gcnNgay?" ngày "+fd(p.gcnNgay):"")+(p.gcnCQ?" do "+p.gcnCQ+" cấp":"")}
-    const kem=d.kem&&d.kem.trim()?d.kem.split("\n").map(s=>s.trim()).filter(Boolean).map(s=>s.replace(/^[-–]\s*/,"- ")).map(s=>/^-/.test(s)?s:"- "+s)
-      :c.docs.filter(z=>z.s!=="Không áp dụng"&&!/^Đơn/i.test(z.n)).map((z,i)=>"("+(i+1)+") "+z.n+";");
-    Object.assign(v,{dest:dest(c),nd,kem:Array.isArray(kem)?kem.join("\n"):kem,
+    const nd=don18Nd(c).replace(/[.]\s*$/,"")+".";
+    const kl=don18Kem(c).map((t,i,a)=>"- "+t+(i===a.length-1?".":";"));
+    Object.assign(v,{dest:dest(c),nd,kem:kl.join("\n"),
       B_names:x.B.map(q=>q.name).filter(Boolean).join(" - "),B_ids:x.B.map(idText).filter(Boolean).join(" - "),
       B_addr:x.B.map(adr).filter((s,i,r)=>s&&r.indexOf(s)===i).join(" ; "),B_phone:b.phone,B_email:b.email});
   }
@@ -977,27 +974,44 @@ const sig=(left,right,name,title)=>`<div class="sig"><div>${left}</div><div>${ri
 function signP(x,pref){return pref==="A"?(x.u.name?x.u:x.a.name?x.a:x.b):(x.u.name?x.u:x.b.name?x.b:x.a)}
 function signer(x,pref){const p=signP(x,pref);return (isOrg(p)?p.dd||p.name:p.name)||""}
 function signT(x,pref){const p=signP(x,pref);return isOrg(p)?(p.ddCv||"Người đại diện theo pháp luật"):""}
+function gcnText(p){
+  const q=dparts(p.gcnNgay),dt=q?" ngày "+q[0]+" tháng "+q[1]+" năm "+q[2]:"";
+  if(!p.soVaoSo&&!p.gcnSo)return "";
+  const head=p.soVaoSo?"Giấy chứng nhận quyền sử dụng đất số vào sổ cấp giấy chứng nhận quyền sử dụng đất: "+p.soVaoSo:"Giấy chứng nhận số "+p.gcnSo;
+  return head+dt+(p.gcnCQ?" do "+p.gcnCQ+" cấp":"");
+}
+function don18Nd(c){
+  const p=c.p||{},d=c.d||{};if(d.nd)return d.nd;
+  if(/^Cấp đổi/.test(c.type)){const g=gcnText(p);return "Cấp đổi "+(g||"Giấy chứng nhận")}
+  return c.type+(propAddr(c)?" – "+propAddr(c):"");
+}
+function don18Kem(c){
+  const p=c.p||{},d=c.d||{};let L;
+  if(d.kem&&d.kem.trim())L=d.kem.split("\n").map(t=>t.trim()).filter(Boolean);
+  else{L=[];const g=gcnText(p);if(g)L.push(g);
+    c.docs.filter(z=>z.s!=="Không áp dụng"&&!/^(Đơn|Giấy chứng nhận (quyền|QSDĐ))/i.test(z.n)).forEach(z=>L.push(z.n))}
+  return L.map(t=>t.replace(/^[-–]\s*/,"").replace(/[;.]\s*$/,""));
+}
 const FORMS={
  don18(c){
   const x=ctx(c),p=x.p;
-  let nd=x.d.nd;
-  if(!nd){nd=c.type+(propAddr(c)?" – "+propAddr(c):"");
-    if(/^Cấp đổi/.test(c.type))nd="Cấp đổi Giấy chứng nhận"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?", số vào sổ cấp Giấy chứng nhận: "+p.soVaoSo:"")+(p.gcnNgay?" ngày "+fd(p.gcnNgay):"")+(p.gcnCQ?" do "+p.gcnCQ+" cấp":"")}
-  const att=x.d.kem&&x.d.kem.trim()?x.d.kem.split("\n").map(t=>t.trim()).filter(Boolean).map(t=>`<p class="att">- <span class="v">${esc(t)};</span></p>`).join(""):c.docs.filter(d=>d.s!=="Không áp dụng"&&!/^Đơn/i.test(d.n)).map(d=>`<p class="att">- ${esc(d.n)};</p>`).join("");
-  return `<div class="fd fd-dkbd"><div class="r i b">Mẫu số 18</div>
+  const nd=don18Nd(c).replace(/[.]\s*$/,"")+".";
+  const att=don18Kem(c).map((t,i,a)=>`<p class="att">- <span class="v">${esc(t)}${i===a.length-1?".":";"}</span></p>`).join("");
+  const sup=n=>`<sup>(${n})</sup>`;
+  return `<div class="fd fd-dkbd">
   ${head("ĐƠN ĐĂNG KÝ BIẾN ĐỘNG ĐẤT ĐAI, TÀI SẢN GẮN LIỀN VỚI ĐẤT")}
-  <p class="recipient">Kính gửi: Văn phòng đăng ký đất đai ${v(dest(c),24)} (1)</p>
+  <p class="recipient">Kính gửi: Văn phòng đăng ký đất đai ${v(dest(c),24)}</p>
   <p class="sec">1. Người sử dụng đất, chủ sở hữu tài sản gắn liền với đất, người quản lý đất:</p>
-  <p class="ind">a) Tên (2): ${v(x.B.map(q=>q.name).join(" - "),40)}</p>
-  <p class="ind">b) Giấy tờ nhân thân/pháp nhân (2): ${v(x.B.map(idText).filter(Boolean).join(" - "),40)}</p>
-  <p class="ind">c) Địa chỉ (2): ${v(x.B.map(adr).filter((s,i,a)=>s&&a.indexOf(s)===i).join(" ; "),50)}</p>
+  <p class="ind">a) Tên${sup(2)}: ${v(x.B.map(q=>q.name).join(" - "),40)}</p>
+  <p class="ind">b) Giấy tờ nhân thân/pháp nhân${sup(2)}: ${v(x.B.map(idText).filter(Boolean).join(" - ").replace(/^(MST|CCCD):\s*/,""),40)}</p>
+  <p class="ind">c) Địa chỉ${sup(2)}: ${v(x.B.map(adr).filter((s,i,a)=>s&&a.indexOf(s)===i).join(" ; "),50)}</p>
   <p class="ind">d) Điện thoại liên hệ (nếu có): ${v(x.b.phone,16)}</p>
   <p class="ind">Hộp thư điện tử (nếu có): ${v(x.b.email,30)}</p>
-  <p class="sec">2. Nội dung biến động (3): ${v(nd,60)}</p>
-  <p class="sec">3. Giấy tờ liên quan đến nội dung biến động nộp kèm theo đơn này gồm có (4):</p>
+  <p class="sec">2. Nội dung biến động${sup(3)}: ${v(nd,60)}</p>
+  <p class="sec">3. Giấy tờ liên quan đến nội dung biến động nộp kèm theo đơn này gồm có${sup(4)}:</p>
   ${att||`<p class="att">- ${v("",50)}</p>`}
   <p class="declaration">Cam đoan nội dung kê khai trên đơn là đúng sự thật và chịu trách nhiệm trước pháp luật.</p>
-  ${sig("", `${sdate(c,x.place)}<br><b>Người viết đơn</b><br><i class="sm">(Ký, ghi rõ họ tên và đóng dấu nếu có)</i>`,signer(x),signT(x))}</div>`;
+  ${sig("", `${sdate(c,x.place)}<br><b>Người viết đơn</b><br><i class="sm" style="font-size:inherit">(Ký, ghi rõ họ tên và đóng dấu nếu có)</i>`,signer(x),signT(x))}</div>`;
  },
  lptb(c){
   const x=ctx(c),p=x.p,d=x.d,apt=p.kind==="Căn hộ chung cư",gia=num(d.gia);
@@ -1245,7 +1259,7 @@ const FORMS={
 };
 function showForms(list){
   const html=list.map(k=>FORMS[k](cur)).join("");
-  $("#pbody").classList.remove("ovb");$("#pbody").contentEditable="false";$("#phint").textContent="Phần chữ xanh là dữ liệu tự điền. Mẫu dựng lại theo bố cục file mẫu; hãy đối chiếu với mẫu hiện hành mà VPĐK yêu cầu.";$("#pbody").innerHTML=html;$("#pdt").textContent=list.length===1?FORMS_LAB[list[0]]:`Xem trước ${list.length} mẫu`;
+  $("#pbody").classList.remove("ovb");$("#pbody").contentEditable="false";$("#phint").textContent="Bản xem nhanh dựng lại để tham khảo. Muốn đúng mẫu gốc, dùng Xuất PDF hoặc Xuất Word; hãy đối chiếu với mẫu hiện hành mà VPĐK yêu cầu.";$("#pbody").innerHTML=html;$("#pdt").textContent=list.length===1?FORMS_LAB[list[0]]:`Xem trước ${list.length} mẫu`;
   $("#pd").showModal();
 }
 let _printTitle="";
