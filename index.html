@@ -243,6 +243,7 @@ table.jtd td{white-space:nowrap;width:1%;vertical-align:middle}table.jtd td.tdw,
 table.jtd .tdt{font-weight:600}table.jtd .tdt.dn{text-decoration:line-through;color:var(--mute)}
 table.jtd tr.tdr{cursor:default}table.jtd td.tda{display:table-cell;text-align:right}table.jtd .tda button{padding:3px 10px;font-size:12px;margin-left:4px}
 tr.gh,tr.gh td{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
+.tdbig{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px 14px 4px}.tdbig .tdc{box-shadow:none;background:var(--fill2)}.tdbig .tdc.on{box-shadow:0 0 0 2px var(--brand);background:var(--card)}.tdbig .tdk{margin:0 0 10px}.tdbig .nt table.m{box-shadow:none;border-radius:0}.tdbig .nt{margin:0 -14px}
 </style>
 </head>
 <body>
@@ -1483,10 +1484,10 @@ function followList(L,T){const out=[];
   const ord={tre:0,sap:1,bg:2,dang:3};
   out.sort((a,b)=>ord[a.g]-ord[b.g]||(a.g==="bg"?b.age-a.age:(a.dd==null?9999:a.dd)-(b.dd==null?9999:b.dd)||String(b.j.ngay||"").localeCompare(String(a.j.ngay||""))));
   return out}
-function followTable(F,key){key=key||"";const fwch=fwx[key]||"";
+function followTable(F,key,noChips){key=key||"";const fwch=fwx[key]||"";
   const cs=[["","Tất cả"],["tre","Trễ hẹn"],["sap","Sắp đến hẹn"],["bg","Báo giá chờ khách"],["dang","Đang làm"]],n=k=>k?F.filter(x=>x.g===k).length:F.length;
   const R=fwch?F.filter(x=>x.g===fwch):F,cl={tre:"r",sap:"y",bg:"b",dang:""};
-  return '<p>'+cs.map(([k,t])=>'<button data-w="'+k+'" data-wk="'+key+'" class="'+(fwch===k?"primary":"")+'">'+t+' ('+n(k)+')</button>').join(" ")+'</p>'+
+  return (noChips?'':'<p>')+(noChips?'':cs.map(([k,t])=>'<button data-w="'+k+'" data-wk="'+key+'" class="'+(fwch===k?"primary":"")+'">'+t+' ('+n(k)+')</button>').join(" ")+'</p>')+
    (R.length?'<div class="nt"><table class="m jf"><tr><th>Mã</th><th>Quận</th><th>Địa chỉ · loại</th><th>Bước</th><th>Việc tới hạn</th><th>Hạn</th><th>Tình trạng</th><th class="num">Báo khách</th><th class="num">Còn nợ</th></tr>'+
    R.map(({j,s,g,e,note})=>'<tr data-j="'+esc(j.id)+'"><td style="white-space:nowrap"><b>'+esc(j.code||"")+'</b></td><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td>'+esc(e?e.t:"—")+'</td><td>'+(e?dmy(e.d):"")+'</td><td>'+(note?'<span class="fc '+cl[g]+'">'+esc(note)+'</span>':"")+'</td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td></tr>').join("")+'</table></div>'
    :'<p class="lg">Không có hồ sơ nào ở mục này.</p>')}
@@ -1693,54 +1694,17 @@ function todoItems(){
     out.push({key:"m:"+m.id,src:"man",m,done:!!m.done,t:m.t,sub:j?j.dc:c?caseTitle(c):(m.ref||""),d:m.d||"",code:m.ref||"",open:j?()=>openJob(j.id):c?()=>openCase(c.id):null})});
   return out}
 function todoGroup(it){if(it.done)return"done";if(it.ton)return"ton";if(!it.d)return"none";const x=daysTo(it.d);return x<0?"late":x===0?"today":x<=7?"week":"later"}
-function todoBadge(){try{const n=todoItems().filter(i=>{const g=todoGroup(i);return g==="late"||g==="today"||g==="ton"}).length,b=$("#t4");if(b)b.innerHTML="Nhắc việc"+(n?' <span class="fc r" style="margin:0 0 0 4px">'+n+'</span>':"")}catch(e){}}
-let tdSrc="",tdSt="",tdPr="",tdQ="",tdAsc=true,tdCard="";
-const TD_SRC={pl:"Thu tiền",hen:"Hẹn trả kết quả",bg:"Báo giá",ton:"Tồn năm trước",m:"Tự thêm"};
-const tdSrcOf=it=>it.key.split(":")[0];
-function tdPrio(it){if(it.src==="man"&&it.m.p)return +it.m.p;const g=todoGroup(it);return g==="late"||g==="today"?1:g==="week"||g==="ton"?2:3}
+function followYear(y){const T=txIdx(),S=fin.jobs.filter(j=>+((j.ngay||"").slice(0,4)||j.nam||0)===y).map(j=>({j,s:jstat(j,T,"")}));return{S,F:followList(S,T)}}
+function todoBadge(){try{const Y=new Date().getFullYear(),F=followYear(Y).F,n=F.filter(x=>x.g==="tre"||x.g==="sap").length,b=$("#t4");if(b)b.innerHTML="Nhắc việc"+(n?' <span class="fc r" style="margin:0 0 0 4px">'+n+'</span>':"")}catch(e){}}
 function renderTodo(){
-  const box=$("#todo");if(!box)return;const all=todoItems(),mon=today().slice(0,7);
-  const open=all.filter(i=>!i.done),G={};all.forEach(i=>{i.g=todoGroup(i);i.p=tdPrio(i);i.sk=tdSrcOf(i)});
-  const cnt=g=>all.filter(i=>i.g===g).length;
-  const doneM=all.filter(i=>i.done&&String(i.m.doneAt||"").slice(0,7)===mon).length,ton=cnt("ton");
-  const cards=[["open","Đang xử lý",open.length,"var(--brand)"],["late","Quá hạn",cnt("late"),"var(--seal)"],["soon","Đến hạn trong 7 ngày",cnt("today")+cnt("week"),"var(--warn)"],...(ton?[["ton","Hồ sơ tồn năm "+(new Date().getFullYear()-1),ton,"#c28a00"]]:[]),["donem","Hoàn thành tháng này",doneM,"var(--ok)"]];
-  const GN={late:"Trễ hạn",today:"Hôm nay",week:"7 ngày tới",later:"Sau đó",ton:"Tồn năm trước",none:"Chưa đặt hạn",done:"Đã xong"};
-  let L=all.slice();
-  const q=tdQ.trim().toLowerCase();if(q)L=L.filter(i=>[i.t,i.sub,i.code].join(" ").toLowerCase().includes(q));
-  if(tdSrc)L=L.filter(i=>i.sk===tdSrc);if(tdPr)L=L.filter(i=>String(i.p)===tdPr);
-  if(tdSt)L=L.filter(i=>i.g===tdSt);
-  else if(tdCard==="open"||!tdCard)L=L.filter(i=>!i.done);
-  if(tdCard==="late")L=L.filter(i=>i.g==="late");else if(tdCard==="soon")L=L.filter(i=>i.g==="today"||i.g==="week");else if(tdCard==="ton")L=L.filter(i=>i.g==="ton");else if(tdCard==="donem")L=L.filter(i=>i.done&&String(i.m.doneAt||"").slice(0,7)===mon);
-  L.sort((a,b)=>(a.done-b.done)||(((a.d||"9999")).localeCompare(b.d||"9999")*(tdAsc?1:-1))||a.p-b.p);
-  const dl=fin.jobs.filter(j=>j.code).sort((a,b)=>b.code.localeCompare(a.code)).slice(0,300).map(j=>'<option value="'+esc(j.code)+'">'+esc(j.dc||j.loai||"")+'</option>').join("");
-  const opt=(o,v)=>o.map(([k,t])=>'<option value="'+k+'"'+(v===k?" selected":"")+'>'+t+'</option>').join("");
-  const st=it=>{if(it.done)return'<span class="fc g">Hoàn thành</span>';const d=it.d?daysTo(it.d):null;if(it.g==="ton"&&d==null)return'<span class="fc y">Tồn</span>';if(d==null)return'<span class="fc">Chưa đặt hạn</span>';return d<0?'<span class="fc r">Trễ '+(-d)+' ngày</span>':d===0?'<span class="fc y">Hôm nay</span>':'<span class="fc b">Còn '+d+' ngày</span>'};
-  const row=it=>'<tr class="tdr p'+it.p+'" data-k="'+esc(it.key)+'"><td><span class="pr p'+it.p+'">'+it.p+'</span></td><td class="tdw"><div class="tdt'+(it.done?" dn":"")+'">'+esc(it.t)+'</div><div class="lg">'+esc(it.sub||"")+'</div></td><td>'+(it.code?'<b>'+esc(it.code)+'</b>':"—")+'</td><td><span class="fc">'+TD_SRC[it.sk]+'</span></td><td>'+(it.d?dmy(it.d):"")+'</td><td>'+st(it)+'</td><td class="tda">'+(it.open?'<button data-a="open">Mở</button>':"")+(it.src==="man"?'<button data-a="done">'+(it.done?"Mở lại":"Xong")+'</button>':"")+(it.done?"":'<button data-a="s1">+1</button><button data-a="s7">+7</button>')+(it.src==="man"?'<button class="link" data-a="del">Xóa</button>':"")+'</td></tr>';
-  box.innerHTML='<div class="tdk">'+cards.map(([k,t,n,c])=>'<button class="tdc'+((tdCard||"open")===k&&!tdSt?" on":"")+'" data-card="'+k+'" style="border-top-color:'+c+'"><b style="color:'+c+'">'+n+'</b><span>'+t+'</span></button>').join("")+'</div>'+
-   '<div class="tdadd"><input id="td_t" placeholder="Thêm việc cần nhớ (vd: gọi khách bổ sung CCCD, nhắc VPĐK…)" style="flex:1;min-width:240px"><input id="td_d" type="date" value="'+today()+'"><input id="td_r" list="td_dl" placeholder="Mã hồ sơ (tùy chọn)" style="width:200px"><datalist id="td_dl">'+dl+'</datalist><select id="td_p"><option value="1">Ưu tiên 1</option><option value="2" selected>Ưu tiên 2</option><option value="3">Ưu tiên 3</option></select><button class="primary" id="td_ok">Thêm việc</button></div>'+
-   '<div class="tdf"><input id="td_q" type="search" placeholder="Tìm theo nội dung, địa chỉ, mã hồ sơ…" value="'+esc(tdQ)+'"><select id="td_fs">'+opt([["","Mọi loại việc"],["pl","Thu tiền"],["hen","Hẹn trả kết quả"],["bg","Báo giá"],["ton","Tồn năm trước"],["m","Tự thêm"]],tdSrc)+'</select><select id="td_fg">'+opt([["","Mọi trạng thái"],["late","Trễ hạn"],["today","Hôm nay"],["week","7 ngày tới"],["later","Sau đó"],["ton","Tồn năm trước"],["none","Chưa đặt hạn"],["done","Đã xong"]],tdSt)+'</select><select id="td_fp">'+opt([["","Mọi mức ưu tiên"],["1","Ưu tiên 1"],["2","Ưu tiên 2"],["3","Ưu tiên 3"]],tdPr)+'</select></div>'+
-   (L.length?'<div class="nt"><table class="m jtd"><tr><th>Ưu tiên</th><th>Công việc</th><th>Mã hồ sơ</th><th>Loại việc</th><th id="td_sort" style="cursor:pointer">Hạn '+(tdAsc?"▲":"▼")+'</th><th>Trạng thái</th><th></th></tr>'+L.map(row).join("")+'</table></div>':'<div class="empty">Không có việc nào phù hợp.</div>')+
-   '<p class="hint">⚑ Việc tự sinh từ hồ sơ: hạn thu đợt chưa thu đủ, hẹn trả kết quả, báo giá chưa chốt trong 120 ngày; sang năm mới, hồ sơ năm vừa rồi chưa xong hiện ở “Tồn năm trước”. “+1/+7” hoãn việc; việc hiện lại khi đến ngày. Ưu tiên 1 = trễ hạn/hôm nay, 2 = trong 7 ngày/tồn, 3 = còn lại (việc tự thêm tự chọn mức).</p>';
-  {const Yc=new Date().getFullYear(),T=txIdx();let h="";
-    [Yc,Yc-1].forEach(y=>{const S=fin.jobs.filter(j=>+((j.ngay||"").slice(0,4)||j.nam||0)===y).map(j=>({j,s:jstat(j,T,"")}));
-      h+='<h3 class="fh">Cần theo dõi — hồ sơ năm '+y+(y===Yc?' đang giải quyết':' còn tồn')+'</h3>'+followTable(followList(S,T),"td"+y)});
-    box.insertAdjacentHTML("beforeend",h);
-    box.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{fwx[b.dataset.wk||""]=b.dataset.w;renderTodo()});
-    box.querySelectorAll("tr[data-j]").forEach(r=>r.onclick=()=>openJob(r.dataset.j))}
-  const byKey=k=>all.find(i=>i.key===k);
-  const add=()=>{const t=$("#td_t").value.trim();if(!t)return toast("Nhập nội dung việc");db.todo.push({id:uid(),t,d:$("#td_d").value||"",ref:$("#td_r").value.trim(),p:+$("#td_p").value||2,done:false});persist();renderTodo()};
-  $("#td_ok").onclick=add;$("#td_t").addEventListener("keydown",e=>{if(e.key==="Enter")add()});
-  $("#td_q").oninput=e=>{tdQ=e.target.value;const p=e.target.selectionStart;renderTodo();const n=$("#td_q");n.focus();n.setSelectionRange(p,p)};
-  $("#td_fs").onchange=e=>{tdSrc=e.target.value;renderTodo()};$("#td_fg").onchange=e=>{tdSt=e.target.value;tdCard="";renderTodo()};$("#td_fp").onchange=e=>{tdPr=e.target.value;renderTodo()};
-  const sh=$("#td_sort");if(sh)sh.onclick=()=>{tdAsc=!tdAsc;renderTodo()};
-  box.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>{tdCard=b.dataset.card;tdSt="";renderTodo()});
-  box.querySelectorAll("tr.tdr").forEach(r=>{const it=byKey(r.dataset.k);if(!it)return;
-    r.querySelectorAll("[data-a]").forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;
-      if(a==="open"&&it.open)it.open();
-      else if(a==="done"){it.m.done=!it.m.done;it.m.doneAt=it.m.done?new Date().toISOString():"";persist();renderTodo()}
-      else if(a==="del"){if(confirm("Xóa việc này?")){db.todo=db.todo.filter(x=>x!==it.m);persist();renderTodo()}}
-      else{const n=a==="s7"?7:1;if(it.src==="man"){const base=it.m.d&&it.m.d>today()?it.m.d:today();it.m.d=addDays(base,n)}else{db.todoSnz[it.key]=addDays(today(),n)}persist();renderTodo()}});
-    if(it.open)r.ondblclick=()=>it.open()})}
+  const box=$("#todo");if(!box)return;const Y=new Date().getFullYear(),mon=today().slice(0,7);
+  const block=y=>{const {S,F}=followYear(y),n=g=>F.filter(x=>x.g===g).length,key="td"+y,cur=fwx[key]||"";
+    const fin_=S.filter(({j})=>["bangiao","dong"].includes(j.st)&&(j.stLog||[]).some(l=>["bangiao","dong"].includes(l.st)&&String(l.d||"").slice(0,7)===mon)).length;
+    const cards=[["",y===Y?"Đang xử lý":"Còn tồn",F.length,"var(--brand)"],["tre","Quá hạn",n("tre"),"var(--seal)"],["sap","Đến hạn trong 7 ngày",n("sap"),"var(--warn)"],["bg","Báo giá chờ khách",n("bg"),"#c28a00"],["dang","Đang làm",n("dang"),"var(--ok)"]];
+    return '<h3 class="fh" style="margin-top:'+(y===Y?4:22)+'px">Năm '+y+(y===Y?"":" — hồ sơ còn tồn")+(y===Y&&fin_?' <span class="lg">· hoàn thành tháng này: '+fin_+'</span>':"")+'</h3><div class="tdbig"><div class="tdk">'+cards.map(([k,t,v,c])=>'<button class="tdc'+(cur===k?" on":"")+'" data-card="'+k+'" data-wk="'+key+'" style="border-top-color:'+c+'"><b style="color:'+c+'">'+v+'</b><span>'+t+'</span></button>').join("")+'</div>'+followTable(F,key,true)+'</div>'};
+  box.innerHTML=block(Y)+block(Y-1);
+  box.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>{fwx[b.dataset.wk]=b.dataset.card;renderTodo()});
+  box.querySelectorAll("tr[data-j]").forEach(r=>r.onclick=()=>openJob(r.dataset.j))}
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
 try{renderList()}catch(e){}
