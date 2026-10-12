@@ -96,7 +96,7 @@ label.ck input{width:auto}
 .it.party,.it.doc,.it.fee,.it.log,.it.mst{grid-template-columns:1fr 1fr}}
 .pv{background:var(--card,#fbf9f4);border:1px dashed var(--line);border-radius:var(--r);padding:8px 12px;font-size:13px;line-height:1.55;white-space:pre-wrap;margin:6px 0}
 .pv b{font-weight:600}
-.chip{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;background:#fde8e6;color:#a1271b;margin-left:6px}
+.fc{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;margin:1px 3px 1px 0;border:1px solid var(--line);white-space:nowrap}.fc.r{color:var(--seal);border-color:var(--seal)}.fc.y{color:var(--warn);border-color:var(--warn)}.fc.g{color:var(--ok);border-color:var(--ok)}.fc.b{color:var(--brand);border-color:var(--brand)}
 .chip.ok{background:#e3f3e6;color:#1f6b33}
 .fgrp .tt{font-weight:600;min-width:260px;flex:1}
 /* ===== Mẫu in ===== */
@@ -128,7 +128,7 @@ label.ck input{width:auto}
 .nt{overflow:auto}.nt table.m{min-width:0}.neg{color:var(--seal)}.pos{color:var(--ok)}
 .chip{display:inline-block;font-size:11px;padding:1px 7px;border-radius:10px;margin:1px 3px 1px 0;border:1px solid var(--line);white-space:nowrap}.chip.r{color:var(--seal);border-color:var(--seal)}.chip.y{color:var(--warn);border-color:var(--warn)}.chip.g{color:var(--ok);border-color:var(--ok)}
 .jg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}.jg label{font-size:12px;color:var(--mute);display:block}.jg input,.jg select{width:100%}
-#fsub button.on{font-weight:700}
+#fsub button.on{font-weight:700}.stg{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.stg button{font-size:12px;padding:3px 8px}.stg button.cur{background:var(--brand);color:#fff;border-color:var(--brand)}.stg button.past{border-color:var(--ok);color:var(--ok)}.sec{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:10px 0}.sec h4{margin:0 0 6px;font-size:13px}
 .lg{font-size:12px;color:var(--mute)}.lg i{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;border-radius:2px}
 </style>
 </head>
@@ -174,7 +174,7 @@ label.ck input{width:auto}
   <div class="wrap" id="fin"></div>
 </div>
 
-<dialog id="jd">
+<dialog id="jd" style="width:min(960px,97vw)">
   <h2 id="jdt">Hồ sơ</h2>
   <div id="jbody"></div>
   <div class="foot">
@@ -190,6 +190,7 @@ label.ck input{width:auto}
   <div id="cbody"></div>
   <div class="foot">
     <button id="cdel" class="link" style="margin-right:auto">Xóa hồ sơ</button>
+    <button id="cfin" title="Mở thẻ doanh thu / chi phí / hoa hồng của thửa đất này">Doanh thu</button>
     <button id="cdup" title="Tạo hồ sơ mới từ thửa đất này (giữ thông tin thửa đất, bỏ các bên)">Nhân bản</button>
     <button id="cclose">Đóng</button>
     <button class="primary" id="csave">Lưu</button>
@@ -328,19 +329,21 @@ const grpOf=n=>/^(Tờ khai|Chứng từ thực hiện|Văn bản .*miễn|Giấ
 let db=loadDb();
 function finMigrate(f){
   f.tx.forEach(t=>{if(t.j==null)t.j=""});
+  (f.jobs||[]).forEach(j=>{if(!j.st)j.st=j.tt==="huy"?"huy":j.tt==="xong"?"bangiao":"cho";["bg","pl","cp","stLog"].forEach(k=>{if(!Array.isArray(j[k]))j[k]=[]});if(j.lephi==null)j.lephi=0;if(j.cid==null)j.cid=""});
   if(f.rows&&f.rows.length&&!f.jobs.length){
     const sm=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
     f.rows.forEach(r=>{if(f.ex[r.id])return;
-      const th=sm(r.thu),j={id:r.id,ngay:r.ngay||"",nam:r.nam,dc:r.dc||"",quan:r.quan||"",loai:r.loai||"",nd:r.nd||"",gt:r.gt||"",chu:r.chu||"",gia:r.dv||0,gc:r.gc||"",tt:"dang",mien:!!f.done[r.id],src:r.so||""};
+      const th=sm(r.thu),j={st:"",bg:[],pl:[],cp:[],stLog:[],lephi:0,cid:"",id:r.id,ngay:r.ngay||"",nam:r.nam,dc:r.dc||"",quan:r.quan||"",loai:r.loai||"",nd:r.nd||"",gt:r.gt||"",chu:r.chu||"",gia:r.dv||0,gc:r.gc||"",tt:"dang",mien:!!f.done[r.id],src:r.so||""};
       if(j.gia>0&&th>=j.gia)j.tt="xong";f.jobs.push(j);
       const d=r.ngay||(r.nam+"-01-01");
       (r.thu||[]).forEach((a,i)=>{if(a>0)f.tx.push({id:"m"+r.id+"t"+i,j:r.id,k:"thu",a,d,n:"Thu đợt "+(i+1),est:1})});
       (r.chi||[]).forEach((a,i)=>{if(a>0)f.tx.push({id:"m"+r.id+"c"+i,j:r.id,k:"chi",a,d,n:"Chi đợt "+(i+1),est:1})});});
-    f.rows=[];f.done={};f.ex={};}
+    f.rows=[];f.done={};f.ex={};
+    (f.jobs||[]).forEach(j=>{if(!j.st)j.st=j.tt==="huy"?"huy":j.tt==="xong"?"bangiao":"cho"});}
 }
 function norm(d){
   d=d&&typeof d==="object"?d:{};
-  d.fin=d.fin&&typeof d.fin==="object"?d.fin:{};d.fin.rows=Array.isArray(d.fin.rows)?d.fin.rows:[];d.fin.done=d.fin.done||{};d.fin.ex=d.fin.ex||{};d.fin.jobs=Array.isArray(d.fin.jobs)?d.fin.jobs:[];d.fin.tx=Array.isArray(d.fin.tx)?d.fin.tx:[];finMigrate(d.fin);
+  d.fin=d.fin&&typeof d.fin==="object"?d.fin:{};d.fin.rows=Array.isArray(d.fin.rows)?d.fin.rows:[];d.fin.done=d.fin.done||{};d.fin.ex=d.fin.ex||{};d.fin.jobs=Array.isArray(d.fin.jobs)?d.fin.jobs:[];d.fin.tx=Array.isArray(d.fin.tx)?d.fin.tx:[];d.fin.refs=d.fin.refs||{};d.fin.alias=d.fin.alias||{};finMigrate(d.fin);
   d.cases=Array.isArray(d.cases)?d.cases:[];d.people=Array.isArray(d.people)?d.people:[];d.seq=d.seq||{};
   d.cfg=Object.assign({place:"TP. Hồ Chí Minh",vpdk:"",rCN:2,rQT:10,qtMien:10000000,rLP:0.5},d.cfg||{});
   d.cfg.cnList=Array.isArray(d.cfg.cnList)?d.cfg.cnList:[];
@@ -414,7 +417,7 @@ function renderList(){
   $("#list").innerHTML=`<table class="m"><thead><tr><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
     const a=partyNames(c,"A"),b=partyNames(c,"B"),m=missing(c);
     const g=[c.p.gcnSo&&"GCN "+c.p.gcnSo,c.p.thua&&"thửa "+c.p.thua,c.p.to&&"tờ "+c.p.to].filter(Boolean).join(" · ");
-    return `<tr data-id="${c.id}"><td><b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}</td>
+    return `<tr data-id="${c.id}"><td><b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
     <td>${a?esc(a):"<span class='sub'>—</span>"}</td><td>${b?esc(b):"<span class='sub'>—</span>"}</td>
     <td>${esc(c.type)}<small>${esc((LOAI18.find(z=>z[0]===c.d.loai)||[])[1]||"")}</small></td>
     <td>${c.upd?fd(new Date(c.upd).toISOString().slice(0,10)):""}</td></tr>`}).join("")}</tbody></table>`;
@@ -466,7 +469,7 @@ let cur=null,isNew=false,ctab="prop",orig="";
 const CTABS=[["prop","1. Thửa đất (GCN)"],["par","2. Các bên"],["deal","3. Giao dịch & mục 2–3 Đơn 18"],["print","4. In đơn"]];
 function openCase(id){
   isNew=!id;cur=id?JSON.parse(JSON.stringify(db.cases.find(c=>c.id===id))):newCase();
-  ctab=id?"print":"prop";orig=JSON.stringify(cur);$("#cdel").hidden=isNew;$("#cdup").hidden=isNew;
+  ctab=id?"print":"prop";orig=JSON.stringify(cur);$("#cdel").hidden=isNew;$("#cdup").hidden=isNew;$("#cfin").hidden=isNew;
   renderCase();$("#cd").showModal();
 }
 function renderCase(){
@@ -644,6 +647,7 @@ function commit(){
   persist();
 }
 $("#csave").onclick=()=>{commit();$("#cd").close();renderList();toast("Đã lưu")};
+$("#cfin").onclick=()=>{if(isNew){alert("Hãy lưu thửa đất trước, rồi mở thẻ doanh thu.");return}openJobForCase(cur)};
 $("#cclose").onclick=()=>{if(JSON.stringify(cur)!==orig&&!confirm("Đóng mà chưa lưu thay đổi?"))return;$("#cd").close()};
 $("#cdel").onclick=()=>{if(!confirm("Xóa hồ sơ thửa đất này? Không khôi phục được (trừ khi đã sao lưu)."))return;db.cases=db.cases.filter(c=>c.id!==cur.id);persist();$("#cd").close();renderList()};
 $("#cdup").onclick=()=>{
@@ -1226,40 +1230,59 @@ $("#sdemo").onclick=()=>{
   persist();$("#sd").close();renderList();renderPeople();toast("Đã nạp 2 hồ sơ mẫu (dữ liệu giả)");
 };
 /* tab chính */
-/* ===== Hồ sơ & doanh thu (hồ sơ + giao dịch thu/chi; lưu trong db.fin, đồng bộ cùng GitHub) ===== */
+/* ===== Hồ sơ & doanh thu — vòng đời, báo giá, đợt thu, chi, hoa hồng (db.fin, đồng bộ cùng GitHub) ===== */
 let fin=db.fin;
+const STAGES=[["tiepnhan","Tiếp nhận"],["baogia","Báo giá"],["kyhd","Ký hợp đồng"],["nop","Soạn & nộp hồ sơ"],["cho","Chờ kết quả"],["nhan","Nhận kết quả"],["bangiao","Bàn giao khách"],["dong","Đóng hồ sơ"]];
+const stIdx=j=>STAGES.findIndex(x=>x[0]===j.st);
+const stName=j=>j.st==="huy"?"Hủy":(STAGES[stIdx(j)]||[0,"—"])[1];
+const isHuy=j=>j.st==="huy",isDone=j=>stIdx(j)>=6;
+const stCls=j=>isHuy(j)?"":isDone(j)?"g":"b";
+const HHMODE=[["","Chưa có"],["phi","% phí dịch vụ"],["lai","% lãi (báo khách − chi)"],["cd","Số tiền cố định"]];
 const fsum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
 const fnum=n=>Math.round(n).toLocaleString("vi-VN");
 const fshort=n=>Math.abs(n)>=1e9?(n/1e9).toFixed(2).replace(".",",")+" tỷ":Math.abs(n)>=1e6?(n/1e6).toFixed(1).replace(".",",")+" tr":fnum(n);
 const dmy=d=>d?String(d).split("-").reverse().join("/"):"";
 const parseAmt=v=>+String(v).replace(/[^\d]/g,"")||0;
+const unacc=x=>String(x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase();
 const fnd=r=>String(r.dc||"").toLowerCase().replace(/[^a-z0-9à-ỹ]/g,"");
+const canon=n=>{n=String(n||"").trim();return(fin.alias&&fin.alias[n])||n};
 function finSave(){db.fin=fin;persist()}
-let fv="all",fmodeV="cash",fchip="",fqv="",jEdit=null;
+let fv="all",fmodeV="cash",fchip="",fqv="",jEdit=null,frefY="";
 const jyear=j=>(j.ngay||"").slice(0,4)||String(j.nam||"");
 function ageM(j){const d=j.ngay||(j.nam?j.nam+"-07-01":"");return d?(Date.now()-new Date(d))/2629800000:null}
 function txIdx(){const T={};fin.tx.forEach(t=>{(T[t.j||""]=T[t.j||""]||[]).push(t)});return T}
-function jstat(j,T,y){const L=T[j.id]||[];let thu=0,chi=0,yt=0,yc=0;
-  L.forEach(t=>{if(t.k==="thu")thu+=t.a;else chi+=t.a;if(y&&t.d.slice(0,4)===y){if(t.k==="thu")yt+=t.a;else yc+=t.a}});
-  const no=(j.mien||j.tt==="huy")?0:Math.max(0,(j.gia||0)-thu),age=ageM(j);
-  return{thu,chi,lai:thu-chi,yt,yc,no,age,stale:no>0&&thu===0&&j.tt==="dang"&&age!=null&&age>=12}}
+function refRate(j){if(j.hh&&j.hh.mode)return j.hh;const r=fin.refs[canon(j.gt)];if(r&&r.mode&&(!r.tu||(j.ngay||"")>=r.tu))return r;return null}
+function jstat(j,T,y){const L=T[j.id]||[];let thu=0,chi=0,hhP=0,yt=0,yc=0,yh=0;
+  L.forEach(t=>{const inY=y&&t.d.slice(0,4)===y;if(t.k==="thu"){thu+=t.a;if(inY)yt+=t.a}else{chi+=t.a;if(t.cat==="hh")hhP+=t.a;if(inY){yc+=t.a;if(t.cat==="hh")yh+=t.a}}});
+  const chiN=chi-hhP,tong=(+j.gia||0)+(+j.lephi||0),huy=isHuy(j),no=(j.mien||huy)?0:Math.max(0,tong-thu),age=ageM(j),r=refRate(j);
+  let hhT=0;if(r&&r.mode){const v=+r.v||0;hhT=r.mode==="phi"?(+j.gia||0)*v/100:r.mode==="lai"?Math.max(0,tong-chiN)*v/100:v}hhT=Math.round(hhT);
+  const due=!r?0:(r.khi==="dot"?hhT*Math.min(1,tong?thu/tong:0):(no===0&&thu>0?hhT:0));
+  const hhOwe=Math.max(0,Math.round(due)-hhP),hhOver=hhT>0&&hhP>hhT+1;
+  let rem=thu,dueUnpaid=0,over=false;
+  const pl=(j.pl||[]).map(p=>{const cov=Math.min(p.a,rem);rem-=cov;const ti=STAGES.findIndex(x=>x[0]===p.tr),d=!huy&&(!p.tr||stIdx(j)>=ti),ov=!!(p.han&&p.han<today()&&cov<p.a&&!huy);if(d&&cov<p.a)dueUnpaid+=p.a-cov;if(ov)over=true;return{...p,cov,due:d,ov}});
+  const cpDK=fsum((j.cp||[]).map(x=>x.a)),chiDK=Math.max(chiN,cpDK);
+  return{thu,chi,chiN,hhP,hhT,hhOwe,hhOver,lai:thu-chi,yt,yc,yh,tong,no,age,pl,dueUnpaid,over,cpDK,chiDK,laiDK:tong-chiDK-hhT,rate:r,stale:no>0&&thu===0&&!isDone(j)&&!huy&&age!=null&&age>=12}}
 function dupSet(S){const g={},g2={},out=new Set();
-  S.forEach(({j,s})=>{if(!j.gia&&!s.thu&&!s.chi)return;(g[[j.ngay,fnd(j),(j.loai||"").toLowerCase(),j.gia,s.thu,s.chi].join("|")]=g[[j.ngay,fnd(j),(j.loai||"").toLowerCase(),j.gia,s.thu,s.chi].join("|")]||[]).push(j);
+  S.forEach(({j,s})=>{if(!j.gia&&!s.thu&&!s.chi)return;const k=[j.ngay,fnd(j),(j.loai||"").toLowerCase(),j.gia,s.thu,s.chi].join("|");(g[k]=g[k]||[]).push(j);
     if(j.gia>=1e7&&fnd(j).length>=8)(g2[fnd(j)+"|"+j.gia]=g2[fnd(j)+"|"+j.gia]||[]).push(j)});
   Object.values(g).filter(v=>v.length>1).forEach(v=>v.slice(1).forEach(j=>out.add(j.id)));
   Object.values(g2).filter(v=>new Set(v.map(j=>j.src)).size>1).forEach(v=>v.slice(1).forEach(j=>{if(j.src!==v[0].src)out.add(j.id)}));
   return out}
+const VAN=["lo","vuot","stale","thieu","trung","dh","hh","hhq"];
 function issues(j,s,dup){const o=[];
-  if(j.tt!=="huy"){
-    if(s.lai<0&&(s.no===0||j.tt==="xong"))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
+  if(!isHuy(j)){
+    if(s.lai<0&&(s.no===0||isDone(j)))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
     else if(s.chi>s.thu&&s.no>0)o.push(["vuot","Chi vượt thu "+fnum(s.chi-s.thu),"y"]);
     if(s.stale)o.push(["stale","Chưa thu đồng nào, trên 1 năm — xem lại","r"]);
-    else if(s.no>0)o.push(["no","Còn nợ "+fnum(s.no),"y"])}
+    else if(s.no>0)o.push(["no","Còn nợ "+fnum(s.no),"y"]);
+    if(s.dueUnpaid>0)o.push(["dh",(s.over?"Quá hạn thu ":"Đến hạn thu ")+fnum(s.dueUnpaid),s.over?"r":"y"]);
+    if(s.hhOwe>0)o.push(["hh","Cần trả hoa hồng "+fnum(s.hhOwe),"y"]);
+    if(s.hhOver)o.push(["hhq","Hoa hồng trả quá "+fnum(s.hhP-s.hhT),"r"])}
   const th=[!j.dc&&"địa chỉ",!j.ngay&&"ngày nhận",(!j.gia&&s.thu>0)&&"phí thỏa thuận"].filter(Boolean);
   if(th.length)o.push(["thieu","Thiếu "+th.join(", "),"y"]);
   if(dup.has(j.id))o.push(["trung","Nghi trùng","y"]);
   return o}
-const REASON={lo:"Lỗ",vuot:"Chi vượt thu",stale:"Cần xem lại",no:"Còn nợ",thieu:"Thiếu thông tin",trung:"Nghi trùng"};
+const REASONS=[["","Tất cả vướng"],["lo","Lỗ"],["vuot","Chi vượt thu"],["dh","Đến/quá hạn thu"],["hh","Cần trả hoa hồng"],["hhq","HH trả quá"],["stale","Cần xem lại"],["thieu","Thiếu thông tin"],["trung","Nghi trùng"],["no","Còn nợ"]];
 function chart(rows){const W=640,H=220,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)return"";
   const mx=Math.max(1,...rows.flatMap(r=>[r.thu,r.chi,Math.abs(r.ln)])),gw=(W-pl)/bw;
   let o='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:760px;background:var(--card);border:1px solid var(--line);border-radius:6px">';
@@ -1270,60 +1293,68 @@ function chart(rows){const W=640,H=220,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)r
     o+='<text x="'+(pl+i*gw+gw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--ink)">'+esc(r.key)+'</text>'});
   return o+'</svg><div class="lg"><i style="background:var(--brand)"></i>Thu<i style="background:var(--warn)"></i>Chi<i style="background:var(--ok)"></i>Lãi (thu − chi)</div>'}
 function allYears(){const y=new Set();fin.jobs.forEach(j=>{const v=jyear(j);if(v)y.add(v)});fin.tx.forEach(t=>y.add(t.d.slice(0,4)));return[...y].filter(Boolean).sort()}
-/* tính số liệu 1 năm */
-function yearData(y,mode,T,S,dup){
+function yearData(y,mode,T,S){
   const inY=S.filter(({j})=>mode==="rec"?jyear(j)===y:(jyear(j)===y||(T[j.id]||[]).some(t=>t.d.slice(0,4)===y))).map(({j})=>({j,s:jstat(j,T,y)}));
-  const gen=(T[""]||[]).filter(t=>t.d.slice(0,4)===y);
-  let thu=0,chi=0;
-  inY.forEach(({j,s})=>{thu+=mode==="rec"?s.thu:s.yt;chi+=mode==="rec"?s.chi:s.yc});
-  gen.forEach(t=>{if(t.k==="thu")thu+=t.a;else chi+=t.a});
+  const gen=(T[""]||[]).filter(t=>t.d.slice(0,4)===y);let thu=0,chi=0,hh=0;
+  inY.forEach(({s})=>{thu+=mode==="rec"?s.thu:s.yt;chi+=mode==="rec"?s.chi:s.yc;hh+=mode==="rec"?s.hhP:s.yh});
+  gen.forEach(t=>{if(t.k==="thu")thu+=t.a;else{chi+=t.a;if(t.cat==="hh")hh+=t.a}});
   const no=inY.filter(x=>!x.s.stale).reduce((a,x)=>a+x.s.no,0),stale=inY.filter(x=>x.s.stale).reduce((a,x)=>a+x.s.no,0);
-  const lo=inY.filter(({j,s})=>j.tt!=="huy"&&s.lai<0&&(s.no===0||j.tt==="xong")).length;
-  return{inY,gen,thu,chi,ln:thu-chi,no,stale,n:inY.length,lo}}
-function chipsFor(j,s,dup){return issues(j,s,dup).map(i=>'<span class="chip '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("")}
-function jrow(x,y,mode,dup,full){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
-  return'<tr data-j="'+esc(j.id)+'"><td>'+dmy(j.ngay||"")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+'<br><span class="lg">'+esc([j.loai,j.quan&&("Q."+j.quan),j.chu,j.gt&&("GT: "+j.gt)].filter(Boolean).join(" · "))+'</span></td><td class="num">'+fnum(j.gia||0)+'</td><td class="num">'+fnum(t)+'</td><td class="num">'+fnum(c)+'</td><td class="num '+((t-c)<0?'neg':'pos')+'">'+fnum(t-c)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td><td>'+(j.tt==="xong"?'<span class="chip g">Xong</span>':j.tt==="huy"?'<span class="chip">Hủy</span>':'<span class="chip">Đang làm</span>')+chipsFor(j,s,dup)+'</td></tr>'}
-function jtable(L,y,mode,dup,note){return'<div class="nt"><table class="m"><tr><th>Ngày nhận</th><th>Địa chỉ · loại</th><th class="num">Phí thỏa thuận</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Trạng thái · vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
+  const lo=inY.filter(({j,s})=>!isHuy(j)&&s.lai<0&&(s.no===0||isDone(j))).length;
+  return{inY,gen,thu,chi,hh,ln:thu-chi,no,stale,n:inY.length,lo}}
+const fcs=(j,s,dup)=>issues(j,s,dup).map(i=>'<span class="fc '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("");
+function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
+  return'<tr data-j="'+esc(j.id)+'"><td>'+dmy(j.ngay||"")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+(j.cid?' <span class="fc b" title="Đã liên kết thửa đất">⛓</span>':'')+'<br><span class="lg">'+esc([j.loai,j.quan&&("Q."+j.quan),j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+fnum(t)+'</td><td class="num">'+fnum(c)+'</td><td class="num '+((t-c)<0?'neg':'pos')+'">'+fnum(t-c)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td><td>'+fcs(j,s,dup)+'</td></tr>'}
+function jtable(L,y,mode,dup){return'<div class="nt"><table class="m"><tr><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
 function matchQ(j){const q=fqv.trim().toLowerCase();return!q||[j.dc,j.chu,j.gt,j.loai,j.nd,j.quan,j.gc].join(" ").toLowerCase().includes(q)}
+const isVan=(j,s,dup)=>issues(j,s,dup).some(i=>VAN.includes(i[0]));
 function renderFin(){
   const T=txIdx(),yrs=allYears(),mode=fmodeV;
-  const S=fin.jobs.map(j=>({j,s:jstat(j,T,fv==="all"||fv==="van"?"":fv)})),dup=dupSet(S);
-  // sub tabs
-  const subs=[["all","Tổng quan"],...yrs.slice().reverse().map(y=>[y,y]),["van","Hồ sơ vướng"]];
-  const vanN=S.filter(({j,s})=>issues(j,s,dup).some(i=>["lo","vuot","stale","thieu","trung"].includes(i[0]))).length;
-  $("#fsub").innerHTML=subs.map(([k,t])=>'<button data-s="'+k+'" class="'+(fv===k?"on":"")+'">'+t+(k==="van"?' ('+vanN+')':'')+'</button>').join("");
+  const S=fin.jobs.map(j=>({j,s:jstat(j,T,"")})),dup=dupSet(S);
+  const vanN=S.filter(({j,s})=>isVan(j,s,dup)).length;
+  const subs=[["all","Tổng quan"],...yrs.slice().reverse().map(y=>[y,y]),["ref","Người giới thiệu"],["van","Hồ sơ vướng ("+vanN+")"]];
+  $("#fsub").innerHTML=subs.map(([k,t])=>'<button data-s="'+k+'" class="'+(fv===k||(fv.startsWith("st:")&&k==="all")?"on":"")+'">'+t+'</button>').join("");
   $("#fsub").querySelectorAll("button").forEach(b=>b.onclick=()=>{fv=b.dataset.s;fchip="";renderFin()});
-  $("#fmode").value=mode;$("#fqs").value=fqv;
+  $("#fmode").value=mode;$("#fqs").value=fqv;$("#fqs").hidden=fv==="ref";
   const box=$("#fin");
   if(!fin.jobs.length&&!fin.tx.length){box.innerHTML='<p class="lg">Chưa có hồ sơ. Bấm “+ Hồ sơ mới”, hoặc “Nhập sổ (JSON)” để nạp dữ liệu từ Excel.</p>';return}
-  const note='<p class="lg">'+(mode==="cash"?"Thu, chi tính vào năm của ngày tiền về (đợt thu/chi cũ chưa có ngày thì tạm lấy ngày nhận hồ sơ).":"Toàn bộ thu, chi của hồ sơ tính vào năm nhận hồ sơ.")+'</p>';
+  const note='<p class="lg">'+(mode==="cash"?"Thu, chi tính vào năm của ngày tiền về (khoản cũ chưa có ngày thì tạm lấy ngày nhận hồ sơ).":"Toàn bộ thu, chi của hồ sơ tính vào năm nhận hồ sơ.")+'</p>';
+  const kp=(a)=>'<div class="kp">'+a.map(([l,v,c])=>'<div><span>'+l+'</span><b class="'+(c||"")+'">'+v+'</b></div>').join("")+'</div>';
   if(fv==="all"){
-    const rows=yrs.map(y=>({key:y,...yearData(y,mode,T,S,dup)}));
-    const tot={thu:rows.reduce((a,r)=>a+r.thu,0),chi:rows.reduce((a,r)=>a+r.chi,0),no:S.filter(x=>!x.s.stale).reduce((a,x)=>a+x.s.no,0),stale:S.filter(x=>x.s.stale).reduce((a,x)=>a+x.s.no,0)};
-    box.innerHTML=note+'<div class="kp"><div><span>Hồ sơ</span><b>'+fin.jobs.length+'</b></div><div><span>Tổng thu</span><b>'+fshort(tot.thu)+'</b></div><div><span>Tổng chi</span><b>'+fshort(tot.chi)+'</b></div><div><span>Lãi</span><b class="'+(tot.thu-tot.chi<0?'neg':'pos')+'">'+fshort(tot.thu-tot.chi)+'</b></div><div><span>Còn nợ (đáng thu)</span><b class="neg">'+fshort(tot.no)+'</b></div><div><span>Nghi không thu được</span><b>'+fshort(tot.stale)+'</b></div></div>'+
-      chart(rows)+'<div class="nt"><table class="m"><tr><th>Năm (bấm để xem chi tiết)</th><th class="num">Số HS</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Lãi</th><th class="num">Biên lãi</th><th class="num">HS lỗ</th><th class="num">Còn nợ</th><th class="num">Nghi không thu được</th></tr>'+
-      rows.slice().reverse().map(r=>'<tr data-y="'+r.key+'" style="cursor:pointer"><td><b>'+r.key+'</b></td><td class="num">'+r.n+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chi)+'</td><td class="num '+(r.ln<0?'neg':'pos')+'">'+fnum(r.ln)+'</td><td class="num">'+(r.thu?Math.round(r.ln/r.thu*100)+"%":"–")+'</td><td class="num">'+(r.lo||"–")+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.stale)+'</td></tr>').join("")+'</table></div>';
+    const rows=yrs.map(y=>({key:y,...yearData(y,mode,T,S)}));
+    const tot={thu:fsum(rows.map(r=>r.thu)),chi:fsum(rows.map(r=>r.chi)),hh:fsum(rows.map(r=>r.hh)),no:fsum(S.filter(x=>!x.s.stale).map(x=>x.s.no)),stale:fsum(S.filter(x=>x.s.stale).map(x=>x.s.no)),due:fsum(S.map(x=>x.s.dueUnpaid)),hhO:fsum(S.map(x=>x.s.hhOwe))};
+    const stg=STAGES.map(([k,n])=>{const a=S.filter(x=>x.j.st===k);return{k,n,c:a.length,tong:fsum(a.map(x=>x.s.tong)),thu:fsum(a.map(x=>x.s.thu)),no:fsum(a.filter(x=>!x.s.stale).map(x=>x.s.no)),due:fsum(a.map(x=>x.s.dueUnpaid))}});
+    const hu=S.filter(x=>x.j.st==="huy");
+    box.innerHTML=note+kp([["Hồ sơ",fin.jobs.length],["Tổng thu",fshort(tot.thu)],["Tổng chi",fshort(tot.chi)],["Lãi",fshort(tot.thu-tot.chi),tot.thu-tot.chi<0?"neg":"pos"],["Hoa hồng đã trả",fshort(tot.hh)],["Hoa hồng còn phải trả",fshort(tot.hhO),tot.hhO?"neg":""],["Còn nợ (đáng thu)",fshort(tot.no),"neg"],["Đến hạn thu chưa thu",fshort(tot.due),tot.due?"neg":""],["Nghi không thu được",fshort(tot.stale)]])+
+      chart(rows)+'<div class="nt"><table class="m"><tr><th>Năm (bấm để xem chi tiết)</th><th class="num">Số HS</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Trong đó hoa hồng</th><th class="num">Lãi</th><th class="num">Biên lãi</th><th class="num">HS lỗ</th><th class="num">Còn nợ</th><th class="num">Nghi không thu được</th></tr>'+
+      rows.slice().reverse().map(r=>'<tr data-y="'+r.key+'" style="cursor:pointer"><td><b>'+r.key+'</b></td><td class="num">'+r.n+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chi)+'</td><td class="num">'+fnum(r.hh)+'</td><td class="num '+(r.ln<0?'neg':'pos')+'">'+fnum(r.ln)+'</td><td class="num">'+(r.thu?Math.round(r.ln/r.thu*100)+"%":"–")+'</td><td class="num">'+(r.lo||"–")+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.stale)+'</td></tr>').join("")+'</table></div>'+
+      '<h3 class="fh">Vòng đời hồ sơ — đang ở bước nào (bấm để xem danh sách)</h3><div class="nt"><table class="m"><tr><th>Bước</th><th class="num">Số HS</th><th class="num">Báo khách</th><th class="num">Đã thu</th><th class="num">Còn nợ</th><th class="num">Đến hạn thu chưa thu</th></tr>'+
+      stg.map(r=>'<tr data-st="'+r.k+'" style="cursor:pointer"><td>'+esc(r.n)+'</td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.tong)+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.due)+'</td></tr>').join("")+
+      (hu.length?'<tr data-st="huy" style="cursor:pointer"><td>Hủy</td><td class="num">'+hu.length+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+'</table></div>'+
+      '<p class="lg">Hồ sơ cũ nhập từ Excel mặc định ở bước “Chờ kết quả” (chưa xong) hoặc “Bàn giao khách” (đã thu đủ). Bạn chỉnh bước khi mở từng hồ sơ.</p>';
     box.querySelectorAll("[data-y]").forEach(e=>e.onclick=()=>{fv=e.dataset.y;renderFin();scrollTo(0,0)});
+    box.querySelectorAll("[data-st]").forEach(e=>e.onclick=()=>{fv="st:"+e.dataset.st;renderFin();scrollTo(0,0)});
+  }else if(fv.startsWith("st:")){
+    const k=fv.slice(3),L=S.filter(x=>x.j.st===k&&matchQ(x.j)).sort((a,b)=>b.s.no-a.s.no);
+    box.innerHTML='<p><button id="back">← Tổng quan</button> &nbsp;<b>Bước: '+esc(k==="huy"?"Hủy":(STAGES.find(x=>x[0]===k)||[0,k])[1])+'</b> ('+L.length+' hồ sơ, xếp theo còn nợ giảm dần)</p>'+jtable(L,"",mode,dup);
+    $("#back").onclick=()=>{fv="all";renderFin()};
+  }else if(fv==="ref"){
+    renderRefs(box,S,T,dup);return;
   }else if(fv==="van"){
     const cnt={};S.forEach(({j,s})=>issues(j,s,dup).forEach(i=>{cnt[i[0]]=(cnt[i[0]]||0)+1}));
-    let L=S.filter(({j,s})=>matchQ(j)&&issues(j,s,dup).some(i=>fchip?i[0]===fchip:["lo","vuot","stale","thieu","trung"].includes(i[0])));
-    L.sort((a,b)=>a.s.lai-b.s.lai);
-    box.innerHTML='<p class="lg">Hồ sơ có vấn đề cần xử lý. Bấm vào một hồ sơ để sửa, thêm khoản thu/chi, đổi trạng thái hoặc xóa nợ.</p><p>'+
-      [["","Tất cả vướng"],["lo","Lỗ"],["vuot","Chi vượt thu"],["stale","Cần xem lại"],["thieu","Thiếu thông tin"],["trung","Nghi trùng"],["no","Còn nợ"]].map(([k,t])=>'<button data-c="'+k+'" class="'+(fchip===k?"primary":"")+'">'+t+(k?" ("+(cnt[k]||0)+")":"")+'</button>').join(" ")+'</p>'+jtable(L,"",mode,dup);
+    const L=S.filter(({j,s})=>matchQ(j)&&issues(j,s,dup).some(i=>fchip?i[0]===fchip:VAN.includes(i[0]))).sort((a,b)=>a.s.lai-b.s.lai);
+    box.innerHTML='<p class="lg">Hồ sơ có vấn đề cần xử lý. Bấm vào một hồ sơ để sửa, thêm khoản thu/chi, đổi bước, trả hoa hồng hoặc xóa nợ.</p><p>'+REASONS.map(([k,t])=>'<button data-c="'+k+'" class="'+(fchip===k?"primary":"")+'">'+t+(k?" ("+(cnt[k]||0)+")":"")+'</button>').join(" ")+'</p>'+jtable(L,"",mode,dup);
     box.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{fchip=b.dataset.c;renderFin()});
   }else{
-    const D=yearData(fv,mode,T,S,dup);
-    let L=D.inY.filter(x=>matchQ(x.j));
+    const D=yearData(fv,mode,T,S);let L=D.inY.filter(x=>matchQ(x.j));
     const months=Array.from({length:12},(_,i)=>({key:"T"+(i+1),thu:0,chi:0}));
     D.inY.forEach(({j})=>(T[j.id]||[]).forEach(t=>{if(t.d.slice(0,4)===fv)months[+t.d.slice(5,7)-1][t.k]+=t.a}));D.gen.forEach(t=>{months[+t.d.slice(5,7)-1][t.k]+=t.a});
     months.forEach(m=>m.ln=m.thu-m.chi);
-    const vL=L.filter(x=>issues(x.j,x.s,dup).some(i=>["lo","vuot","stale","thieu","trung"].includes(i[0])));
+    const vL=L.filter(x=>isVan(x.j,jstat(x.j,T,""),dup)).map(x=>({j:x.j,s:x.s}));
     const chipsF=[["","Tất cả"],["lo","Lỗ"],["no","Còn nợ"],["dang","Đang làm"],["xong","Đã xong"]];
-    if(fchip)L=L.filter(({j,s})=>fchip==="dang"?j.tt==="dang":fchip==="xong"?j.tt==="xong":issues(j,s,dup).some(i=>i[0]===fchip));
-    L.sort((a,b)=>(mode==="rec"?a.s.lai:a.s.yt-a.s.yc)-(mode==="rec"?b.s.lai:b.s.yt-b.s.yc));
-    box.innerHTML=note+'<div class="kp"><div><span>Hồ sơ năm '+fv+'</span><b>'+D.n+'</b></div><div><span>Thu</span><b>'+fshort(D.thu)+'</b></div><div><span>Chi</span><b>'+fshort(D.chi)+'</b></div><div><span>Lãi</span><b class="'+(D.ln<0?'neg':'pos')+'">'+fshort(D.ln)+'</b></div><div><span>Hồ sơ lỗ</span><b class="'+(D.lo?'neg':'')+'">'+D.lo+'</b></div><div><span>Còn nợ</span><b class="neg">'+fshort(D.no)+'</b></div></div>'+
-      chart(months)+
-      '<h3 class="fh">Hồ sơ vướng của năm '+fv+' ('+vL.length+')</h3>'+(vL.length?jtable(vL.slice().sort((a,b)=>a.s.lai-b.s.lai),fv,mode,dup):'<p class="lg">Không có hồ sơ vướng.</p>')+
+    if(fchip)L=L.filter(({j,s})=>fchip==="dang"?(!isDone(j)&&!isHuy(j)):fchip==="xong"?isDone(j):issues(j,jstat(j,T,""),dup).some(i=>i[0]===fchip));
+    const key=({s})=>mode==="rec"?s.lai:s.yt-s.yc;L.sort((a,b)=>key(a)-key(b));
+    box.innerHTML=note+kp([["Hồ sơ năm "+fv,D.n],["Thu",fshort(D.thu)],["Chi",fshort(D.chi)],["Trong đó hoa hồng",fshort(D.hh)],["Lãi",fshort(D.ln),D.ln<0?"neg":"pos"],["Hồ sơ lỗ",D.lo,D.lo?"neg":""],["Còn nợ",fshort(D.no),"neg"]])+chart(months)+
+      '<h3 class="fh">Hồ sơ vướng của năm '+fv+' ('+vL.length+')</h3>'+(vL.length?jtable(vL.sort((a,b)=>a.s.lai-b.s.lai),fv,mode,dup):'<p class="lg">Không có hồ sơ vướng.</p>')+
       '<h3 class="fh">Tất cả hồ sơ — xếp từ lỗ nhiều đến lãi nhiều</h3><p>'+chipsF.map(([k,t])=>'<button data-c="'+k+'" class="'+(fchip===k?"primary":"")+'">'+t+'</button>').join(" ")+'</p>'+jtable(L,fv,mode,dup)+
       '<h3 class="fh">Thu / chi khác (không gắn hồ sơ) — năm '+fv+'</h3><div class="filters" style="padding:0 0 8px"><input type="date" id="g_d"><select id="g_k"><option value="chi">Chi</option><option value="thu">Thu</option></select><input id="g_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><input id="g_n" placeholder="Nội dung (vd: văn phòng phẩm, xăng…)" style="flex:1;min-width:180px"><button class="primary" id="g_ok">Thêm</button></div>'+
       (D.gen.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Nội dung</th><th></th></tr>'+D.gen.sort((a,b)=>b.d.localeCompare(a.d)).map(t=>'<tr><td>'+dmy(t.d)+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td><button class="link" data-gd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div>':'');
@@ -1335,49 +1366,114 @@ function renderFin(){
   }
   box.querySelectorAll("tr[data-j]").forEach(r=>r.onclick=()=>openJob(r.dataset.j));
 }
+/* ----- người giới thiệu & hoa hồng ----- */
+function renderRefs(box,S,T,dup){
+  const yrs=allYears(),G={};
+  S.filter(({j})=>!frefY||jyear(j)===frefY).forEach(x=>{const n=canon(x.j.gt)||"(không ghi)";(G[n]=G[n]||[]).push(x)});
+  const rows=Object.entries(G).map(([n,a])=>({n,c:a.length,thu:fsum(a.map(x=>x.s.thu)),chiN:fsum(a.map(x=>x.s.chiN)),hhP:fsum(a.map(x=>x.s.hhP)),hhT:fsum(a.map(x=>x.s.hhT)),hhO:fsum(a.map(x=>x.s.hhOwe)),lai:fsum(a.map(x=>x.s.lai)),no:fsum(a.filter(x=>!x.s.stale).map(x=>x.s.no))})).sort((a,b)=>b.thu-a.thu);
+  const names=rows.map(r=>r.n).filter(n=>n!=="(không ghi)");
+  const raw=[...new Set(fin.jobs.map(j=>String(j.gt||"").trim()).filter(Boolean))];
+  const aliasN=Object.keys(fin.alias||{}).length;
+  box.innerHTML='<p class="lg">Mỗi người một dòng. Đặt <b>mức hoa hồng mặc định</b> cho từng người; hồ sơ nhận từ ngày “áp dụng từ” trở đi sẽ tự tính hoa hồng (hồ sơ cũ không bị ảnh hưởng). Mỗi hồ sơ vẫn ghi đè được mức riêng. Hoa hồng đã trả được ghi bằng khoản chi loại “Hoa hồng” trong hồ sơ.</p>'+
+   '<p><select id="rY"><option value="">Tất cả các năm</option>'+yrs.map(y=>'<option'+(y===frefY?' selected':'')+'>'+y+'</option>').join("")+'</select> <button id="rmerge">Gộp tự động tên chỉ khác hoa/thường, dấu</button>'+(aliasN?' <button id="rundo" class="link">Hoàn tác gộp ('+aliasN+')</button>':'')+'</p>'+
+   '<div class="nt"><table class="m"><tr><th>Người giới thiệu</th><th class="num">Số HS</th><th class="num">Doanh thu (thu)</th><th class="num">Chi (không HH)</th><th class="num">HH đã trả</th><th class="num">HH tổng phải trả</th><th class="num">HH còn phải trả</th><th class="num">Lãi sau HH</th><th>Mức hoa hồng mặc định</th><th>Gộp vào…</th></tr>'+
+   rows.map((r,i)=>{const q=fin.refs[r.n]||{};const real=r.n!=="(không ghi)";
+    return'<tr><td><b>'+esc(r.n)+'</b></td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chiN)+'</td><td class="num">'+fnum(r.hhP)+'</td><td class="num">'+fnum(r.hhT)+'</td><td class="num '+(r.hhO?'neg':'')+'">'+fnum(r.hhO)+'</td><td class="num '+(r.lai<0?'neg':'pos')+'">'+fnum(r.lai)+'</td><td>'+(real?'<select data-rm="'+i+'">'+HHMODE.map(([k,t])=>'<option value="'+k+'"'+((q.mode||"")===k?' selected':'')+'>'+t+'</option>').join("")+'</select> <input data-rv="'+i+'" value="'+esc(q.v==null?"":q.v)+'" style="width:80px" placeholder="% hoặc đ"> <select data-rk="'+i+'"><option value="dot"'+(q.khi!=="du"?' selected':'')+'>trả theo từng đợt thu</option><option value="du"'+(q.khi==="du"?' selected':'')+'>trả khi thu đủ</option></select> <label class="lg">áp dụng từ <input type="date" data-rt="'+i+'" value="'+esc(q.tu||"2026-01-01")+'" style="width:130px"></label>':'')+'</td><td>'+(real?'<select data-ra="'+i+'"><option value="">—</option>'+names.filter(n=>n!==r.n).map(n=>'<option>'+esc(n)+'</option>').join("")+'</select>':'')+'</td></tr>'}).join("")+'</table></div>';
+  const setR=(i,k,v)=>{const n=rows[i].n;fin.refs[n]=Object.assign({mode:"",v:0,khi:"dot",tu:"2026-01-01"},fin.refs[n]||{});fin.refs[n][k]=v;finSave();renderFin()};
+  box.querySelectorAll("[data-rm]").forEach(e=>e.onchange=()=>setR(+e.dataset.rm,"mode",e.value));
+  box.querySelectorAll("[data-rv]").forEach(e=>e.onchange=()=>setR(+e.dataset.rv,"v",+String(e.value).replace(",",".")||0));
+  box.querySelectorAll("[data-rk]").forEach(e=>e.onchange=()=>setR(+e.dataset.rk,"khi",e.value));
+  box.querySelectorAll("[data-rt]").forEach(e=>e.onchange=()=>setR(+e.dataset.rt,"tu",e.value));
+  box.querySelectorAll("[data-ra]").forEach(e=>e.onchange=()=>{if(!e.value)return;const from=rows[+e.dataset.ra].n;if(!confirm("Gộp “"+from+"” vào “"+e.value+"”?"))return;
+    raw.filter(x=>canon(x)===from).forEach(x=>{fin.alias[x]=e.value});finSave();renderFin()});
+  $("#rY").onchange=e=>{frefY=e.target.value;renderFin()};
+  $("#rmerge").onclick=()=>{const g={};raw.forEach(x=>{(g[unacc(x).replace(/[^a-z0-9]/g,"")]=g[unacc(x).replace(/[^a-z0-9]/g,"")]||[]).push(x)});
+    const cnt={};fin.jobs.forEach(j=>{const n=String(j.gt||"").trim();if(n)cnt[n]=(cnt[n]||0)+1});let m=0;
+    Object.values(g).filter(v=>v.length>1).forEach(v=>{const top=v.slice().sort((a,b)=>cnt[b]-cnt[a])[0];v.forEach(x=>{if(x!==top){fin.alias[x]=top;m++}})});
+    finSave();alert(m?"Đã gộp "+m+" tên.":"Không có tên nào chỉ khác hoa/thường hoặc dấu.");renderFin()};
+  if($("#rundo"))$("#rundo").onclick=()=>{if(confirm("Hoàn tác tất cả các gộp tên?")){fin.alias={};finSave();renderFin()}};
+}
 /* ----- hộp thoại hồ sơ ----- */
-function openJob(id){
+function newJob(pre){return Object.assign({id:"j"+Date.now().toString(36),ngay:today(),nam:new Date().getFullYear(),dc:"",quan:"",loai:"",nd:"",gt:"",chu:"",gia:0,lephi:0,gc:"",st:"tiepnhan",mien:false,src:"",cid:"",bg:[],pl:[],cp:[],stLog:[{st:"tiepnhan",d:today()}],hh:null,_new:1},pre||{})}
+function openJob(id,pre){
   const j=id?fin.jobs.find(x=>x.id===id):null;
-  jEdit=j?JSON.parse(JSON.stringify(j)):{id:"j"+Date.now().toString(36),ngay:today(),nam:new Date().getFullYear(),dc:"",quan:"",loai:"",nd:"",gt:"",chu:"",gia:0,gc:"",tt:"dang",mien:false,src:"",_new:1};
+  jEdit=j?JSON.parse(JSON.stringify(j)):newJob(pre);
+  ["bg","pl","cp","stLog"].forEach(k=>{if(!Array.isArray(jEdit[k]))jEdit[k]=[]});
   $("#jdt").textContent=j?"Hồ sơ: "+(j.dc||j.loai||j.id):"Hồ sơ mới";$("#jdel").hidden=!j;
   drawJob();$("#jd").showModal()}
+function openJobForCase(c){
+  let j=fin.jobs.find(x=>x.cid===c.id);
+  if(j){openJob(j.id);return}
+  openJob(null,{dc:propAddr(c)||caseTitle(c),loai:c.type||"",ngay:c.ngayKy||today(),cid:c.id})}
+function finChip(c){try{const j=fin.jobs.find(x=>x.cid===c.id);if(!j)return"";const T=txIdx(),s=jstat(j,T,"");return' <span class="fc b" title="Thẻ doanh thu của thửa đất">'+esc(stName(j))+' · thu '+fshort(s.thu)+'/'+fshort(s.tong)+(s.no?' · nợ '+fshort(s.no):'')+'</span>'}catch(e){return""}}
 function drawJob(){
-  const j=jEdit,L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d));
-  const thu=fsum(L.filter(t=>t.k==="thu").map(t=>t.a)),chi=fsum(L.filter(t=>t.k==="chi").map(t=>t.a)),no=(j.mien||j.tt==="huy")?0:Math.max(0,(+j.gia||0)-thu);
+  const j=jEdit,T=txIdx(),L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d)),s=jstat(j,T,"");
   const f=(k,l,t)=>'<div><label>'+l+'</label><input data-f="'+k+'" type="'+(t||"text")+'" value="'+esc(j[k]==null?"":j[k])+'"></div>';
-  $("#jbody").innerHTML='<div class="kp"><div><span>Phí thỏa thuận</span><b>'+fnum(j.gia||0)+'</b></div><div><span>Đã thu</span><b class="pos">'+fnum(thu)+'</b></div><div><span>Đã chi</span><b>'+fnum(chi)+'</b></div><div><span>Lãi tạm tính (thu − chi)</span><b class="'+(thu-chi<0?'neg':'pos')+'">'+fnum(thu-chi)+'</b></div><div><span>Còn nợ</span><b class="neg">'+fnum(no)+'</b></div><div><span>Lãi dự kiến khi thu đủ</span><b>'+fnum((+j.gia||0)-chi)+'</b></div></div>'+
-   '<div class="jg">'+f("ngay","Ngày nhận","date")+f("dc","Địa chỉ / khách")+f("quan","Quận")+f("loai","Loại việc")+f("nd","Nội dung")+f("gt","Người giới thiệu")+f("chu","Chủ sử dụng đất")+
-   '<div><label>Phí thỏa thuận (đ)</label><input data-f="gia" inputmode="numeric" value="'+(j.gia?Number(j.gia).toLocaleString("vi-VN"):"")+'"></div>'+
-   '<div><label>Trạng thái</label><select data-f="tt"><option value="dang">Đang làm</option><option value="xong">Đã xong</option><option value="huy">Hủy</option></select></div>'+f("gc","Ghi chú")+
-   '<div><label>Xóa nợ</label><label style="color:var(--ink)"><input type="checkbox" data-f="mien" style="width:auto" '+(j.mien?"checked":"")+'> Không thu thêm nữa</label></div></div>'+
-   '<h3 class="fh">Các đợt thu / chi</h3><div class="filters" style="padding:0 0 8px"><select id="x_k"><option value="thu">+ Thu</option><option value="chi">+ Chi</option></select><input id="x_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><input type="date" id="x_d" value="'+today()+'"><input id="x_n" placeholder="Ghi chú (tự đặt: Thu đợt …)" style="flex:1;min-width:140px"><button class="primary" id="x_ok">Thêm</button></div>'+
-   (L.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Ghi chú</th><th></th></tr>'+L.map(t=>'<tr><td>'+dmy(t.d)+(t.est?' <span class="lg" title="Ngày ước tính, chưa có ngày thật">~</span>':'')+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td style="white-space:nowrap"><button data-xe="'+t.id+'">Sửa</button> <button class="link" data-xd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div><p class="lg">Dấu ~ là ngày ước tính (dữ liệu cũ chưa có ngày từng đợt). Bấm Sửa để nhập ngày thật.</p>':'<p class="lg">Chưa có khoản thu/chi.</p>');
-  $("#jbody").querySelector('[data-f="tt"]').value=j.tt;
-  $("#jbody").querySelectorAll("[data-f]").forEach(e=>e.onchange=()=>{const k=e.dataset.f;j[k]=e.type==="checkbox"?e.checked:k==="gia"?parseAmt(e.value):e.value;if(k==="gia"||k==="tt"||k==="mien")drawJob()});
-  $("#x_a").oninput=e=>{const n=parseAmt(e.target.value);e.target.value=n?n.toLocaleString("vi-VN"):""};
+  const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
+  const kp=[["Báo khách",fnum(s.tong),""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""]];
+  const si=stIdx(j);
+  const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'" style="margin-left:auto">Hủy</button></div>'+
+    (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
+  const trOpts=sel=>'<option value="">Ngay khi nhận</option>'+STAGES.map(([k,n])=>'<option value="'+k+'"'+(sel===k?' selected':'')+'>Khi tới bước: '+n+'</option>').join("");
+  const plSum=fsum((j.pl||[]).map(p=>p.a));
+  const r=s.rate,hhO=j.hh||{mode:"",v:0,khi:"dot"};
+  $("#jbody").innerHTML='<div class="kp">'+kp.map(([l,v,c])=>'<div><span>'+l+'</span><b class="'+c+'" style="font-size:16px">'+v+'</b></div>').join("")+'</div>'+
+   '<div class="sec"><h4>Vòng đời</h4>'+stg+'</div>'+
+   '<div class="sec"><h4>Thông tin hồ sơ</h4><div class="jg">'+f("ngay","Ngày nhận","date")+f("dc","Địa chỉ / khách")+f("quan","Quận")+f("loai","Loại việc")+f("nd","Nội dung")+
+   '<div><label>Người giới thiệu</label><input data-f="gt" list="rlist" value="'+esc(j.gt||"")+'"><datalist id="rlist">'+[...new Set(fin.jobs.map(x=>canon(x.gt)).filter(Boolean))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
+   f("chu","Chủ sử dụng đất")+'<div><label>Liên kết thửa đất (tab Hồ sơ)</label><select data-f="cid"><option value="">— chưa liên kết —</option>'+ca.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===j.cid?' selected':'')+'>'+esc(caseTitle(c))+'</option>').join("")+'</select></div>'+f("gc","Ghi chú")+
+   '<div><label>Xóa nợ</label><label style="color:var(--ink)"><input type="checkbox" data-f="mien" style="width:auto" '+(j.mien?"checked":"")+'> Không thu thêm nữa</label></div></div>'+(j.cid&&db.cases.some(c=>c.id===j.cid)?'<p><button id="gocase">Mở hồ sơ thửa đất / in đơn →</button></p>':'')+'</div>'+
+   '<div class="sec"><h4>Báo khách</h4><div class="jg"><div><label>Phí dịch vụ chốt (đ)</label><input data-f="gia" inputmode="numeric" value="'+(j.gia?Number(j.gia).toLocaleString("vi-VN"):"")+'"></div><div><label>Lệ phí / thuế khách đóng hộ (đ)</label><input data-f="lephi" inputmode="numeric" value="'+(j.lephi?Number(j.lephi).toLocaleString("vi-VN"):"")+'"></div></div>'+
+   '<p class="lg">Lịch sử báo giá: '+(j.bg.length?j.bg.map((b,i)=>dmy(b.d)+" · <b>"+fnum(b.a)+"</b>"+(b.n?" ("+esc(b.n)+")":"")+' <a href="#" data-bgc="'+i+'">chốt</a> <a href="#" data-bgd="'+i+'">xóa</a>').join(" &nbsp;|&nbsp; "):"chưa có")+'</p>'+
+   '<div class="filters" style="padding:0"><input type="date" id="b_d" value="'+today()+'"><input id="b_a" inputmode="numeric" placeholder="Số tiền báo" style="width:130px"><input id="b_n" placeholder="Ghi chú (báo lần 1, khách trả giá…)" style="flex:1;min-width:140px"><button id="b_ok">Thêm báo giá</button></div></div>'+
+   '<div class="sec"><h4>Kế hoạch các đợt thu</h4>'+(j.pl.length?'<div class="nt"><table class="m"><tr><th>Đợt</th><th class="num">Số tiền</th><th>Đến hạn khi</th><th>Hạn thu</th><th>Tình trạng</th><th></th></tr>'+s.pl.map((p,i)=>'<tr><td>'+esc(p.n)+'</td><td class="num">'+fnum(p.a)+'</td><td>'+(p.tr?esc(STAGES.find(x=>x[0]===p.tr)[1]):"Ngay khi nhận")+'</td><td>'+dmy(p.han)+'</td><td>'+(p.cov>=p.a?'<span class="fc g">Đã thu đủ</span>':p.ov?'<span class="fc r">Quá hạn · thiếu '+fnum(p.a-p.cov)+'</span>':p.due?'<span class="fc y">Đến hạn · thiếu '+fnum(p.a-p.cov)+'</span>':'<span class="fc">Chưa đến hạn</span>')+(p.cov&&p.cov<p.a?' <span class="lg">đã thu '+fnum(p.cov)+'</span>':'')+'</td><td><button class="link" data-pd="'+i+'">Xóa</button></td></tr>').join("")+'</table></div>'+(plSum!==s.tong?'<p class="lg" style="color:var(--warn)">Tổng các đợt ('+fnum(plSum)+') khác tổng báo khách ('+fnum(s.tong)+').</p>':''):'<p class="lg">Chưa chia đợt. Ví dụ: Đợt 1 – 50% khi ký hợp đồng; đợt 2 – 50% khi nhận kết quả.</p>')+
+   '<div class="filters" style="padding:0"><input id="p_n" placeholder="Tên đợt" style="width:120px" value="Đợt '+(j.pl.length+1)+'"><input id="p_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><select id="p_t">'+trOpts("")+'</select><input type="date" id="p_h" title="Hạn thu (không bắt buộc)"><button id="p_ok">Thêm đợt</button></div><p class="lg">Số đã thu tự phân bổ lần lượt vào các đợt theo thứ tự.</p></div>'+
+   '<div class="sec"><h4>Kế hoạch chi (dự kiến)</h4>'+(j.cp.length?'<div class="nt"><table class="m"><tr><th>Hạng mục</th><th class="num">Dự kiến</th><th></th></tr>'+j.cp.map((c,i)=>'<tr><td>'+esc(c.n)+'</td><td class="num">'+fnum(c.a)+'</td><td><button class="link" data-cd="'+i+'">Xóa</button></td></tr>').join("")+'<tr><td><b>Tổng dự kiến</b></td><td class="num"><b>'+fnum(s.cpDK)+'</b></td><td></td></tr></table></div><p class="lg">Chi thực tế (không tính hoa hồng): '+fnum(s.chiN)+' — '+(s.chiN>s.cpDK?'<span class="neg">vượt dự kiến '+fnum(s.chiN-s.cpDK)+'</span>':'còn trong dự kiến '+fnum(s.cpDK-s.chiN))+'</p>':'<p class="lg">Chưa có dự kiến chi.</p>')+
+   '<div class="filters" style="padding:0"><input id="c_n" placeholder="Hạng mục (lệ phí, đo đạc, đi lại…)" style="flex:1;min-width:160px"><input id="c_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><button id="c_ok">Thêm</button></div></div>'+
+   '<div class="sec"><h4>Hoa hồng người giới thiệu: '+esc(canon(j.gt)||"(chưa ghi người giới thiệu)")+'</h4>'+
+   '<p class="lg">'+(r?'Đang áp dụng: <b>'+esc(HHMODE.find(x=>x[0]===r.mode)[1])+' '+(r.mode==="cd"?fnum(r.v)+" đ":r.v+"%")+'</b>, '+(r.khi==="du"?"trả khi thu đủ":"trả theo từng đợt thu")+(j.hh&&j.hh.mode?" (mức riêng của hồ sơ)":" (mặc định của người giới thiệu)"):'Chưa có mức hoa hồng cho hồ sơ này. Đặt mức mặc định ở tab “Người giới thiệu”, hoặc ghi đè riêng bên dưới.')+'</p>'+
+   '<div class="jg"><div><label>Mức riêng của hồ sơ</label><select data-h="mode">'+HHMODE.map(([k,t])=>'<option value="'+k+'"'+(hhO.mode===k?' selected':'')+'>'+(k===""?"Dùng mặc định":t)+'</option>').join("")+'</select></div><div><label>Giá trị (% hoặc đ)</label><input data-h="v" value="'+esc(hhO.v||"")+'"></div><div><label>Thời điểm trả</label><select data-h="khi"><option value="dot"'+(hhO.khi!=="du"?' selected':'')+'>Theo từng đợt thu</option><option value="du"'+(hhO.khi==="du"?' selected':'')+'>Khi thu đủ</option></select></div></div>'+
+   '<div class="kp" style="margin-top:8px"><div><span>Tổng hoa hồng</span><b style="font-size:16px">'+fnum(s.hhT)+'</b></div><div><span>Đến hạn trả</span><b style="font-size:16px">'+fnum(s.hhOwe+s.hhP)+'</b></div><div><span>Đã trả</span><b style="font-size:16px">'+fnum(s.hhP)+'</b></div><div><span>Còn phải trả</span><b class="'+(s.hhOwe?'neg':'')+'" style="font-size:16px">'+fnum(s.hhOwe)+'</b></div></div></div>'+
+   '<div class="sec"><h4>Thu / chi thực tế</h4><div class="filters" style="padding:0 0 8px"><select id="x_k"><option value="thu">+ Thu</option><option value="chi">+ Chi</option><option value="hh">+ Trả hoa hồng</option></select><input id="x_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><input type="date" id="x_d" value="'+today()+'"><input id="x_n" placeholder="Ghi chú (tự đặt: Thu đợt …)" style="flex:1;min-width:140px"><button class="primary" id="x_ok">Thêm</button></div>'+
+   (L.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Ghi chú</th><th></th></tr>'+L.map(t=>'<tr><td>'+dmy(t.d)+(t.est?' <span class="lg" title="Ngày ước tính, chưa có ngày thật">~</span>':'')+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":t.cat==="hh"?"Chi · hoa hồng":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td style="white-space:nowrap"><button data-xe="'+t.id+'">Sửa</button> <button class="link" data-xd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div><p class="lg">Dấu ~ là ngày ước tính (dữ liệu cũ chưa có ngày từng đợt). Bấm Sửa để nhập ngày thật.</p>':'<p class="lg">Chưa có khoản thu/chi.</p>')+'</div>';
+  const B=$("#jbody"),amt=e=>{const n=parseAmt(e.target.value);e.target.value=n?n.toLocaleString("vi-VN"):""};
+  ["#x_a","#b_a","#p_a","#c_a"].forEach(i=>$(i).oninput=amt);
+  B.querySelectorAll("[data-f]").forEach(e=>e.onchange=()=>{const k=e.dataset.f;j[k]=e.type==="checkbox"?e.checked:(k==="gia"||k==="lephi")?parseAmt(e.value):e.value;if(["gia","lephi","mien","gt","cid"].includes(k))drawJob()});
+  B.querySelectorAll("[data-h]").forEach(e=>e.onchange=()=>{const h=j.hh||{mode:"",v:0,khi:"dot"};h[e.dataset.h]=e.dataset.h==="v"?(+String(e.value).replace(",",".")||0):e.value;j.hh=h.mode?h:null;drawJob()});
+  B.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{if(j.st===b.dataset.st)return;j.st=b.dataset.st;j.stLog=(j.stLog||[]).concat([{st:j.st,d:today()}]);drawJob()});
+  B.querySelectorAll("[data-bgc]").forEach(a=>a.onclick=e=>{e.preventDefault();j.gia=j.bg[+a.dataset.bgc].a;drawJob()});
+  B.querySelectorAll("[data-bgd]").forEach(a=>a.onclick=e=>{e.preventDefault();j.bg.splice(+a.dataset.bgd,1);drawJob()});
+  $("#b_ok").onclick=()=>{const a=parseAmt($("#b_a").value);if(!a){alert("Nhập số tiền báo.");return}j.bg.push({d:$("#b_d").value||today(),a,n:$("#b_n").value.trim()});if(!j.gia)j.gia=a;drawJob()};
+  $("#p_ok").onclick=()=>{const a=parseAmt($("#p_a").value);if(!a){alert("Nhập số tiền của đợt.");return}j.pl.push({id:"p"+Date.now().toString(36),n:$("#p_n").value.trim()||"Đợt "+(j.pl.length+1),a,tr:$("#p_t").value,han:$("#p_h").value||""});drawJob()};
+  B.querySelectorAll("[data-pd]").forEach(b=>b.onclick=()=>{j.pl.splice(+b.dataset.pd,1);drawJob()});
+  $("#c_ok").onclick=()=>{const a=parseAmt($("#c_a").value);if(!a||!$("#c_n").value.trim()){alert("Nhập hạng mục và số tiền.");return}j.cp.push({n:$("#c_n").value.trim(),a});drawJob()};
+  B.querySelectorAll("[data-cd]").forEach(b=>b.onclick=()=>{j.cp.splice(+b.dataset.cd,1);drawJob()});
   $("#x_ok").onclick=()=>{const a=parseAmt($("#x_a").value);if(!a){alert("Nhập số tiền.");return}
-    const k=$("#x_k").value,cnt=fin.tx.filter(t=>t.j===j.id&&t.k===k).length+1;
-    fin.tx.push({id:"x"+Date.now().toString(36),j:j.id,k,a,d:$("#x_d").value||today(),n:$("#x_n").value.trim()||((k==="thu"?"Thu":"Chi")+" đợt "+cnt)});
-    j._dirty=1;saveJobInline();drawJob()};
-  $("#jbody").querySelectorAll("[data-xd]").forEach(b=>b.onclick=()=>{if(confirm("Xóa khoản này?")){fin.tx=fin.tx.filter(x=>x.id!==b.dataset.xd);saveJobInline();drawJob()}});
-  $("#jbody").querySelectorAll("[data-xe]").forEach(b=>b.onclick=()=>{const t=fin.tx.find(x=>x.id===b.dataset.xe);if(!t)return;
+    const sel=$("#x_k").value,k=sel==="thu"?"thu":"chi",cat=sel==="hh"?"hh":"",cnt=fin.tx.filter(t=>t.j===j.id&&t.k===k&&(t.cat||"")===cat).length+1;
+    fin.tx.push({id:"x"+Date.now().toString(36),j:j.id,k,cat,a,d:$("#x_d").value||today(),n:$("#x_n").value.trim()||(sel==="thu"?"Thu đợt "+cnt:sel==="hh"?"Trả hoa hồng "+cnt:"Chi đợt "+cnt)});
+    saveJobInline();drawJob()};
+  B.querySelectorAll("[data-xd]").forEach(b=>b.onclick=()=>{if(confirm("Xóa khoản này?")){fin.tx=fin.tx.filter(x=>x.id!==b.dataset.xd);saveJobInline();drawJob()}});
+  B.querySelectorAll("[data-xe]").forEach(b=>b.onclick=()=>{const t=fin.tx.find(x=>x.id===b.dataset.xe);if(!t)return;
     const a=prompt("Số tiền (đ):",t.a);if(a===null)return;const d=prompt("Ngày (yyyy-mm-dd):",t.d);if(d===null)return;const n=prompt("Ghi chú:",t.n||"");
-    t.a=parseAmt(a)||t.a;if(/^\d{4}-\d{2}-\d{2}$/.test(d)){t.d=d;delete t.est}if(n!==null)t.n=n;saveJobInline();drawJob()})}
-function saveJobInline(){ /* khoản thu/chi lưu ngay; hồ sơ mới được thêm vào danh sách để các khoản gắn được */
-  const j=jEdit;if(!fin.jobs.some(x=>x.id===j.id)){const c=JSON.parse(JSON.stringify(j));delete c._new;delete c._dirty;fin.jobs.push(c);j._new=0}
-  finSave()}
+    t.a=parseAmt(a)||t.a;if(/^\d{4}-\d{2}-\d{2}$/.test(d)){t.d=d;delete t.est}if(n!==null)t.n=n;saveJobInline();drawJob()});
+  if($("#gocase"))$("#gocase").onclick=()=>{const id=j.cid;$("#jsave").click();openCase(id)};
+}
+function saveJobInline(){const j=jEdit;if(!fin.jobs.some(x=>x.id===j.id)){const c=JSON.parse(JSON.stringify(j));delete c._new;fin.jobs.push(c);j._new=0;$("#jdel").hidden=false}finSave()}
 $("#jnew").onclick=()=>openJob(null);
-$("#jclose").onclick=()=>{$("#jd").close();if(jEdit&&jEdit._new===0)finSave();renderFin()};
-$("#jsave").onclick=()=>{const j=JSON.parse(JSON.stringify(jEdit));delete j._new;delete j._dirty;const i=fin.jobs.findIndex(x=>x.id===j.id);if(i>=0)fin.jobs[i]=j;else fin.jobs.push(j);finSave();$("#jd").close();renderFin()};
-$("#jdel").onclick=()=>{if(!confirm("Xóa hồ sơ này và các khoản thu/chi của nó?"))return;fin.jobs=fin.jobs.filter(x=>x.id!==jEdit.id);fin.tx=fin.tx.filter(t=>t.j!==jEdit.id);finSave();$("#jd").close();renderFin()};
+$("#jclose").onclick=()=>{$("#jd").close();renderFin();renderList()};
+$("#jsave").onclick=()=>{const j=JSON.parse(JSON.stringify(jEdit));delete j._new;
+  if(j.st&&(!j.stLog||!j.stLog.length))j.stLog=[{st:j.st,d:today()}];
+  const i=fin.jobs.findIndex(x=>x.id===j.id);if(i>=0)fin.jobs[i]=j;else fin.jobs.push(j);finSave();$("#jd").close();renderFin();renderList()};
+$("#jdel").onclick=()=>{if(!confirm("Xóa hồ sơ này và các khoản thu/chi của nó?"))return;fin.jobs=fin.jobs.filter(x=>x.id!==jEdit.id);fin.tx=fin.tx.filter(t=>t.j!==jEdit.id);finSave();$("#jd").close();renderFin();renderList()};
 $("#fmode").onchange=e=>{fmodeV=e.target.value;renderFin()};
 $("#fqs").oninput=e=>{fqv=e.target.value;const p=e.target.selectionStart;renderFin();const q=$("#fqs");q.focus();try{q.setSelectionRange(p,p)}catch(_){}};
 $("#finimp").onclick=()=>$("#finfile").click();
 $("#finfile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);
-  let nf;if(Array.isArray(x)||(x&&Array.isArray(x.rows))){nf={rows:Array.isArray(x)?x:x.rows,done:x.done||{},ex:{},jobs:[],tx:[]}}else if(x&&Array.isArray(x.jobs)){nf={rows:[],done:{},ex:{},jobs:x.jobs,tx:x.tx||[]}}else throw 0;
+  let nf;if(Array.isArray(x)||(x&&Array.isArray(x.rows))){nf={rows:Array.isArray(x)?x:x.rows,done:x.done||{},ex:{},jobs:[],tx:[],refs:{},alias:{}}}else if(x&&Array.isArray(x.jobs)){nf={rows:[],done:{},ex:{},jobs:x.jobs,tx:x.tx||[],refs:x.refs||{},alias:x.alias||{}}}else throw 0;
   if((fin.jobs.length||fin.tx.length)&&!confirm("Thay toàn bộ hồ sơ và thu chi hiện có bằng file này?"))return;
-  finMigrate(nf);fin=nf;fv="all";finSave();renderFin()}catch(_){alert("File không đúng định dạng.")}};rd.readAsText(f);e.target.value=""};
-$("#finexp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({jobs:fin.jobs,tx:fin.tx})],{type:"application/json"}));a.download="so-ho-so-doanh-thu.json";a.click()};
+  finMigrate(nf);fin=nf;fv="all";finSave();renderFin();renderList()}catch(_){alert("File không đúng định dạng.")}};rd.readAsText(f);e.target.value=""};
+$("#finexp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({jobs:fin.jobs,tx:fin.tx,refs:fin.refs,alias:fin.alias})],{type:"application/json"}));a.download="so-ho-so-doanh-thu.json";a.click()};
+try{renderList()}catch(e){}
 function setTab(n){tab=n;[1,2,3].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});if(n===2)renderPeople();if(n===3)renderFin()}
 $("#t1").onclick=()=>setTab(1);$("#t2").onclick=()=>setTab(2);$("#t3").onclick=()=>setTab(3);
 ["cd","pe","sd","pd"].forEach(i=>$("#"+i).addEventListener("cancel",e=>{if(i==="cd"){e.preventDefault();$("#cclose").click()}}));
