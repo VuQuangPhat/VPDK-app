@@ -448,10 +448,10 @@ function renderList(){
   if(!db.cases.length){$("#list").innerHTML=`<div class="empty">Chưa có thửa đất nào. Bấm <b>+ Thửa đất mới</b>, hoặc vào <b>Cài đặt → Nạp hồ sơ mẫu</b> để xem thử.</div>`;return}
   const l=filtered();
   if(!l.length){$("#list").innerHTML=`<div class="empty">Không tìm thấy.</div>`;return}
-  $("#list").innerHTML=`<table class="m"><thead><tr><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
+  $("#list").innerHTML=`<table class="m"><thead><tr><th>Mã</th><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
     const a=partyNames(c,"A"),b=partyNames(c,"B"),m=missing(c);
     const g=[c.p.gcnSo&&"GCN "+c.p.gcnSo,c.p.thua&&"thửa "+c.p.thua,c.p.to&&"tờ "+c.p.to].filter(Boolean).join(" · ");
-    return `<tr data-id="${c.id}"><td>${c.code?`<span class="fc b">${esc(c.code)}</span> `:""}<b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
+    return `<tr data-id="${c.id}"><td style="white-space:nowrap"><b>${esc(c.code||"")}</b></td><td><b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
     <td>${a?esc(a):"<span class='sub'>—</span>"}</td><td>${b?esc(b):"<span class='sub'>—</span>"}</td>
     <td>${esc(c.type)}<small>${esc((LOAI18.find(z=>z[0]===c.d.loai)||[])[1]||"")}</small></td>
     <td>${c.upd?fd(new Date(c.upd).toISOString().slice(0,10)):""}</td></tr>`}).join("")}</tbody></table>`;
