@@ -143,7 +143,7 @@ label.ck input{width:auto}
 <div id="v2" hidden>
   <section class="filters">
     <input id="pq" type="search" placeholder="Tìm theo tên, CCCD, mã số thuế…">
-    <button class="primary" id="addp">+ Thêm người</button>
+    <button class="primary" id="addp">+ Thêm người</button><button id="pimp">Nhập CSV</button><button id="pexp">Xuất CSV</button><input type="file" id="pfile" accept=".csv,text/csv" hidden>
   </section>
   <div class="wrap"><div id="plist"></div></div>
 </div>
@@ -1163,6 +1163,44 @@ function setTab(n){tab=n;$("#t1").classList.toggle("on",n===1);$("#t2").classLis
 $("#t1").onclick=()=>setTab(1);$("#t2").onclick=()=>setTab(2);
 ["cd","pe","sd","pd"].forEach(i=>$("#"+i).addEventListener("cancel",e=>{if(i==="cd"){e.preventDefault();$("#cclose").click()}}));
 renderList();
+/* ===== Danh bạ: nhập / xuất CSV ===== */
+const PCOLS=["name","kind","dob","cccd","cccdDate","cccdPlace","mst","phone","email","dc","px","qh","tp","dcTB","gdkNgay","gdkNoi","dd","ddCv","ddCccd","note"];
+function csvParse(t){
+  t=t.replace(/^\uFEFF/,"");const sep=(t.split("\n")[0].match(/;/g)||[]).length>(t.split("\n")[0].match(/,/g)||[]).length?";":",";
+  const rows=[];let r=[],f="",q=false;
+  for(let i=0;i<t.length;i++){const c=t[i];
+    if(q){if(c==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;
+    else if(c===sep){r.push(f);f=""}
+    else if(c==="\n"){r.push(f.replace(/\r$/,""));rows.push(r);r=[];f=""}
+    else f+=c}
+  if(f!==""||r.length){r.push(f.replace(/\r$/,""));rows.push(r)}
+  return rows.filter(x=>x.some(y=>y.trim()!==""));
+}
+const normDate=s=>{s=String(s||"").trim();let m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);if(m)return m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0");return s};
+$("#pexp").onclick=()=>{
+  const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
+  dl("danh-ba-"+today()+".csv","text/csv;charset=utf-8","\uFEFF"+[PCOLS.join(","),...db.people.map(p=>PCOLS.map(k=>q(p[k])).join(","))].join("\r\n"));
+};
+$("#pimp").onclick=()=>$("#pfile").click();
+$("#pfile").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const rd=new FileReader();
+  rd.onload=()=>{try{
+    const rows=csvParse(rd.result);if(rows.length<2)throw new Error("File không có dòng dữ liệu");
+    const h=rows[0].map(x=>x.trim());if(!h.includes("name"))throw new Error("Dòng đầu phải là tiêu đề, có cột “name”");
+    let add=0,upd=0;
+    rows.slice(1).forEach(r=>{
+      const o={};h.forEach((k,i)=>{if(PCOLS.includes(k))o[k]=(r[i]||"").trim()});
+      if(!o.name)return;["dob","cccdDate","gdkNgay"].forEach(k=>{if(o[k])o[k]=normDate(o[k])});
+      if(o.kind&&!/^org$/i.test(o.kind))o.kind="";else if(o.kind)o.kind="org";
+      const ex=db.people.find(p=>(o.cccd&&p.cccd===o.cccd)||(o.mst&&p.mst===o.mst)||(!o.cccd&&!o.mst&&p.name===o.name));
+      if(ex){Object.assign(ex,o);upd++}else{db.people.push(Object.assign({id:uid()},o));add++}
+    });
+    persist();renderPeople();toast("Đã nhập CSV: thêm "+add+", cập nhật "+upd);
+  }catch(x){alert("Không nhập được: "+x.message)}};
+  rd.readAsText(f,"utf-8");e.target.value="";
+};
+
 /* ===== Đồng bộ GitHub (data.json trong repo qua GitHub API) ===== */
 const KGH="hsdd_gh_v1",KDIRTY="hsdd_gh_dirty";
 let GH=null;try{GH=JSON.parse(localStorage.getItem(KGH)||"null")}catch(e){}
