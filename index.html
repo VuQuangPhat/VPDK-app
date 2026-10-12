@@ -37,6 +37,7 @@ input,select,textarea{background:var(--card);border:1px solid var(--line);border
 table.m{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);min-width:900px}
 table.m th,table.m td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 table.m th{font-weight:600;color:var(--mute);font-size:12px;background:var(--bg);white-space:nowrap}
+table.m tr.gh{cursor:pointer;background:var(--bg)}table.m tr.gh td{font-weight:500;border-top:2px solid var(--line)}
 table.m tr[data-id]{cursor:pointer}
 table.m tr[data-id]:hover td{background:color-mix(in srgb,var(--brand) 6%,var(--card))}
 td small,.sub{display:block;color:var(--mute);font-size:12px}
@@ -155,7 +156,7 @@ label.ck input{width:auto}
 <div id="v2" hidden>
   <section class="filters">
     <input id="pq" type="search" placeholder="Tìm theo tên, CCCD, mã số thuế…">
-    <button class="primary" id="addp">+ Thêm người</button><button id="pimp">Nhập CSV</button><button id="pexp">Xuất CSV</button><input type="file" id="pfile" accept=".csv,text/csv" hidden>
+    <button id="pexpand">Mở tất cả</button><button id="pcol">Thu gọn tất cả</button><button class="primary" id="addp">+ Thêm người</button><button id="pimp">Nhập CSV</button><button id="pexp">Xuất CSV</button><input type="file" id="pfile" accept=".csv,text/csv" hidden>
   </section>
   <div class="wrap"><div id="plist"></div></div>
 </div>
@@ -363,11 +364,12 @@ function ensureCodes(d){
   if(!d||!d.fin)return;d.cfg=d.cfg||{};
   const jobs=d.fin.jobs||[],cases=d.cases||[],cmap={},jc={},used=new Set(),mx={};
   cases.forEach(c=>cmap[c.id]=c);jobs.forEach(j=>{if(j.cid)jc[j.cid]=j});
-  const reg=code=>{const m=/^(\d{4}-[A-Z0-9]+)-(\d+)$/.exec(code);if(m)mx[m[1]]=Math.max(mx[m[1]]||0,+m[2])};
+  const reg=code=>{const m=/^(\d{4})-[A-Z0-9]+-(\d+)$/.exec(code);if(m)mx[m[1]]=Math.max(mx[m[1]]||0,+m[2])};
+  if(d.cfg.codeV!==2){d.cfg.codeV=2;jobs.forEach(j=>j.code="");cases.forEach(c=>c.code="")}
   jobs.forEach(j=>{if(j.code&&CODE_RE.test(j.code)&&!used.has(j.code)){used.add(j.code);reg(j.code)}else j.code=""});
   cases.forEach(c=>{if(!(c.code&&CODE_RE.test(c.code)))c.code="";const j=jc[c.id];if(j&&!j.code&&c.code&&!used.has(c.code)){j.code=c.code;used.add(c.code);reg(c.code)}});
   const yr=v=>/^\d{4}$/.test(v)?v:String(new Date().getFullYear());
-  const gen=(y,q)=>{const p=y+"-"+qAbbr(d.cfg,q);const n=(mx[p]||0)+1;mx[p]=n;const code=p+"-"+String(n).padStart(2,"0");used.add(code);return code};
+  const gen=(y,q)=>{const n=(mx[y]||0)+1;mx[y]=n;const code=y+"-"+qAbbr(d.cfg,q)+"-"+String(n).padStart(2,"0");used.add(code);return code};
   jobs.map((j,i)=>[j,i]).filter(x=>!x[0].code).sort((a,b)=>String(a[0].ngay||"").localeCompare(String(b[0].ngay||""))||a[1]-b[1]).forEach(([j])=>{
     const c=cmap[j.cid];j.code=gen(yr((j.ngay||"").slice(0,4)||String(j.nam||"")),j.quan||(c&&c.p&&c.p.qh))});
   cases.filter(c=>!jc[c.id]&&c.code).forEach(c=>{if(used.has(c.code))c.code="";else{used.add(c.code);reg(c.code)}});
@@ -458,13 +460,23 @@ $("#list").onclick=e=>{const r=e.target.closest("tr[data-id]");if(r)openCase(r.d
 $("#q").addEventListener("input",renderList);
 
 /* ===== Danh bạ ===== */
+let pCol=new Set(),pAll=false;
 function renderPeople(){
   const q=$("#pq").value.trim().toLowerCase();
   const l=db.people.filter(p=>!q||[p.name,p.cccd,p.mst,p.phone,p.dd].join(" ").toLowerCase().includes(q)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","vi"));
   if(!l.length){$("#plist").innerHTML=`<div class="empty">Chưa có ai trong danh bạ. Nhập một lần, dùng lại cho mọi hồ sơ.</div>`;return}
-  $("#plist").innerHTML=`<table class="m"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead><tbody>${l.map(p=>`<tr data-pid="${p.id}"><td><b>${esc(p.name)}</b>${isOrg(p)?` <span class="br">Pháp nhân</span><small>ĐD: ${esc([p.dd,p.ddCv].filter(Boolean).join(", "))}</small>`:""}</td><td>${fd(p.dob)}</td><td>${esc(p.cccd)}<small>${p.cccdDate?"cấp "+fd(p.cccdDate):""} ${esc(p.cccdPlace)}</small></td><td>${esc(p.mst)}</td><td>${esc([p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", "))}</td><td>${esc(p.phone)}<small>${esc(p.email)}</small></td><td>${db.cases.filter(c=>c.parties.some(x=>x.pid===p.id)).length}</td></tr>`).join("")}</tbody></table>`;
+  const rowOf=(p,role)=>`<tr data-pid="${p.id}"><td><b>${esc(p.name)}</b>${role?` <span class="br">${role==="A"?"Bên bán":role==="B"?"Bên mua":esc(role)}</span>`:""}${isOrg(p)?` <span class="br">Pháp nhân</span><small>ĐD: ${esc([p.dd,p.ddCv].filter(Boolean).join(", "))}</small>`:""}</td><td>${fd(p.dob)}</td><td>${esc(p.cccd)}<small>${p.cccdDate?"cấp "+fd(p.cccdDate):""} ${esc(p.cccdPlace)}</small></td><td>${esc(p.mst)}</td><td>${esc([p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", "))}</td><td>${esc(p.phone)}<small>${esc(p.email)}</small></td><td>${db.cases.filter(c=>c.parties.some(x=>x.pid===p.id)).length}</td></tr>`;
+  const ids=new Set(l.map(p=>p.id)),inCase=new Set(),G=[];
+  db.cases.slice().sort((a,b)=>String(b.code||"").localeCompare(String(a.code||""))).forEach(c=>{
+    const rows=[];(c.parties||[]).forEach(x=>{if(ids.has(x.pid)){const p=P(x.pid);if(p){rows.push([p,x.role]);inCase.add(p.id)}}});
+    if(rows.length)G.push({k:c.id,t:(c.code?`<span class="fc b">${esc(c.code)}</span> `:"")+esc(caseTitle(c)),n:rows.length,rows})});
+  const free=l.filter(p=>!inCase.has(p.id));if(free.length)G.push({k:"_free",t:"<i>Chưa gắn hồ sơ nào</i>",n:free.length,rows:free.map(p=>[p,""])});
+  const open=g=>q?true:!(pAll?!pCol.has("o"+g.k):pCol.has(g.k));
+  $("#plist").innerHTML=`<table class="m"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead>${G.map(g=>{const o=open(g);return `<tbody><tr class="gh" data-g="${esc(g.k)}"><td colspan="7"><b>${o?"▾":"▸"}</b> ${g.t} <span class="lg">· ${g.n} người</span></td></tr>${o?g.rows.map(([p,r])=>rowOf(p,r)).join(""):""}</tbody>`}).join("")}</table>`;
 }
-$("#plist").onclick=e=>{const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
+$("#plist").onclick=e=>{const g=e.target.closest("tr.gh");if(g){const k=g.dataset.g;if(pAll){pCol.has("o"+k)?pCol.delete("o"+k):pCol.add("o"+k)}else{pCol.has(k)?pCol.delete(k):pCol.add(k)}renderPeople();return}const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
+$("#pcol").onclick=()=>{pAll=true;pCol=new Set();renderPeople()};
+$("#pexpand").onclick=()=>{pAll=false;pCol=new Set();renderPeople()};
 $("#pq").addEventListener("input",renderPeople);
 const PF=[["name","Họ và tên","full"],["dob","Ngày sinh","date"],["cccd","Số CCCD / hộ chiếu"],["cccdDate","Ngày cấp","date"],["cccdPlace","Nơi cấp"],["mst","Mã số thuế (nếu có)"],["phone","Điện thoại"],["email","Email"],["dc","Số nhà, đường / phố (thường trú)","full"],["px","Phường / xã"],["qh","Quận / huyện (nếu có)"],["tp","Tỉnh / thành phố"],["dcTB","Địa chỉ nhận thông báo thuế (nếu khác)","full"],["note","Ghi chú","full"]];
 const PFO=[["name","Tên pháp nhân (tổ chức)","full"],["mst","Mã số doanh nghiệp / mã số thuế"],["gdkNgay","Ngày cấp Giấy chứng nhận ĐKDN","date"],["gdkNoi","Nơi cấp Giấy chứng nhận ĐKDN"],["phone","Điện thoại"],["email","Email"],["dc","Số nhà, đường / phố (trụ sở chính)","full"],["px","Phường / xã"],["qh","Quận / huyện (nếu có)"],["tp","Tỉnh / thành phố"],["dcTB","Địa chỉ nhận thông báo (nếu khác)","full"],["dd","Người đại diện theo pháp luật (ký đơn)"],["ddCv","Chức danh"],["ddCccd","CCCD của người đại diện"],["note","Ghi chú","full"]];
