@@ -323,7 +323,7 @@ const grpOf=n=>/^(Tờ khai|Chứng từ thực hiện|Văn bản .*miễn|Giấ
 let db=loadDb();
 function norm(d){
   d=d&&typeof d==="object"?d:{};
-  d.fin=d.fin&&typeof d.fin==="object"?d.fin:{};d.fin.rows=Array.isArray(d.fin.rows)?d.fin.rows:[];d.fin.done=d.fin.done||{};d.fin.tx=Array.isArray(d.fin.tx)?d.fin.tx:[];
+  d.fin=d.fin&&typeof d.fin==="object"?d.fin:{};d.fin.rows=Array.isArray(d.fin.rows)?d.fin.rows:[];d.fin.done=d.fin.done||{};d.fin.ex=d.fin.ex||{};d.fin.tx=Array.isArray(d.fin.tx)?d.fin.tx:[];
   d.cases=Array.isArray(d.cases)?d.cases:[];d.people=Array.isArray(d.people)?d.people:[];d.seq=d.seq||{};
   d.cfg=Object.assign({place:"TP. Hồ Chí Minh",vpdk:"",rCN:2,rQT:10,qtMien:10000000,rLP:0.5},d.cfg||{});
   d.cfg.cnList=Array.isArray(d.cfg.cnList)?d.cfg.cnList:[];
@@ -1217,7 +1217,7 @@ const fsum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
 const fnum=n=>Math.round(n).toLocaleString("vi-VN");
 const fshort=n=>Math.abs(n)>=1e9?(n/1e9).toFixed(2).replace(".",",")+" tỷ":Math.abs(n)>=1e6?(n/1e6).toFixed(1).replace(".",",")+" tr":fnum(n);
 function fRows(){const y=$("#fy").value,q=$("#fq").value,l=$("#fl").value;
-  return fin.rows.filter(r=>(!y||String(r.nam)===y)&&(!q||r.quan===q)&&(!l||r.loai===l))}
+  return fin.rows.filter(r=>!fin.ex[r.id]&&(!y||String(r.nam)===y)&&(!q||r.quan===q)&&(!l||r.loai===l))}
 function fOpts(id,all,vals,cur){const e=$(id);e.innerHTML='<option value="">'+all+'</option>'+vals.map(v=>'<option'+(v===cur?' selected':'')+'>'+esc(v)+'</option>').join("")}
 function fFilters(){const uniq=k=>[...new Set(fin.rows.map(r=>r[k]).filter(Boolean))].sort();
   const cy=$("#fy").value,cq=$("#fq").value,cl=$("#fl").value;
@@ -1238,36 +1238,73 @@ function chart(rows){const W=640,H=220,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)r
   return o+'</svg><div class="lg"><i style="background:var(--brand)"></i>Thu<i style="background:var(--warn)"></i>Chi<i style="background:var(--ok)"></i>Lợi nhuận (thu − chi)</div>'}
 function rowsT(rows,first,full){return '<div class="nt"><table class="m"><tr><th>'+first+'</th><th class="num">Số HS</th><th class="num">Giá trị DV</th><th class="num">Thực thu</th><th class="num">Chi</th><th class="num">Lợi nhuận</th><th class="num">Biên LN</th><th class="num">Còn phải thu</th></tr>'+
   rows.map(r=>'<tr><td>'+esc(r.key)+'</td><td class="num">'+r.n+'</td><td class="num">'+fnum(r.dv)+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chi)+'</td><td class="num '+(r.ln<0?'neg':'')+'">'+fnum(r.ln)+'</td><td class="num">'+(r.thu?Math.round(r.ln/r.thu*100)+'%':'–')+'</td><td class="num">'+fnum(r.ton)+'</td></tr>').join("")+'</table></div>'}
+const fsheet=r=>String(r.id).split("#")[0];
+const fnd=r=>String(r.dc||"").toLowerCase().replace(/[^a-z0-9à-ỹ]/g,"");
+function dupGroups(){const rows=fin.rows,g1={},g2={},out=[];
+  rows.forEach(r=>{const t=fsum(r.thu),c=fsum(r.chi);if(!r.dv&&!t&&!c)return;const k=[r.ngay,fnd(r),(r.loai||"").toLowerCase(),r.dv,t,c].join("|");(g1[k]=g1[k]||[]).push(r)});
+  const seen=new Set();
+  Object.values(g1).filter(v=>v.length>1).forEach(v=>{v.forEach(r=>seen.add(r.id));out.push({t:"Trùng hệt (cùng ngày, địa chỉ, loại, số tiền)",v})});
+  rows.forEach(r=>{if(r.dv>=1e7&&fnd(r).length>=8)(g2[fnd(r)+"|"+r.dv]=g2[fnd(r)+"|"+r.dv]||[]).push(r)});
+  Object.values(g2).filter(v=>new Set(v.map(fsheet)).size>1&&!v.every(r=>seen.has(r.id))).forEach(v=>out.push({t:"Nghi trùng giữa các sheet (cùng địa chỉ + giá trị ≥ 10 tr)",v}));
+  return out}
+function ageM(r){if(!r.ngay)return null;return (Date.now()-new Date(r.ngay))/2629800000}
+function chkHtml(L){
+  const D=dupGroups(),dn=D.reduce((a,g)=>a+g.v.length-1,0);
+  const dh=D.length?'<div class="nt"><table class="m"><tr><th>Nhóm</th><th>Sheet</th><th>Ngày</th><th>Địa chỉ</th><th>Loại</th><th class="num">Giá trị DV</th><th class="num">Thu</th><th class="num">Chi</th><th>Loại khỏi tính</th></tr>'+
+    D.map(g=>'<tr><td colspan="9" style="background:var(--bg);font-weight:600">'+esc(g.t)+'</td></tr>'+g.v.map((r,i)=>'<tr style="'+(fin.ex[r.id]?'opacity:.45':'')+'"><td></td><td>'+esc(fsheet(r))+'</td><td>'+esc((r.ngay||"").split("-").reverse().join("/"))+'</td><td>'+esc(r.dc)+'</td><td>'+esc(r.loai)+'</td><td class="num">'+fnum(r.dv)+'</td><td class="num">'+fnum(fsum(r.thu))+'</td><td class="num">'+fnum(fsum(r.chi))+'</td><td><input type="checkbox" data-ex="'+esc(r.id)+'"'+(fin.ex[r.id]?' checked':'')+'></td></tr>').join("")).join("")+'</table></div>':'<p class="lg">Không phát hiện dòng trùng.</p>';
+  const LS=L.filter(r=>fsum(r.thu)-fsum(r.chi)<0).sort((a,b)=>(fsum(a.thu)-fsum(a.chi))-(fsum(b.thu)-fsum(b.chi)));
+  const lt=LS.reduce((a,r)=>a+fsum(r.thu)-fsum(r.chi),0);
+  const lh=LS.length?'<div class="nt"><table class="m"><tr><th>Năm</th><th>Địa chỉ</th><th>Loại · nội dung</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Lỗ</th><th>Ghi chú</th></tr>'+LS.map(r=>'<tr><td>'+r.nam+'</td><td>'+esc(r.dc)+'</td><td>'+esc(r.loai)+(r.nd?' · <span class="lg">'+esc(r.nd)+'</span>':'')+'</td><td class="num">'+fnum(fsum(r.thu))+'</td><td class="num">'+fnum(fsum(r.chi))+'</td><td class="num neg">'+fnum(fsum(r.thu)-fsum(r.chi))+'</td><td>'+esc(r.gc)+'</td></tr>').join("")+'</table></div>':'<p class="lg">Không có hồ sơ lỗ.</p>';
+  const T=L.map(r=>({r,c:Math.max(0,r.dv-fsum(r.thu)),m:ageM(r)})).filter(x=>x.c>0&&!fin.done[x.r.id]);
+  const B=[["Dưới 6 tháng",x=>x.m!=null&&x.m<6],["6–12 tháng",x=>x.m!=null&&x.m>=6&&x.m<12],["1–2 năm",x=>x.m!=null&&x.m>=12&&x.m<24],["Trên 2 năm",x=>x.m!=null&&x.m>=24],["Không rõ ngày",x=>x.m==null]];
+  const ah='<div class="nt"><table class="m"><tr><th>Tuổi của khoản tồn</th><th class="num">Số HS</th><th class="num">Còn phải thu</th><th class="num">Trong đó chưa thu đồng nào</th></tr>'+B.map(([n,f])=>{const a=T.filter(f);return'<tr><td>'+n+'</td><td class="num">'+a.length+'</td><td class="num">'+fnum(a.reduce((s,x)=>s+x.c,0))+'</td><td class="num">'+fnum(a.filter(x=>!fsum(x.r.thu)).reduce((s,x)=>s+x.c,0))+'</td></tr>'}).join("")+'</table></div>'+
+    '<p><button id="bulkold">Bỏ qua tất cả tồn trên 2 năm ('+T.filter(B[3][1]).length+' hồ sơ)</button> <button id="bulknot">Bỏ qua tồn chưa thu đồng nào &amp; trên 1 năm ('+T.filter(x=>x.m!=null&&x.m>=12&&!fsum(x.r.thu)).length+')</button> <button id="unskip" class="link">Bỏ đánh dấu “bỏ qua” tất cả</button></p>';
+  return'<h3 class="fh">Kiểm tra dữ liệu</h3>'+
+   '<h4 class="fh" style="font-size:13px">1. Dòng trùng ('+D.length+' nhóm, '+dn+' dòng thừa) — tích “Loại khỏi tính” để không cộng vào báo cáo</h4><p><button id="exdup">Loại bản sao (giữ dòng đầu mỗi nhóm có tiền)</button> <button id="exun" class="link">Hoàn tác tất cả</button></p>'+dh+
+   '<h4 class="fh" style="font-size:13px">2. Hồ sơ lỗ — chi lớn hơn thu ('+LS.length+' hồ sơ, tổng '+fnum(lt)+' đ)</h4>'+lh+
+   '<h4 class="fh" style="font-size:13px">3. Hồ sơ tồn chưa giải quyết — theo tuổi</h4>'+ah}
+function chkBind(box){
+  box.querySelectorAll("[data-ex]").forEach(e=>e.onchange=()=>{if(e.checked)fin.ex[e.dataset.ex]=1;else delete fin.ex[e.dataset.ex];finSave();renderFin()});
+  const B=id=>box.querySelector(id);
+  if(B("#exdup"))B("#exdup").onclick=()=>{if(!confirm("Loại các dòng trùng (giữ dòng đầu của mỗi nhóm)?"))return;dupGroups().forEach(g=>g.v.slice(1).forEach(r=>{fin.ex[r.id]=1}));finSave();renderFin()};
+  if(B("#exun"))B("#exun").onclick=()=>{fin.ex={};finSave();renderFin()};
+  const bulk=(id,f,msg)=>{if(B(id))B(id).onclick=()=>{const L=fRows().filter(r=>{const c=r.dv-fsum(r.thu);return c>0&&!fin.done[r.id]&&f(r)});if(!L.length||!confirm(msg+" ("+L.length+" hồ sơ)?"))return;L.forEach(r=>fin.done[r.id]=1);finSave();renderFin()}};
+  bulk("#bulkold",r=>{const m=ageM(r);return m!=null&&m>=24},"Đánh dấu bỏ qua các khoản tồn trên 2 năm");
+  bulk("#bulknot",r=>{const m=ageM(r);return m!=null&&m>=12&&!fsum(r.thu)},"Đánh dấu bỏ qua tồn chưa thu đồng nào và trên 1 năm");
+  if(B("#unskip"))B("#unskip").onclick=()=>{if(confirm("Bỏ đánh dấu tất cả?")){fin.done={};finSave();renderFin()}}}
+let fyInit=false;
 function renderFin(){fFilters();const box=$("#fin");
+  if(!fyInit&&fin.rows.length){fyInit=true;const ys=[...new Set(fin.rows.map(r=>r.nam))].sort();const cy=String(new Date().getFullYear());$("#fy").value=ys.map(String).includes(cy)?cy:String(ys[ys.length-1])}
   if(!fin.rows.length){box.innerHTML='<p class="lg">Chưa có dữ liệu. Bấm “Nhập sổ (JSON)” và chọn file <b>so-dich-vu.json</b> (chuyển từ Excel). Dữ liệu được lưu cùng hồ sơ (và đồng bộ GitHub nếu bạn đã bật — nên dùng repo private).</p>';return}
   const L=fRows(),t=agg(L);
-  const noTx=$("#fq").value||$("#fl").value,X=noTx?[]:(fin.tx||[]).filter(x=>!$("#fy").value||x.d.slice(0,4)===$("#fy").value);
-  const xs=k=>X.filter(x=>x.k===k).reduce((a,x)=>a+x.a,0);t.thu+=xs("thu");t.chi+=xs("chi");t.ln=t.thu-t.chi;t.n+=0;
-  const yk=[...new Set([...L.map(r=>String(r.nam)),...X.map(x=>x.d.slice(0,4))])].sort();
-  const years=yk.map(y=>{const g=agg(L.filter(r=>String(r.nam)===y)),xt=X.filter(x=>x.d.slice(0,4)===y);
+  const noTx=$("#fq").value||$("#fl").value,XA=noTx?[]:(fin.tx||[]),X=XA.filter(x=>!$("#fy").value||x.d.slice(0,4)===$("#fy").value);
+  const xs=k=>X.filter(x=>x.k===k).reduce((a,x)=>a+x.a,0);t.thu+=xs("thu");t.chi+=xs("chi");t.ln=t.thu-t.chi;
+  const LA=fin.rows.filter(r=>!fin.ex[r.id]&&(!$("#fq").value||r.quan===$("#fq").value)&&(!$("#fl").value||r.loai===$("#fl").value));
+  const yk=[...new Set([...LA.map(r=>String(r.nam)),...XA.map(x=>x.d.slice(0,4))])].sort();
+  const years=yk.map(y=>{const g=agg(LA.filter(r=>String(r.nam)===y)),xt=XA.filter(x=>x.d.slice(0,4)===y);
     g.thu+=xt.filter(x=>x.k==="thu").reduce((a,x)=>a+x.a,0);g.chi+=xt.filter(x=>x.k==="chi").reduce((a,x)=>a+x.a,0);g.ln=g.thu-g.chi;return{key:y,...g}});
   const ton=L.map(r=>({r,c:Math.max(0,r.dv-fsum(r.thu))})).filter(x=>x.c>0).sort((a,b)=>b.c-a.c);
   const tonOpen=ton.filter(x=>!fin.done[x.r.id]),tonDone=ton.length-tonOpen.length;
   const show=$("#fshow")?+$("#fshow").value:50;
-  box.innerHTML='<div class="kp"><div><span>Số hồ sơ</span><b>'+t.n+'</b></div><div><span>Giá trị dịch vụ</span><b>'+fshort(t.dv)+'</b></div><div><span>Doanh thu thực thu</span><b>'+fshort(t.thu)+'</b></div><div><span>Chi phí</span><b>'+fshort(t.chi)+'</b></div><div><span>Lợi nhuận</span><b class="'+(t.ln<0?'neg':'pos')+'">'+fshort(t.ln)+'</b></div><div><span>Còn phải thu (tồn)</span><b class="neg">'+fshort(t.ton)+'</b></div></div>'+
+  box.innerHTML='<p class="lg" style="margin:0 0 6px">Đang xem: <b>'+($("#fy").value?"năm "+$("#fy").value:"cộng dồn tất cả các năm")+'</b></p><div class="kp"><div><span>Số hồ sơ</span><b>'+t.n+'</b></div><div><span>Giá trị dịch vụ</span><b>'+fshort(t.dv)+'</b></div><div><span>Doanh thu thực thu</span><b>'+fshort(t.thu)+'</b></div><div><span>Chi phí</span><b>'+fshort(t.chi)+'</b></div><div><span>Lợi nhuận</span><b class="'+(t.ln<0?'neg':'pos')+'">'+fshort(t.ln)+'</b></div><div><span>Còn phải thu (tồn)</span><b class="neg">'+fshort(t.ton)+'</b></div></div>'+
   '<h3 class="fh">Theo năm</h3><p class="lg">Gồm sổ Excel cũ + giao dịch nhập ở tab Thu chi'+(noTx?' (đang lọc quận/loại nên không tính giao dịch Thu chi)':'')+'.</p>'+chart(years)+rowsT(years,"Năm")+
   '<h3 class="fh">Theo loại hồ sơ</h3>'+rowsT(topBy(L,"loai",12),"Loại")+
   '<h3 class="fh">Theo quận</h3>'+rowsT(topBy(L,"quan",12),"Quận")+
   '<h3 class="fh">Theo người giới thiệu (top 12 theo lợi nhuận)</h3>'+rowsT(topBy(L,"gt",12),"Người giới thiệu")+
-  '<h3 class="fh">Hồ sơ tồn — chưa thu đủ ('+tonOpen.length+' hồ sơ, '+fnum(tonOpen.reduce((a,x)=>a+x.c,0))+' đ'+(tonDone?'; đã đánh dấu bỏ qua '+tonDone:'')+')</h3>'+
+  chkHtml(L)+'<h3 class="fh">Hồ sơ tồn — chưa thu đủ ('+tonOpen.length+' hồ sơ, '+fnum(tonOpen.reduce((a,x)=>a+x.c,0))+' đ'+(tonDone?'; đã đánh dấu bỏ qua '+tonDone:'')+')</h3>'+
   '<p class="lg">Tồn = giá trị dịch vụ − tổng đã thu &gt; 0. Tích “Bỏ qua” cho hồ sơ không còn phải thu (hủy, miễn…) để loại khỏi danh sách.</p>'+
-  '<div class="nt"><table class="m"><tr><th>Năm</th><th>Ngày tiếp xúc</th><th>Địa chỉ / Chủ</th><th>Loại · nội dung</th><th>Giới thiệu</th><th class="num">Giá trị DV</th><th class="num">Đã thu</th><th class="num">Còn phải thu</th><th>Ghi chú</th><th>Bỏ qua</th></tr>'+
-  ton.slice(0,show).map(({r,c})=>'<tr style="'+(fin.done[r.id]?'opacity:.45':'')+'"><td>'+r.nam+'</td><td>'+esc(r.ngay.split("-").reverse().join("/"))+'</td><td>'+esc(r.dc)+(r.chu?'<br><span class="lg">'+esc(r.chu)+'</span>':'')+'</td><td>'+esc(r.loai)+(r.nd?'<br><span class="lg">'+esc(r.nd)+'</span>':'')+'</td><td>'+esc(r.gt)+'</td><td class="num">'+fnum(r.dv)+'</td><td class="num">'+fnum(fsum(r.thu))+'</td><td class="num neg">'+fnum(c)+'</td><td>'+esc(r.gc)+'</td><td><input type="checkbox" data-done="'+esc(r.id)+'"'+(fin.done[r.id]?' checked':'')+'></td></tr>').join("")+'</table></div>'+
+  '<div class="nt"><table class="m"><tr><th>Năm</th><th>Ngày tiếp xúc (tuổi)</th><th>Địa chỉ / Chủ</th><th>Loại · nội dung</th><th>Giới thiệu</th><th class="num">Giá trị DV</th><th class="num">Đã thu</th><th class="num">Còn phải thu</th><th>Ghi chú</th><th>Bỏ qua</th></tr>'+
+  ton.slice(0,show).map(({r,c})=>'<tr style="'+(fin.done[r.id]?'opacity:.45':'')+'"><td>'+r.nam+'</td><td>'+esc(r.ngay.split("-").reverse().join("/"))+(ageM(r)!=null?'<br><span class="lg">'+(ageM(r)>=12?(ageM(r)/12).toFixed(1).replace(".",",")+' năm':Math.round(ageM(r))+' tháng')+'</span>':'')+'</td><td>'+esc(r.dc)+(r.chu?'<br><span class="lg">'+esc(r.chu)+'</span>':'')+'</td><td>'+esc(r.loai)+(r.nd?'<br><span class="lg">'+esc(r.nd)+'</span>':'')+'</td><td>'+esc(r.gt)+'</td><td class="num">'+fnum(r.dv)+'</td><td class="num">'+fnum(fsum(r.thu))+'</td><td class="num neg">'+fnum(c)+'</td><td>'+esc(r.gc)+'</td><td><input type="checkbox" data-done="'+esc(r.id)+'"'+(fin.done[r.id]?' checked':'')+'></td></tr>').join("")+'</table></div>'+
   (ton.length>show?'<p><select id="fshow"><option value="50">Hiện 50 dòng đầu</option><option value="200">Hiện 200</option><option value="9999">Hiện tất cả ('+ton.length+')</option></select></p>':'');
   if($("#fshow"))$("#fshow").value=String(show);
   box.querySelectorAll("[data-done]").forEach(e=>e.onchange=()=>{if(e.checked)fin.done[e.dataset.done]=1;else delete fin.done[e.dataset.done];finSave();renderFin()});
-  const fs=$("#fshow");if(fs)fs.onchange=renderFin}
+  chkBind(box);const fs=$("#fshow");if(fs)fs.onchange=renderFin}
 ["#fy","#fq","#fl"].forEach(i=>$(i).onchange=renderFin);
 $("#finimp").onclick=()=>$("#finfile").click();
 $("#finfile").onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);const rows=Array.isArray(x)?x:x.rows;if(!Array.isArray(rows)||!rows.length||!("dv" in rows[0]))throw 0;
-  if(fin.rows.length&&!confirm("Thay toàn bộ dữ liệu báo cáo hiện có bằng file này?"))return;fin={rows,done:(x.done||fin.done||{}),tx:fin.tx||[]};finSave();renderFin()}catch(_){alert("File không đúng định dạng sổ dịch vụ.")}};rd.readAsText(f);e.target.value=""};
+  if(fin.rows.length&&!confirm("Thay toàn bộ dữ liệu báo cáo hiện có bằng file này?"))return;fin={rows,done:(x.done||fin.done||{}),tx:fin.tx||[],ex:fin.ex||{}};finSave();renderFin()}catch(_){alert("File không đúng định dạng sổ dịch vụ.")}};rd.readAsText(f);e.target.value=""};
 $("#finexp").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({rows:fin.rows,done:fin.done})],{type:"application/json"}));a.download="so-dich-vu.json";a.click()};
-$("#fincl").onclick=()=>{if(confirm("Xóa toàn bộ dữ liệu báo cáo trên trình duyệt này?")){fin={rows:[],done:{},tx:fin.tx||[]};finSave();renderFin()}};
+$("#fincl").onclick=()=>{if(confirm("Xóa toàn bộ dữ liệu báo cáo trên trình duyệt này?")){fin={rows:[],done:{},ex:{},tx:fin.tx||[]};finSave();renderFin()}};
 /* ===== Thu chi (sổ giao dịch mới; lưu trong db.fin.tx, đồng bộ cùng GitHub) ===== */
 let txEdit=null;
 const caseLabel=c=>(typeof propAddr==="function"&&propAddr(c))||c.note||"Hồ sơ "+c.id;
