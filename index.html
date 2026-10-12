@@ -1413,6 +1413,28 @@ function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode===
 function jtable(L,y,mode,dup){L=L.slice().sort((a,b)=>String(b.j.ngay||"").localeCompare(String(a.j.ngay||"")));return'<div class="nt"><table class="m"><tr><th>Mã</th><th>Quận</th><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
 function matchQ(j){const q=fqv.trim().toLowerCase();return!q||[j.code,j.dc,j.chu,j.gt,j.loai,j.nd,j.quan,j.gc].join(" ").toLowerCase().includes(q)}
 const isVan=(j,s,dup)=>issues(j,s,dup).some(i=>VAN.includes(i[0]));
+let fwch="";
+function followList(L,T){const out=[];
+  L.forEach(x=>{const j=x.j,s=x.s;if(!isDangTD(j))return;
+    const ev=[];(s.pl||[]).forEach((p,i)=>{if(p.han&&p.cov<p.a)ev.push({d:p.han,t:"Hạn thu đợt "+(p.n||i+1)+(p.a?" ("+fshort(p.a-p.cov)+")":"")})});
+    const c=db.cases.find(z=>z.id===j.cid);if(c&&c.ngayHen&&!c.ngayNhan&&!c.ketQua)ev.push({d:c.ngayHen,t:"Hẹn trả kết quả"});
+    ev.sort((a,b)=>a.d.localeCompare(b.d));const e=ev[0],dd=e?daysTo(e.d):null,age=s.age;
+    let g,note;
+    if(e&&dd<0){g="tre";note="Trễ "+(-dd)+" ngày"}
+    else if(e&&dd<=7){g="sap";note=dd===0?"Hôm nay":"Còn "+dd+" ngày"}
+    else if(stIdx(j)<=1){g="bg";const dn=j.ngay?-daysTo(j.ngay):null;note=dn==null?"Đang chờ khách":"Báo giá "+(dn<30?dn+" ngày":dn<365?Math.round(dn/30)+" tháng":(dn/365).toFixed(1).replace(".",",")+" năm")}
+    else{g="dang";note=e?"Còn "+dd+" ngày":""}
+    out.push({j,s,g,e,dd:e?dd:null,note,age:j.ngay?-daysTo(j.ngay):0})});
+  const ord={tre:0,sap:1,bg:2,dang:3};
+  out.sort((a,b)=>ord[a.g]-ord[b.g]||(a.g==="bg"?b.age-a.age:(a.dd==null?9999:a.dd)-(b.dd==null?9999:b.dd)||String(b.j.ngay||"").localeCompare(String(a.j.ngay||""))));
+  return out}
+function followTable(F){
+  const cs=[["","Tất cả"],["tre","Trễ hẹn"],["sap","Sắp đến hẹn"],["bg","Báo giá chờ khách"],["dang","Đang làm"]],n=k=>k?F.filter(x=>x.g===k).length:F.length;
+  const R=fwch?F.filter(x=>x.g===fwch):F,cl={tre:"r",sap:"y",bg:"b",dang:""};
+  return '<p>'+cs.map(([k,t])=>'<button data-w="'+k+'" class="'+(fwch===k?"primary":"")+'">'+t+' ('+n(k)+')</button>').join(" ")+'</p>'+
+   (R.length?'<div class="nt"><table class="m"><tr><th>Mã</th><th>Quận</th><th>Địa chỉ · loại</th><th>Bước</th><th>Việc tới hạn</th><th>Hạn</th><th>Tình trạng</th><th class="num">Báo khách</th><th class="num">Còn nợ</th></tr>'+
+   R.map(({j,s,g,e,note})=>'<tr data-j="'+esc(j.id)+'"><td style="white-space:nowrap"><b>'+esc(j.code||"")+'</b></td><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td>'+esc(e?e.t:"—")+'</td><td>'+(e?dmy(e.d):"")+'</td><td>'+(note?'<span class="fc '+cl[g]+'">'+esc(note)+'</span>':"")+'</td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td></tr>').join("")+'</table></div>'
+   :'<p class="lg">Không có hồ sơ nào ở mục này.</p>')}
 function renderFin(){
   const T=txIdx(),yrs=allYears(),mode=fmodeV;
   const S=fin.jobs.map(j=>({j,s:jstat(j,T,"")})),dup=dupSet(S);
@@ -1459,12 +1481,15 @@ function renderFin(){
     const chipsF=[["","Tất cả"],["lo","Lỗ"],["no","Còn nợ"],["dang","Đang làm"],["xong","Đã xong"]];
     if(fchip)L=L.filter(({j,s})=>fchip==="dang"?(!isDone(j)&&!isHuy(j)):fchip==="xong"?isDone(j):issues(j,jstat(j,T,""),dup).some(i=>i[0]===fchip));
     const key=({s})=>mode==="rec"?s.lai:s.yt-s.yc;L.sort((a,b)=>key(a)-key(b));
-    box.innerHTML=note+kp([["Hồ sơ năm "+fv,D.n],["Thu",fshort(D.thu)],["Chi",fshort(D.chi)],["Trong đó hoa hồng",fshort(D.hh)],["Lãi",fshort(D.ln),D.ln<0?"neg":"pos"],["Hồ sơ lỗ",D.lo,D.lo?"neg":""],["Còn nợ",fshort(D.no),"neg"]])+chart(months)+
+    box.innerHTML=note+kp([["Hồ sơ năm "+fv,D.n],["Thu",fshort(D.thu)],["Chi",fshort(D.chi)],["Trong đó hoa hồng",fshort(D.hh)],["Lãi",fshort(D.ln),D.ln<0?"neg":"pos"],["Hồ sơ lỗ",D.lo,D.lo?"neg":""],["Còn nợ",fshort(D.no),"neg"]])+
+      '<h3 class="fh">Cần theo dõi — hồ sơ năm '+fv+' đang giải quyết</h3>'+followTable(followList(D.inY.filter(x=>matchQ(x.j)),T))+
+      '<h3 class="fh">Tất cả hồ sơ năm '+fv+' — mới nhất trước</h3><p>'+chipsF.map(([k,t])=>'<button data-c="'+k+'" class="'+(fchip===k?"primary":"")+'">'+t+'</button>').join(" ")+'</p>'+jtable(L,fv,mode,dup)+
+      chart(months)+
       '<h3 class="fh">Hồ sơ vướng của năm '+fv+' ('+vL.length+')</h3>'+(vL.length?jtable(vL.sort((a,b)=>a.s.lai-b.s.lai),fv,mode,dup):'<p class="lg">Không có hồ sơ vướng.</p>')+
-      '<h3 class="fh">Tất cả hồ sơ — mới nhất trước</h3><p>'+chipsF.map(([k,t])=>'<button data-c="'+k+'" class="'+(fchip===k?"primary":"")+'">'+t+'</button>').join(" ")+'</p>'+jtable(L,fv,mode,dup)+
       '<h3 class="fh">Thu / chi khác (không gắn hồ sơ) — năm '+fv+'</h3><div class="filters" style="padding:0 0 8px"><input type="date" id="g_d"><select id="g_k"><option value="chi">Chi</option><option value="thu">Thu</option></select><input id="g_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><input id="g_n" placeholder="Nội dung (vd: văn phòng phẩm, xăng…)" style="flex:1;min-width:180px"><button class="primary" id="g_ok">Thêm</button></div>'+
       (D.gen.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Nội dung</th><th></th></tr>'+D.gen.sort((a,b)=>b.d.localeCompare(a.d)).map(t=>'<tr><td>'+dmy(t.d)+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td><button class="link" data-gd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div>':'');
     box.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{fchip=b.dataset.c;renderFin()});
+    box.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{fwch=b.dataset.w;renderFin()});
     $("#g_d").value=fv===String(new Date().getFullYear())?today():fv+"-12-31";
     $("#g_a").oninput=e=>{const n=parseAmt(e.target.value);e.target.value=n?n.toLocaleString("vi-VN"):""};
     $("#g_ok").onclick=()=>{const a=parseAmt($("#g_a").value);if(!a){alert("Nhập số tiền.");return}fin.tx.push({id:"g"+Date.now().toString(36),j:"",k:$("#g_k").value,a,d:$("#g_d").value||today(),n:$("#g_n").value.trim()});finSave();renderFin()};
