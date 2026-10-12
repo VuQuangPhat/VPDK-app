@@ -245,6 +245,9 @@ table.jtd tr.tdr{cursor:default}table.jtd td.tda{display:table-cell;text-align:r
 tr.gh,tr.gh td{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
 .tdbig{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px 14px 4px}.tdbig .tdc{box-shadow:none;background:var(--fill2)}.tdbig .tdc.on{box-shadow:0 0 0 2px var(--brand);background:var(--card)}.tdbig .tdk{margin:0 0 10px}.tdbig .nt table.m{box-shadow:none;border-radius:0}.tdbig .nt{margin:0 -14px}
 .dts{margin-top:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.dts>div{padding:6px 8px;border-radius:12px}.dts .dhl{background:color-mix(in srgb,var(--brand) 9%,transparent);box-shadow:inset 0 0 0 1.5px var(--brand)}.dts label{font-size:11.5px}
+table.m tr.gh td{white-space:normal!important;width:auto!important;max-width:0}
+.lkb{background:var(--fill2);border-radius:14px;padding:12px 14px}.lkr{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}.lkr:last-child{border:0}.lkr span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lkr select{width:auto;max-width:260px}.lkr.add select:first-child{flex:1;max-width:none}
+#pform>*{min-width:0}.lkb{grid-column:1/-1;overflow:hidden}.lkr select{width:120px!important;flex:none}.lkr.add select:first-child{width:auto!important;flex:1}
 </style>
 </head>
 <body>
@@ -589,9 +592,9 @@ function renderPeople(){
     if(rows.length)G.push({k:c.id,t:(c.code?`<span class="fc b">${esc(c.code)}</span> `:"")+esc(caseTitle(c)),n:rows.length,rows})});
   const free=l.filter(p=>!inCase.has(p.id));if(free.length)G.push({k:"_free",t:"<i>Chưa gắn hồ sơ nào</i>",n:free.length,rows:free.map(p=>[p,""])});
   const open=g=>q?true:!(pAll?!pCol.has("o"+g.k):pCol.has(g.k));
-  $("#plist").innerHTML=`<table class="m jp"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead>${G.map(g=>{const o=open(g);return `<tbody><tr class="gh" data-g="${esc(g.k)}"><td colspan="7"><b>${o?"▾":"▸"}</b> ${g.t} <span class="lg">· ${g.n} người</span></td></tr>${o?g.rows.map(([p,r])=>rowOf(p,r)).join(""):""}</tbody>`}).join("")}</table>`;
+  $("#plist").innerHTML=`<table class="m jp"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead>${G.map(g=>{const o=open(g);return `<tbody><tr class="gh" data-g="${esc(g.k)}"><td colspan="7"><b>${o?"▾":"▸"}</b> ${g.t} <span class="lg">· ${g.n} người</span>${g.k!=="_free"?` <button class="ghost" data-addto="${esc(g.k)}" style="font-size:12px">+ Thêm người</button>`:""}</td></tr>${o?g.rows.map(([p,r])=>rowOf(p,r)).join(""):""}</tbody>`}).join("")}</table>`;
 }
-$("#plist").onclick=e=>{const g=e.target.closest("tr.gh");if(g){const k=g.dataset.g;if(pAll){pCol.has("o"+k)?pCol.delete("o"+k):pCol.add("o"+k)}else{pCol.has(k)?pCol.delete(k):pCol.add(k)}renderPeople();return}const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
+$("#plist").onclick=e=>{const ad=e.target.closest("[data-addto]");if(ad){e.stopPropagation();openPerson(null,null,ad.dataset.addto);return}const g=e.target.closest("tr.gh");if(g){const k=g.dataset.g;if(pAll){pCol.has("o"+k)?pCol.delete("o"+k):pCol.add("o"+k)}else{pCol.has(k)?pCol.delete(k):pCol.add(k)}renderPeople();return}const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
 $("#pcol").onclick=()=>{pAll=true;pCol=new Set();renderPeople()};
 $("#pexpand").onclick=()=>{pAll=false;pCol=new Set();renderPeople()};
 $("#pq").addEventListener("input",renderPeople);
@@ -600,15 +603,28 @@ const PFO=[["name","Tên pháp nhân (tổ chức)","full"],["mst","Mã số doa
 const isOrg=p=>p&&p.kind==="org";
 const idText=p=>isOrg(p)?(p.mst?"MST: "+p.mst:""):(p.cccd?"CCCD: "+p.cccd:(p.idAsMst&&p.mst?"CCCD: "+p.mst:""));
 let curP=null,pCb=null;
-function openPerson(id,cb){
+let curLinks=[],pLinkOn=false;
+function openPerson(id,cb,preCid){
   curP=id?JSON.parse(JSON.stringify(P(id))):{id:uid(),tp:"TP. Hồ Chí Minh"};pCb=cb||null;
+  pLinkOn=!cb;curLinks=db.cases.flatMap(c=>(c.parties||[]).filter(x=>x.pid===curP.id).map(x=>({cid:c.id,role:x.role,ratio:x.ratio||""})));
+  if(preCid&&!curLinks.some(l=>l.cid===preCid))curLinks.push({cid:preCid,role:"B",ratio:""});
   $("#pet").textContent=id?"Sửa thông tin":"Thêm người";$("#pdel").hidden=!id;
   renderPForm();$("#pe").showModal();
 }
 function renderPForm(){
   $("#pform").innerHTML=`<label class="full">Loại<select data-pk="kind"><option value="" ${isOrg(curP)?"":"selected"}>Cá nhân</option><option value="org" ${isOrg(curP)?"selected":""}>Pháp nhân / tổ chức</option></select></label>`+
-   (isOrg(curP)?PFO:PF).map(([k,l,t])=>`<label class="${t==="full"?"full":""}">${l}<input data-pk="${k}" type="${t==="date"?"date":"text"}" value="${esc(curP[k]||"")}"></label>`).join("");
+   (isOrg(curP)?PFO:PF).map(([k,l,t])=>`<label class="${t==="full"?"full":""}">${l}<input data-pk="${k}" type="${t==="date"?"date":"text"}" value="${esc(curP[k]||"")}"></label>`).join("")+(pLinkOn?linkBox():"");
 }
+const SR={A:"Bên bán",B:"Bên mua",U:"Ủy quyền"};
+function linkBox(){
+  const cs=db.cases.slice().sort((a,b)=>String(b.code||"").localeCompare(String(a.code||""))),by=id=>db.cases.find(c=>c.id===id);
+  return `<div class="full lkb"><b>Gắn vào hồ sơ</b><div class="lg" style="margin:2px 0 6px">Chọn mã hồ sơ và vai trò để người này xuất hiện trong hồ sơ đó (bên bán, bên mua…).</div>`+
+   (curLinks.length?curLinks.map((l,i)=>{const c=by(l.cid);return `<div class="lkr"><span class="fc b">${esc(c&&c.code||"")}</span><span>${esc(c?caseTitle(c):"(hồ sơ đã xóa)")}</span><select data-lkr="${i}">${Object.entries(SR).map(([k,v])=>`<option value="${k}"${l.role===k?" selected":""}>${v}</option>`).join("")}</select><button class="link" data-lkd="${i}">Gỡ</button></div>`}).join(""):`<div class="lg">Chưa gắn vào hồ sơ nào.</div>`)+
+   `<div class="lkr add"><select id="lk_c"><option value="">— chọn mã hồ sơ —</option>${cs.filter(c=>!curLinks.some(l=>l.cid===c.id)).map(c=>`<option value="${esc(c.id)}">${esc(c.code||"")} · ${esc(caseTitle(c))}</option>`).join("")}</select><select id="lk_r">${Object.entries(SR).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select><button id="lk_add">Gắn</button></div></div>`}
+$("#pform").addEventListener("click",e=>{const t=e.target;
+  if(t.id==="lk_add"){const c=$("#lk_c").value;if(!c)return toast("Chọn mã hồ sơ");curLinks.push({cid:c,role:$("#lk_r").value,ratio:""});renderPForm()}
+  else if(t.dataset&&t.dataset.lkd!=null){curLinks.splice(+t.dataset.lkd,1);renderPForm()}});
+$("#pform").addEventListener("change",e=>{if(e.target.dataset&&e.target.dataset.lkr!=null)curLinks[+e.target.dataset.lkr].role=e.target.value});
 $("#pform").addEventListener("input",e=>{if(e.target.dataset.pk)curP[e.target.dataset.pk]=e.target.value});
 $("#pform").addEventListener("change",e=>{if(e.target.dataset.pk==="kind"){curP.kind=e.target.value;renderPForm()}});
 $("#addp").onclick=()=>openPerson();
@@ -616,6 +632,10 @@ $("#pclose").onclick=()=>$("#pe").close();
 $("#psave").onclick=()=>{
   if(!(curP.name||"").trim()){toast("Cần nhập tên");return}
   const i=db.people.findIndex(p=>p.id===curP.id);if(i>=0)db.people[i]=curP;else db.people.push(curP);
+  if(pLinkOn)db.cases.forEach(c=>{const want=curLinks.filter(l=>l.cid===c.id),has=(c.parties||[]).filter(x=>x.pid===curP.id);
+    if(!want.length&&!has.length)return;
+    const keep=c.parties.filter(x=>x.pid!==curP.id);want.forEach(l=>{const o=has.find(x=>x.role===l.role)||has[0];keep.push({pid:curP.id,role:l.role,ratio:(o&&o.ratio)||l.ratio||""})});
+    c.parties=keep;c.upd=Date.now()});
   persist();$("#pe").close();renderPeople();renderList();if(pCb)pCb(curP.id);
 };
 $("#pdel").onclick=()=>{
