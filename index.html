@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quản lý hồ sơ của tôi</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#1c2333;--mute:#667085;--line:#dcd9d2;--brand:#23395b;--seal:#a4262c;--ok:#2e6b4f;--warn:#b7791f;--r:6px}
+@media(prefers-color-scheme:dark){:root{--bg:#14171f;--card:#1c2029;--ink:#e8e9ee;--mute:#9aa1b2;--line:#323848;--brand:#8fb0e6;--seal:#ef7b80;--ok:#6fc29a;--warn:#e3b341}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:18px 24px 8px}
+h1{font-size:20px;margin:0;font-weight:600;letter-spacing:-.01em}
+h1 small{display:block;font-weight:400;color:var(--mute);font-size:12px}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--brand)}
+button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+@media(prefers-color-scheme:dark){button.primary{color:#14171f}}
+button.link{border:0;background:none;color:var(--seal);padding:2px 6px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tabs{display:flex;gap:4px;padding:0 24px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:8px 14px;white-space:nowrap}
+.tabs button.on{border-bottom-color:var(--brand);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;padding:10px 24px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;text-align:left;cursor:pointer}
+.stat.on{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.stat b{display:block;font-size:24px;font-weight:600;line-height:1.2}
+.stat span{color:var(--mute);font-size:12px}
+.stat.late b{color:var(--seal)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;padding:8px 24px;align-items:center}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:6px 8px}
+.filters input[type=search]{min-width:220px;flex:1}
+.wrap{padding:0 24px 40px;overflow-x:auto}
+table.m{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);min-width:900px}
+table.m th,table.m td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.m th{font-weight:600;color:var(--mute);font-size:12px;background:var(--bg);white-space:nowrap}
+table.m tr[data-id]{cursor:pointer}
+table.m tr[data-id]:hover td{background:color-mix(in srgb,var(--brand) 6%,var(--card))}
+td small,.sub{display:block;color:var(--mute);font-size:12px}
+.tag{display:inline-block;border:1px solid var(--line);border-radius:99px;padding:0 8px;font-size:12px;white-space:nowrap}
+.tag.ok{border-color:var(--ok);color:var(--ok)}.tag.warn{border-color:var(--warn);color:var(--warn)}.tag.bad{border-color:var(--seal);color:var(--seal)}.tag.info{border-color:var(--brand);color:var(--brand)}
+.late-d{color:var(--seal);font-weight:600}
+.num{text-align:right!important;white-space:nowrap}
+.empty{padding:40px;text-align:center;color:var(--mute);background:var(--card);border:1px dashed var(--line)}
+.prog{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;min-width:70px;margin-top:3px}.prog i{display:block;height:100%;background:var(--ok)}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:18px 20px;width:min(760px,96vw);max-height:94vh}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+dialog h2{margin:0 0 10px;font-size:17px}
+#cd{width:min(980px,97vw)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid.g3{grid-template-columns:repeat(3,1fr)}
+.grid label,.fl{display:flex;flex-direction:column;gap:2px;color:var(--mute);font-size:12px}
+.grid label.full{grid-column:1/-1}
+.grid label.sp2{grid-column:span 2}
+.grid input,.grid select,.grid textarea{width:100%;color:var(--ink)}
+label.ck{flex-direction:row;align-items:center;gap:6px;color:var(--ink);font-size:13px}
+label.ck input{width:auto}
+.foot{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.hint{color:var(--mute);font-size:12px;margin:8px 0 0}
+.warnbox{background:color-mix(in srgb,var(--warn) 12%,var(--card));border:1px solid var(--warn);border-radius:var(--r);padding:6px 10px;font-size:12.5px;margin:6px 0}
+.ctabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:12px;overflow-x:auto}
+.ctabs button{border:0;border-bottom:2px solid transparent;border-radius:0;background:none;padding:7px 12px;white-space:nowrap}
+.ctabs button.on{border-bottom-color:var(--brand);font-weight:600}
+#cbody{overflow:auto;max-height:64vh;padding:2px 4px 2px 0}
+.lst{border:1px solid var(--line);border-radius:var(--r);margin:8px 0}
+.lst .it{display:grid;gap:8px;padding:8px;border-bottom:1px solid var(--line);align-items:center}
+.lst .it:last-child{border:0}
+.it.party{grid-template-columns:2fr 1.4fr 70px auto}
+.it.doc{grid-template-columns:3fr 1.5fr 1.6fr 1.3fr auto}
+.gh{font-weight:600;font-size:12px;color:var(--brand);background:var(--bg);padding:6px 10px;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.03em}
+.brtabs{display:flex;gap:8px;padding:10px 24px 0;flex-wrap:wrap}
+.brtabs button{border-radius:99px;padding:5px 14px}
+.brtabs button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+@media(prefers-color-scheme:dark){.brtabs button.on{color:#14171f}}
+.br{display:inline-block;font-size:11px;font-weight:600;padding:0 7px;border-radius:4px;background:color-mix(in srgb,var(--brand) 14%,var(--card));color:var(--brand)}
+.br.cn{background:color-mix(in srgb,var(--warn) 18%,var(--card));color:var(--warn)}
+.choose{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choose button{text-align:left;padding:14px;display:flex;flex-direction:column;gap:4px;line-height:1.4}
+.choose button b{font-size:15px}.choose button span{color:var(--mute);font-size:12px}
+.sec2{margin:10px 0 2px;font-weight:600;font-size:13px}
+.it.fee{grid-template-columns:2.2fr 1.2fr 1.2fr 1.1fr 1.3fr auto}
+.it.log{grid-template-columns:130px 1fr auto}
+.it.mst{grid-template-columns:1.3fr 1.3fr 1.3fr auto}
+.it input,.it select{width:100%}
+.hd{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:8px;flex-wrap:wrap}
+.hd h3{margin:0;font-size:14px}
+.sum{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;margin:6px 0}.sum b{font-weight:600}
+.fgrp{border:1px solid var(--line);border-radius:var(--r);padding:8px 10px;margin:8px 0;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fgrp .nm{flex:1;min-width:220px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:99px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:99}
+#toast.on{opacity:1}
+@media(max-width:700px){.choose{grid-template-columns:1fr}.brtabs{padding-left:12px;padding-right:12px}.grid,.grid.g3{grid-template-columns:1fr}.grid label.sp2{grid-column:auto}header,.stats,.filters,.wrap,.tabs{padding-left:12px;padding-right:12px}
+.it.party,.it.doc,.it.fee,.it.log,.it.mst{grid-template-columns:1fr 1fr}}
+/* ===== Mẫu in ===== */
+#pd{width:min(900px,97vw)}
+#pbody{overflow:auto;max-height:70vh;background:#e9e9e9;padding:12px;border-radius:var(--r)}
+.fd{width:100%;max-width:794px;margin:0 auto 14px;background:#fff;color:#000;font:14px/1.55 "Times New Roman",Times,serif;padding:26px 34px;box-shadow:0 1px 4px #0003}
+.fd .c{text-align:center}.fd .r{text-align:right}.fd .b{font-weight:700}.fd .i{font-style:italic}.fd .sm{font-size:12px}
+.fd h2{text-align:center;font-size:16px;margin:12px 0 4px;text-transform:uppercase;color:#000}
+.fd .ss{text-align:center;font-style:italic;margin:0 0 8px}
+.fd p{margin:3px 0}
+.fd .v{color:#0a2f87}
+.fd .bl{display:inline-block;border-bottom:1px dotted #000;height:1em;vertical-align:baseline}
+.fd table{border-collapse:collapse;width:100%;margin:6px 0}
+.fd td,.fd th{border:1px solid #000;padding:3px 5px;vertical-align:top;font-size:13px}
+.fd th{text-align:center;font-weight:700}
+.fd .sig{display:flex;justify-content:space-between;margin-top:14px;text-align:center;gap:12px}
+.fd .sig>div{flex:1}
+.fd .sec{font-weight:700;margin-top:8px}
+.fd .ind{padding-left:18px}
+#proot{display:none}
+@page{size:A4;margin:12mm}
+@media print{body>*:not(#proot){display:none!important}#proot{display:block}#proot .fd{box-shadow:none;margin:0;padding:0;max-width:none;page-break-after:always}#proot .fd:last-child{page-break-after:auto}#proot .fd .v{color:#000}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Quản lý hồ sơ của tôi<small>Hồ sơ nộp Văn phòng đăng ký đất đai · dữ liệu chỉ lưu trên trình duyệt này</small></h1>
+  <div class="bar">
+    <button class="primary" id="addc">+ Hồ sơ mới</button>
+    <button id="cfgb">Cài đặt</button>
+    <button id="csv">Xuất CSV</button>
+    <button id="bak">Sao lưu</button>
+    <button id="imp">Khôi phục</button>
+    <input type="file" id="file" accept=".json" hidden>
+  </div>
+</header>
+<nav class="tabs"><button id="t1" class="on">Hồ sơ</button><button id="t2">Danh bạ (người, chủ thể)</button></nav>
+
+<div id="v1">
+  <div class="brtabs" id="brtabs"></div>
+  <section class="stats" id="stats"></section>
+  <section class="filters">
+    <input id="q" type="search" placeholder="Tìm theo mã, tên, số GCN, thửa đất, biên nhận…">
+    <select id="ft"></select>
+    <label class="ck"><input type="checkbox" id="hideDone"> Ẩn hồ sơ đã xong</label>
+  </section>
+  <div class="wrap"><div id="list"></div></div>
+</div>
+
+<div id="v2" hidden>
+  <section class="filters">
+    <input id="pq" type="search" placeholder="Tìm theo tên, CCCD, mã số thuế…">
+    <button class="primary" id="addp">+ Thêm người</button>
+  </section>
+  <div class="wrap"><div id="plist"></div></div>
+</div>
+
+<!-- Hồ sơ -->
+<dialog id="cd">
+  <h2 id="cdt">Hồ sơ</h2>
+  <nav class="ctabs" id="ctabs"></nav>
+  <div id="cbody"></div>
+  <div class="foot">
+    <button id="cdel" class="link" style="margin-right:auto">Xóa hồ sơ</button>
+    <button id="cdup">Nhân bản</button>
+    <button id="cclose">Đóng</button>
+    <button class="primary" id="csave">Lưu</button>
+  </div>
+</dialog>
+
+<!-- Chọn nhánh nộp -->
+<dialog id="bd">
+  <h2>Hồ sơ nộp ở đâu?</h2>
+  <div class="choose">
+    <button id="bTP"><b>VPĐK Thành phố</b><span>Dùng Phiếu hướng dẫn 30 mục của Bộ phận tiếp nhận và trả kết quả: Hồ sơ đất đai + Hồ sơ thuế, ghi rõ bản chính / sao y / photo.</span></button>
+    <button id="bCN"><b>Chi nhánh VPĐK</b><span>Danh mục giấy tờ riêng của chi nhánh (chỉnh trong Cài đặt), kèm thông tin chi nhánh và cán bộ phụ trách.</span></button>
+  </div>
+  <div class="foot"><button id="bclose">Hủy</button></div>
+</dialog>
+<datalist id="formopts"><option value="Bản chính"><option value="Bản sao y"><option value="Bản photo"><option value="Bản photo + bản chính"></datalist>
+<datalist id="cnopts"></datalist>
+
+<!-- Người -->
+<dialog id="pe">
+  <h2 id="pet">Thông tin người</h2>
+  <div class="grid" id="pform"></div>
+  <div class="foot">
+    <button id="pdel" class="link" style="margin-right:auto">Xóa</button>
+    <button id="pclose">Đóng</button>
+    <button class="primary" id="psave">Lưu</button>
+  </div>
+</dialog>
+
+<!-- Cài đặt -->
+<dialog id="sd">
+  <h2>Cài đặt</h2>
+  <div class="grid">
+    <label>Địa danh ghi trên tờ khai<input id="s_place"></label>
+    <label>Văn phòng đăng ký đất đai (mặc định)<input id="s_vpdk" placeholder="VD: Thành phố Hồ Chí Minh"></label>
+    <label>Thuế TNCN chuyển nhượng BĐS (%)<input id="s_rcn" type="number" step="0.01"></label>
+    <label>Thuế TNCN thừa kế, tặng cho BĐS (%)<input id="s_rqt" type="number" step="0.01"></label>
+    <label>Phần thu nhập được trừ (thừa kế, tặng cho) (đồng)<input id="s_qtm" type="number"></label>
+    <label>Lệ phí trước bạ nhà, đất (%)<input id="s_rlp" type="number" step="0.01"></label>
+  </div>
+  <p class="hint">Các tỷ lệ chỉ dùng cho nút “Tính tự động”. Hãy đối chiếu quy định hiện hành trước khi nộp.</p>
+  <label class="fl" style="margin-top:10px">Các chi nhánh thường nộp (mỗi dòng một chi nhánh)<textarea id="s_cn" rows="3" style="width:100%"></textarea></label>
+  <div class="hd"><h3>Danh mục giấy tờ theo nhánh và loại thủ tục</h3><span><select id="s_br"><option value="TP">VPĐK Thành phố</option><option value="CN">Chi nhánh</option></select> <select id="s_type"></select></span></div>
+  <textarea id="s_tpl" rows="7" style="width:100%;margin-top:6px"></textarea>
+  <p class="hint" id="s_hint"></p>
+  <div class="foot">
+    <button id="sdemo" style="margin-right:auto">Nạp hồ sơ mẫu (dữ liệu giả)</button>
+    <button id="swipe" class="link">Xóa toàn bộ dữ liệu</button>
+    <button id="sclose">Đóng</button>
+    <button class="primary" id="ssave">Lưu</button>
+  </div>
+</dialog>
+
+<!-- Xem mẫu -->
+<dialog id="pd">
+  <h2 id="pdt">Xem trước</h2>
+  <div id="pbody"></div>
+  <p class="hint">Phần chữ xanh là dữ liệu tự điền. Bấm In rồi chọn “Lưu thành PDF” nếu muốn xuất file. Mẫu dựng lại theo bố cục file mẫu; hãy đối chiếu với mẫu hiện hành mà VPĐK yêu cầu.</p>
+  <div class="foot"><button id="pclose2">Đóng</button><button class="primary" id="pprint">In</button></div>
+</dialog>
+
+<div id="proot"></div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+const KEY="hsdd_v1";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const num=s=>{const n=Number(String(s==null?"":s).replace(/[^\d]/g,""));return isFinite(n)?n:0};
+const fmt=n=>(n===""||n==null)?"":Number(n).toLocaleString("vi-VN");
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const fd=iso=>{if(!iso)return "";const m=String(iso).match(/^(\d{4})-(\d\d)-(\d\d)/);return m?m[3]+"/"+m[2]+"/"+m[1]:iso};
+const dparts=iso=>{const m=String(iso||"").match(/^(\d{4})-(\d\d)-(\d\d)/);return m?[+m[3],+m[2],+m[1]]:null};
+const daysTo=iso=>{if(!iso)return null;const a=new Date(iso+"T00:00:00"),b=new Date(today()+"T00:00:00");return Math.round((a-b)/864e5)};
+const getp=(o,p)=>p.split(".").reduce((a,k)=>a==null?a:a[k],o);
+const setp=(o,p,v)=>{const a=p.split(".");let t=o;for(let i=0;i<a.length-1;i++){if(t[a[i]]==null)t[a[i]]={};t=t[a[i]]}t[a[a.length-1]]=v};
+const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("on"),2200)};
+
+/* ===== Danh mục thủ tục ===== */
+const STATUS=["Chuẩn bị","Đã nộp","Cần bổ sung","Có kết quả","Hoàn thành","Hủy"];
+const DOC_ST=["Thiếu","Đã có","Đã nộp","Không áp dụng"];
+const ROLES={A:"Bên chuyển nhượng / cho / để lại",B:"Bên nhận (người sử dụng đất)",U:"Người nộp thay / được ủy quyền"};
+const PKIND=["Căn hộ chung cư","Nhà ở riêng lẻ","Đất ở","Khác"];
+const FORMS_LAB={phieu:"Phiếu yêu cầu hướng dẫn, bổ sung, hoàn thiện hồ sơ (VPĐK TP)",don18:"Đơn đăng ký biến động (Mẫu 18)",lptb:"Tờ khai lệ phí trước bạ (nhà, đất)",tncn:"Tờ khai thuế TNCN (03/BDS-TNCN)",pnn:"Tờ khai thuế sử dụng đất phi nông nghiệp",tsdd:"Tờ khai tiền sử dụng đất (Mẫu 01/TSDD)",mst:"Tờ khai điều chỉnh thông tin đăng ký thuế (08-MST)",cover:"Phiếu danh mục hồ sơ (mang theo khi nộp)"};
+const DOC_COMMON=["Căn cước công dân / hộ chiếu các bên (bản sao)","Giấy tờ chứng minh tình trạng hôn nhân / đăng ký kết hôn","Giấy ủy quyền (nếu nộp thay)"];
+const TYPES={
+ "Chuyển nhượng QSDĐ / nhà ở / căn hộ":{tax:"cn",lptb:1,forms:["don18","lptb","tncn","pnn","cover"],fees:["Thuế thu nhập cá nhân","Lệ phí trước bạ","Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Tặng cho":{tax:"qt",lptb:1,forms:["don18","lptb","tncn","pnn","cover"],fees:["Thuế thu nhập cá nhân","Lệ phí trước bạ","Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Thừa kế":{tax:"qt",lptb:1,forms:["don18","lptb","tncn","pnn","cover"],fees:["Thuế thu nhập cá nhân","Lệ phí trước bạ","Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Cấp Giấy chứng nhận lần đầu (căn hộ mua của chủ đầu tư)":{tax:null,lptb:1,forms:["lptb","pnn","cover"],fees:["Lệ phí trước bạ","Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Cấp đổi / cấp lại Giấy chứng nhận":{tax:null,forms:["don18","cover"],fees:["Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Thế chấp / xóa thế chấp":{tax:null,forms:["cover"],fees:["Phí đăng ký thế chấp / xóa thế chấp"]},
+ "Tách / hợp thửa":{tax:null,forms:["cover"],fees:["Phí thẩm định hồ sơ","Lệ phí cấp Giấy chứng nhận"]},
+ "Thay đổi thông tin (CCCD, địa chỉ, tên…)":{tax:null,forms:["don18","cover"],fees:["Phí thẩm định hồ sơ"]},
+ "Khác":{tax:null,forms:["cover"],fees:[]}
+};
+const TPL0={
+ "Chuyển nhượng QSDĐ / nhà ở / căn hộ":["Đơn đăng ký biến động (Mẫu 18)","Hợp đồng chuyển nhượng đã công chứng / chứng thực","Giấy chứng nhận đã cấp (bản gốc)","Tờ khai lệ phí trước bạ","Tờ khai thuế TNCN (03/BDS-TNCN)","Tờ khai thuế sử dụng đất phi nông nghiệp","Tờ khai điều chỉnh thông tin đăng ký thuế (08-MST) nếu cần cập nhật","Giấy tờ chứng minh miễn thuế / lệ phí (nếu có)",...DOC_COMMON],
+ "Tặng cho":["Đơn đăng ký biến động (Mẫu 18)","Hợp đồng tặng cho đã công chứng / chứng thực","Giấy chứng nhận đã cấp (bản gốc)","Tờ khai lệ phí trước bạ","Tờ khai thuế TNCN (03/BDS-TNCN)","Tờ khai thuế sử dụng đất phi nông nghiệp","Giấy tờ chứng minh quan hệ (để xét miễn thuế, lệ phí)",...DOC_COMMON],
+ "Thừa kế":["Đơn đăng ký biến động (Mẫu 18)","Văn bản khai nhận / phân chia di sản đã công chứng","Giấy chứng tử","Giấy chứng nhận đã cấp (bản gốc)","Tờ khai lệ phí trước bạ","Tờ khai thuế TNCN (03/BDS-TNCN)","Tờ khai thuế sử dụng đất phi nông nghiệp","Giấy tờ chứng minh quan hệ (để xét miễn thuế, lệ phí)",...DOC_COMMON],
+ "Cấp Giấy chứng nhận lần đầu (căn hộ mua của chủ đầu tư)":["Đơn đăng ký, cấp Giấy chứng nhận","Hợp đồng mua bán căn hộ với chủ đầu tư","Biên bản bàn giao căn hộ","Chứng từ thanh toán / hóa đơn của chủ đầu tư","Tờ khai lệ phí trước bạ","Tờ khai thuế sử dụng đất phi nông nghiệp",...DOC_COMMON],
+ "Cấp đổi / cấp lại Giấy chứng nhận":["Đơn đăng ký biến động (Mẫu 18)","Giấy chứng nhận cũ (nếu còn)","Giấy chứng nhận đăng ký doanh nghiệp (nếu bên đăng ký là pháp nhân)","Phiếu đo đạc chỉnh lý thửa đất (nếu có)","Giấy tờ chứng minh lý do (mất, hư hỏng, thay đổi thông tin)","Căn cước công dân / hộ chiếu (bản sao)"],
+ "Thế chấp / xóa thế chấp":["Đơn đăng ký thế chấp / xóa đăng ký thế chấp","Hợp đồng thế chấp đã công chứng (nếu đăng ký thế chấp)","Văn bản đồng ý xóa thế chấp của bên nhận thế chấp (nếu xóa)","Giấy chứng nhận (bản gốc)","Căn cước công dân / hộ chiếu (bản sao)"],
+ "Tách / hợp thửa":["Đơn đề nghị tách / hợp thửa","Giấy chứng nhận (bản gốc)","Bản vẽ / trích đo địa chính thửa đất","Căn cước công dân / hộ chiếu (bản sao)"],
+ "Thay đổi thông tin (CCCD, địa chỉ, tên…)":["Đơn đăng ký biến động (Mẫu 18)","Giấy chứng nhận (bản gốc)","Căn cước công dân mới (bản sao)","Giấy tờ chứng minh nội dung thay đổi"],
+ "Khác":["Giấy chứng nhận (bản gốc)","Căn cước công dân / hộ chiếu (bản sao)"]
+};
+const MST_ROWS0=["Số CMND / CCCD","Địa chỉ liên lạc"];
+const LAND="Hồ sơ đất đai",TAX="Hồ sơ thuế";
+/* Danh mục theo Phiếu yêu cầu hướng dẫn, bổ sung, hoàn thiện hồ sơ của VPĐK TP (Bộ phận tiếp nhận và trả kết quả) */
+const TP_ITEMS=[
+ [1,LAND,"Đơn đăng ký biến động"],[2,LAND,"Giấy giới thiệu"],[3,LAND,"Giấy chứng nhận QSDĐ, QSHNO và TSKGLVĐ"],
+ [4,LAND,"Hợp đồng, văn bản về việc chuyển đổi, chuyển nhượng, cho thuê, cho thuê lại, thừa kế, tặng cho quyền sử dụng đất, quyền sở hữu tài sản gắn liền với đất; góp vốn QSDĐ, QSHTS gắn liền với đất; chuyển quyền SDĐ, QSHTS gắn liền với đất của vợ hoặc chồng thành của chung vợ và chồng theo quy định"],
+ [5,LAND,"Giấy phép đăng ký kinh doanh và danh sách cổ đông"],[6,LAND,"Văn bản của cơ quan có thẩm quyền cho phép hoặc công nhận việc thay đổi thông tin pháp nhân"],
+ [7,LAND,"Văn bản chấp thuận của cơ quan có thẩm quyền về việc cho phép nhận chuyển nhượng đất nông nghiệp để thực hiện dự án"],
+ [8,LAND,"Văn bản của người sử dụng đất đồng ý cho chủ sở hữu tài sản được chuyển nhượng tài sản"],[9,LAND,"Văn bản cam kết tài sản riêng; độc thân"],
+ [10,LAND,"Giấy phép xây dựng; hồ sơ thiết kế xây dựng"],[11,LAND,"Bản vẽ sơ đồ công trình; căn hộ"],[12,LAND,"Bản vẽ hiện trạng vị trí"],
+ [13,LAND,"Biên bản kiểm tra hoàn công"],[14,LAND,"Biên bản bàn giao công trình"],[15,LAND,"Biên bản nghiệm thu HT CTXD"],
+ [16,LAND,"Văn bản ủy quyền nếu người yêu cầu đăng ký là người được ủy quyền"],[17,LAND,"Giấy tờ chứng minh thuộc đối tượng không phải nộp phí, lệ phí"],
+ [23,TAX,"Tờ khai lệ phí trước bạ"],[24,TAX,"Tờ khai thuế sử dụng đất phi nông nghiệp"],[25,TAX,"Tờ khai thuế thu nhập từ chuyển nhượng bất động sản"],
+ [26,TAX,"Chứng từ thực hiện nghĩa vụ tài chính"],[27,TAX,"Văn bản của người sử dụng đất đề nghị được miễn, giảm các khoản nghĩa vụ tài chính"],[28,TAX,"Các giấy tờ chứng minh thuộc đối tượng được miễn, giảm"]
+].map(([no,g,n])=>({no,g,n}));
+/* Mục áp dụng mặc định theo loại thủ tục (số thứ tự trên Phiếu) – sửa được trong Cài đặt */
+const TP_ON0={
+ "Chuyển nhượng QSDĐ / nhà ở / căn hộ":[1,3,4,9,10,11,16,17,23,24,25,26,27,28],
+ "Tặng cho":[1,3,4,9,10,11,16,17,23,24,25,26,27,28],
+ "Thừa kế":[1,3,4,16,17,23,24,25,26,27,28],
+ "Cấp Giấy chứng nhận lần đầu (căn hộ mua của chủ đầu tư)":[1,3,4,10,11,14,16,17,23,24,26,27,28],
+ "Cấp đổi / cấp lại Giấy chứng nhận":[1,3,5,12,16,17],
+ "Thế chấp / xóa thế chấp":[1,3,4,16],
+ "Tách / hợp thửa":[1,3,12,16],
+ "Thay đổi thông tin (CCCD, địa chỉ, tên…)":[1,3,16],
+ "Khác":[1,3,16]
+};
+const BR={TP:"VPĐK Thành phố",CN:"Chi nhánh"};
+const grpOf=n=>/^(Tờ khai|Chứng từ thực hiện|Văn bản .*miễn|Giấy tờ chứng minh .*miễn)/i.test(n)?TAX:LAND;
+
+/* ===== Dữ liệu ===== */
+let db=loadDb();
+function norm(d){
+  d=d&&typeof d==="object"?d:{};
+  d.cases=Array.isArray(d.cases)?d.cases:[];d.people=Array.isArray(d.people)?d.people:[];d.seq=d.seq||{};
+  d.cfg=Object.assign({place:"TP. Hồ Chí Minh",vpdk:"",rCN:2,rQT:10,qtMien:10000000,rLP:0.5},d.cfg||{});
+  d.cfg.cnList=Array.isArray(d.cfg.cnList)?d.cfg.cnList:[];
+  d.tpl=Object.assign({},JSON.parse(JSON.stringify(TPL0)),d.tpl||{});      /* danh mục của Chi nhánh */
+  d.tpOn=Object.assign({},JSON.parse(JSON.stringify(TP_ON0)),d.tpOn||{});  /* mục áp dụng của VPĐK TP */
+  d.cases.forEach(c=>{if(!c.noiNop)c.noiNop="TP";c.tp=c.tp||{};c.cn=c.cn||{};c.ts=c.ts||{};c.docs=c.docs||[];c.fees=c.fees||[];c.log=c.log||[];c.parties=c.parties||[];c.p=c.p||{};c.d=c.d||{};c.mst=c.mst||{pid:"",rows:[]}});
+  return d;
+}
+function dest(c){
+  const vp=db.cfg.vpdk||"Thành phố Hồ Chí Minh";
+  return c.noiNop==="CN"?vp+" – Chi nhánh "+(c.cn.ten||"……"):vp;
+}
+function brLabel(c){return c.noiNop==="CN"?"Chi nhánh"+(c.cn.ten?" "+c.cn.ten:""):"VPĐK TP"}
+function loadDb(){try{const r=localStorage.getItem(KEY);if(r)return norm(JSON.parse(r))}catch(e){}return norm({})}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(db))}catch(e){alert("Không lưu được vào trình duyệt. Hãy bấm Sao lưu để giữ dữ liệu.")}}
+const P=id=>db.people.find(p=>p.id===id)||null;
+const typeNames=()=>Object.keys(TYPES);
+
+function newCase(type,br){
+  type=type||typeNames()[0];
+  const c={id:uid(),code:"",noiNop:br||"TP",tp:{quay:"Quầy số 2-3",phieuSo:"",ngayPhieu:"",nguoiHD:"",kq:"",bs:""},cn:{ten:"",canBo:"",sdt:""},ts:{},type,status:"Chuẩn bị",client:"",ngayNop:"",bienNhan:"",ngayHen:"",ngayNhan:"",ketQua:"",ngayKy:"",note:"",
+    parties:[],p:{kind:"Căn hộ chung cư"},d:{},docs:[],fees:[],log:[],mst:{pid:"",rows:MST_ROWS0.map(k=>({k,o:"",n:""}))},upd:Date.now()};
+  syncType(c);return c;
+}
+function tplDocs(c){
+  if(c.noiNop==="CN")return (db.tpl[c.type]||[]).map(n=>({n,g:grpOf(n),s:"Thiếu"}));
+  const on=db.tpOn[c.type]||[1,3,16];
+  return TP_ITEMS.map(it=>({n:it.n,g:it.g,no:it.no,s:on.includes(it.no)?"Thiếu":"Không áp dụng"}));
+}
+function syncType(c){
+  const tpl=tplDocs(c),old=c.docs,out=[];
+  tpl.forEach(t=>{
+    const o=old.find(x=>!x.c&&x.n===t.n);
+    const untouched=o&&["Thiếu","Không áp dụng"].includes(o.s)&&!o.f&&!o.note;
+    out.push(o?Object.assign(o,{g:t.g,no:t.no},untouched?{s:t.s}:{}):Object.assign(t,{f:"",note:""}));
+  });
+  old.forEach(x=>{if(!out.includes(x)&&(x.c||x.s==="Đã có"||x.s==="Đã nộp"||x.f||x.note))out.push(x)});
+  c.docs=out;
+  ((TYPES[c.type]||{}).fees||[]).forEach(n=>{if(!c.fees.some(f=>f.n===n))c.fees.push({n,due:"",paid:"",date:"",rc:""})});
+}
+function docStat(c){const l=c.docs.filter(x=>x.s!=="Không áp dụng");return {done:l.filter(x=>x.s!=="Thiếu").length,total:l.length}}
+function feeStat(c){return {due:c.fees.reduce((a,f)=>a+num(f.due),0),paid:c.fees.reduce((a,f)=>a+num(f.paid),0)}}
+const isOpen=c=>!["Hoàn thành","Hủy"].includes(c.status);
+const isLate=c=>["Đã nộp","Cần bổ sung"].includes(c.status)&&c.ngayHen&&daysTo(c.ngayHen)<0;
+const partyNames=(c,r)=>c.parties.filter(x=>x.role===r).map(x=>(P(x.pid)||{}).name).filter(Boolean).join(", ");
+function propAddr(c){
+  const p=c.p||{};
+  const base=[p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", ");
+  if(p.kind==="Căn hộ chung cư"){
+    const a=[p.can&&"căn hộ "+p.can,p.tang&&"tầng "+p.tang,p.toa&&"tòa "+p.toa,p.duAn&&p.duAn].filter(Boolean).join(", ");
+    return [a,base].filter(Boolean).join(", ");
+  }
+  return base;
+}
+function caseTitle(c){return [c.type,propAddr(c)].filter(Boolean).join(" · ")}
+
+/* ===== Danh sách hồ sơ ===== */
+let tab=1,statF="",brF="";
+const inBr=c=>!brF||c.noiNop===brF;
+function renderBr(){
+  const n=k=>db.cases.filter(c=>!k||c.noiNop===k).length;
+  $("#brtabs").innerHTML=[["","Tất cả"],["TP","VPĐK Thành phố"],["CN","Chi nhánh"]].map(([k,l])=>`<button data-b="${k}" class="${brF===k?"on":""}">${l} (${n(k)})</button>`).join("");
+}
+$("#brtabs").onclick=e=>{const b=e.target.closest("[data-b]");if(!b)return;brF=b.dataset.b;statF="";renderList()};
+function renderStats(){
+  const base=db.cases.filter(inBr),open=base.filter(isOpen);
+  const S=[["", "Tất cả",base.length,""],["Chuẩn bị","Đang chuẩn bị",base.filter(c=>c.status==="Chuẩn bị").length,""],["Đã nộp","Đã nộp, chờ xử lý",base.filter(c=>c.status==="Đã nộp").length,""],["Cần bổ sung","Cần bổ sung",base.filter(c=>c.status==="Cần bổ sung").length,""],["__late","Quá hẹn trả",open.filter(isLate).length,"late"],["Có kết quả","Có kết quả, chưa nhận",base.filter(c=>c.status==="Có kết quả").length,""],["Hoàn thành","Hoàn thành",base.filter(c=>c.status==="Hoàn thành").length,""]];
+  $("#stats").innerHTML=S.map(s=>`<button class="stat ${s[3]} ${statF===s[0]?"on":""}" data-f="${s[0]}"><b>${s[2]}</b><span>${s[1]}</span></button>`).join("");
+}
+function filtered(){
+  const q=$("#q").value.trim().toLowerCase(),t=$("#ft").value,hide=$("#hideDone").checked;
+  return db.cases.filter(c=>{
+    if(!inBr(c))return false;
+    if(t&&c.type!==t)return false;
+    if(hide&&!isOpen(c))return false;
+    if(statF==="__late"){if(!(isOpen(c)&&isLate(c)))return false}else if(statF&&c.status!==statF)return false;
+    if(q){const h=[c.code,c.type,c.client,c.bienNhan,c.note,c.ketQua,c.cn.ten,c.tp.phieuSo,propAddr(c),c.p.gcnSo,c.p.thua,c.p.to,partyNames(c,"A"),partyNames(c,"B")].join(" ").toLowerCase();if(!h.includes(q))return false}
+    return true;
+  }).sort((a,b)=>{
+    const oa=isOpen(a)?0:1,ob=isOpen(b)?0:1;if(oa!==ob)return oa-ob;
+    if(oa===0){const x=a.ngayHen||"9999",y=b.ngayHen||"9999";if(x!==y)return x<y?-1:1}
+    return (b.upd||0)-(a.upd||0);
+  });
+}
+function renderList(){
+  renderBr();renderStats();$("#cnopts").innerHTML=db.cfg.cnList.map(x=>`<option value="${esc(x)}">`).join("");
+  const l=filtered();
+  if(!db.cases.length){$("#list").innerHTML=`<div class="empty">Chưa có hồ sơ nào. Bấm <b>+ Hồ sơ mới</b>, hoặc vào <b>Cài đặt → Nạp hồ sơ mẫu</b> để xem thử.</div>`;return}
+  if(!l.length){$("#list").innerHTML=`<div class="empty">Không có hồ sơ phù hợp bộ lọc.</div>`;return}
+  $("#list").innerHTML=`<table class="m"><thead><tr><th>Hồ sơ</th><th>Các bên / tài sản</th><th>Nộp / biên nhận</th><th>Hẹn trả</th><th>Giấy tờ</th><th class="num">Thuế phí (đã nộp / phải nộp)</th><th>Trạng thái</th></tr></thead><tbody>${l.map(c=>{
+    const ds=docStat(c),fs=feeStat(c),dt=daysTo(c.ngayHen);
+    let hen=c.ngayHen?fd(c.ngayHen):"—",sub="";
+    if(c.ngayHen&&isOpen(c)&&["Đã nộp","Cần bổ sung"].includes(c.status)){sub=dt<0?`<small class="late-d">Trễ ${-dt} ngày</small>`:dt===0?`<small class="late-d">Hôm nay</small>`:`<small>Còn ${dt} ngày</small>`}
+    const st={"Hoàn thành":"ok","Hủy":"","Cần bổ sung":"bad","Có kết quả":"info","Đã nộp":"warn"}[c.status]||"";
+    const a=partyNames(c,"A"),b=partyNames(c,"B");
+    return `<tr data-id="${c.id}"><td><b>${esc(c.code||"(chưa lưu)")}</b> <span class="br ${c.noiNop==="CN"?"cn":""}">${esc(brLabel(c))}</span><small>${esc(c.type)}</small>${c.client?`<small>${esc(c.client)}</small>`:""}</td>
+    <td>${b?esc(b):"<span class='sub'>Chưa chọn bên nhận</span>"}${a?`<small>từ: ${esc(a)}</small>`:""}<small>${esc(propAddr(c)||"")}</small></td>
+    <td>${c.ngayNop?fd(c.ngayNop):"—"}<small>${esc(c.bienNhan)}</small></td>
+    <td>${hen}${sub}</td>
+    <td>${ds.done}/${ds.total}<div class="prog"><i style="width:${ds.total?ds.done/ds.total*100:0}%"></i></div></td>
+    <td class="num">${fmt(fs.paid)||0} / ${fmt(fs.due)||0}</td>
+    <td><span class="tag ${st}">${esc(c.status)}</span></td></tr>`}).join("")}</tbody></table>`;
+}
+$("#stats").onclick=e=>{const b=e.target.closest("[data-f]");if(!b)return;statF=statF===b.dataset.f?"":b.dataset.f;renderList()};
+$("#list").onclick=e=>{const r=e.target.closest("tr[data-id]");if(r)openCase(r.dataset.id)};
+["#q","#ft","#hideDone"].forEach(s=>$(s).addEventListener("input",renderList));
+$("#ft").innerHTML=`<option value="">Mọi loại thủ tục</option>`+typeNames().map(t=>`<option>${esc(t)}</option>`).join("");
+
+/* ===== Danh bạ ===== */
+function renderPeople(){
+  const q=$("#pq").value.trim().toLowerCase();
+  const l=db.people.filter(p=>!q||[p.name,p.cccd,p.mst,p.phone,p.dd].join(" ").toLowerCase().includes(q)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","vi"));
+  if(!l.length){$("#plist").innerHTML=`<div class="empty">Chưa có ai trong danh bạ. Nhập một lần, dùng lại cho mọi hồ sơ.</div>`;return}
+  $("#plist").innerHTML=`<table class="m"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead><tbody>${l.map(p=>`<tr data-pid="${p.id}"><td><b>${esc(p.name)}</b>${isOrg(p)?` <span class="br">Pháp nhân</span><small>ĐD: ${esc([p.dd,p.ddCv].filter(Boolean).join(", "))}</small>`:""}</td><td>${fd(p.dob)}</td><td>${esc(p.cccd)}<small>${p.cccdDate?"cấp "+fd(p.cccdDate):""} ${esc(p.cccdPlace)}</small></td><td>${esc(p.mst)}</td><td>${esc([p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", "))}</td><td>${esc(p.phone)}<small>${esc(p.email)}</small></td><td>${db.cases.filter(c=>c.parties.some(x=>x.pid===p.id)).length}</td></tr>`).join("")}</tbody></table>`;
+}
+$("#plist").onclick=e=>{const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
+$("#pq").addEventListener("input",renderPeople);
+const PF=[["name","Họ và tên","full"],["dob","Ngày sinh","date"],["cccd","Số CCCD / hộ chiếu"],["cccdDate","Ngày cấp","date"],["cccdPlace","Nơi cấp"],["mst","Mã số thuế (nếu có)"],["phone","Điện thoại"],["email","Email"],["dc","Số nhà, đường / phố (thường trú)","full"],["px","Phường / xã"],["qh","Quận / huyện (nếu có)"],["tp","Tỉnh / thành phố"],["dcTB","Địa chỉ nhận thông báo thuế (nếu khác)","full"],["note","Ghi chú","full"]];
+const PFO=[["name","Tên pháp nhân (tổ chức)","full"],["mst","Mã số doanh nghiệp / mã số thuế"],["gdkNgay","Ngày cấp Giấy chứng nhận ĐKDN","date"],["gdkNoi","Nơi cấp Giấy chứng nhận ĐKDN"],["phone","Điện thoại"],["email","Email"],["dc","Số nhà, đường / phố (trụ sở chính)","full"],["px","Phường / xã"],["qh","Quận / huyện (nếu có)"],["tp","Tỉnh / thành phố"],["dcTB","Địa chỉ nhận thông báo (nếu khác)","full"],["dd","Người đại diện theo pháp luật (ký đơn)"],["ddCv","Chức danh"],["ddCccd","CCCD của người đại diện"],["note","Ghi chú","full"]];
+const isOrg=p=>p&&p.kind==="org";
+const idText=p=>isOrg(p)?(p.mst?"MST: "+p.mst:""):(p.cccd?"CCCD: "+p.cccd:"");
+let curP=null,pCb=null;
+function openPerson(id,cb){
+  curP=id?JSON.parse(JSON.stringify(P(id))):{id:uid(),tp:"TP. Hồ Chí Minh"};pCb=cb||null;
+  $("#pet").textContent=id?"Sửa thông tin":"Thêm người";$("#pdel").hidden=!id;
+  renderPForm();$("#pe").showModal();
+}
+function renderPForm(){
+  $("#pform").innerHTML=`<label class="full">Loại<select data-pk="kind"><option value="" ${isOrg(curP)?"":"selected"}>Cá nhân</option><option value="org" ${isOrg(curP)?"selected":""}>Pháp nhân / tổ chức</option></select></label>`+
+   (isOrg(curP)?PFO:PF).map(([k,l,t])=>`<label class="${t==="full"?"full":""}">${l}<input data-pk="${k}" type="${t==="date"?"date":"text"}" value="${esc(curP[k]||"")}"></label>`).join("");
+}
+$("#pform").addEventListener("input",e=>{if(e.target.dataset.pk)curP[e.target.dataset.pk]=e.target.value});
+$("#pform").addEventListener("change",e=>{if(e.target.dataset.pk==="kind"){curP.kind=e.target.value;renderPForm()}});
+$("#addp").onclick=()=>openPerson();
+$("#pclose").onclick=()=>$("#pe").close();
+$("#psave").onclick=()=>{
+  if(!(curP.name||"").trim()){toast("Cần nhập tên");return}
+  const i=db.people.findIndex(p=>p.id===curP.id);if(i>=0)db.people[i]=curP;else db.people.push(curP);
+  persist();$("#pe").close();renderPeople();renderList();if(pCb)pCb(curP.id);
+};
+$("#pdel").onclick=()=>{
+  const n=db.cases.filter(c=>c.parties.some(x=>x.pid===curP.id)).length;
+  if(!confirm(n?`Người này có trong ${n} hồ sơ. Xóa và gỡ khỏi các hồ sơ đó?`:"Xóa người này?"))return;
+  db.people=db.people.filter(p=>p.id!==curP.id);db.cases.forEach(c=>c.parties=c.parties.filter(x=>x.pid!==curP.id));
+  persist();$("#pe").close();renderPeople();renderList();
+};
+
+/* ===== Hồ sơ: hộp thoại ===== */
+let cur=null,isNew=false,ctab="gen",orig="";
+const CTABS=[["gen","Chung"],["par","Các bên"],["prop","Tài sản"],["deal","Giao dịch, thuế phí"],["docs","Giấy tờ"],["log","Nhật ký"],["print","Tờ khai in"]];
+function openCase(id,br){
+  isNew=!id;cur=id?JSON.parse(JSON.stringify(db.cases.find(c=>c.id===id))):newCase(null,br);
+  ctab="gen";orig=JSON.stringify(cur);$("#cdel").hidden=isNew;$("#cdup").hidden=isNew;
+  renderCase();$("#cd").showModal();
+}
+function renderCase(){
+  $("#cdt").textContent=(cur.code||"Hồ sơ mới")+" · "+brLabel(cur)+" · "+cur.type;
+  $("#ctabs").innerHTML=CTABS.map(([k,l])=>{
+    let extra="";if(k==="docs"){const s=docStat(cur);extra=` (${s.done}/${s.total})`}
+    if(k==="par")extra=` (${cur.parties.length})`;
+    return `<button data-t="${k}" class="${ctab===k?"on":""}">${l}${extra}</button>`}).join("");
+  $("#cbody").innerHTML=TABS[ctab]();
+}
+$("#ctabs").onclick=e=>{const b=e.target.closest("[data-t]");if(!b)return;ctab=b.dataset.t;renderCase()};
+const L=(l,k,o={})=>{
+  const v=getp(cur,k),t=o.type||"text";
+  if(o.sel)return `<label class="${o.cls||""}">${l}<select data-k="${k}">${o.sel.map(x=>{const a=Array.isArray(x)?x:[x,x];return `<option value="${esc(a[0])}" ${a[0]===v?"selected":""}>${esc(a[1])}</option>`}).join("")}</select></label>`;
+  if(t==="area")return `<label class="${o.cls||"full"}">${l}<textarea data-k="${k}" rows="${o.rows||3}">${esc(v||"")}</textarea></label>`;
+  if(t==="money")return `<label class="${o.cls||""}">${l}<input data-k="${k}" data-money="1" inputmode="numeric" value="${v===""||v==null?"":fmt(num(v))}"></label>`;
+  if(t==="check")return `<label class="ck ${o.cls||""}"><input type="checkbox" data-k="${k}" ${v?"checked":""}> ${l}</label>`;
+  return `<label class="${o.cls||""}">${l}<input data-k="${k}" type="${t}" value="${esc(v||"")}" ${o.list?`list="${o.list}"`:""} ${o.ph?`placeholder="${esc(o.ph)}"`:""}></label>`;
+};
+function missing(c){
+  const m=[];
+  c.parties.forEach(x=>{const p=P(x.pid);if(!p)return;const w=[];if(isOrg(p)){if(!p.mst)w.push("MST");if(!p.dd)w.push("người đại diện")}else if(!p.cccd)w.push("CCCD");if(!p.dc&&!p.px)w.push("địa chỉ");if(w.length)m.push(`${p.name}: thiếu ${w.join(", ")}`)});
+  if(!c.parties.some(x=>x.role==="B"))m.push("chưa chọn bên nhận");
+  return m;
+}
+const TABS={
+ gen:()=>{
+  const cn=cur.noiNop==="CN";
+  return `<div class="grid">
+  ${L("Nơi nộp","noiNop",{sel:[["TP","VPĐK Thành phố"],["CN","Chi nhánh VPĐK"]]})}
+  ${L("Loại thủ tục","type",{sel:typeNames(),cls:"sp2"})}
+  ${L("Trạng thái","status",{sel:STATUS})}
+  ${L("Chủ hồ sơ / khách hàng (nếu làm cho người khác)","client",{cls:"sp2"})}
+  </div>
+  <div class="sec2">${cn?"Chi nhánh tiếp nhận":"VPĐK Thành phố – Bộ phận tiếp nhận và trả kết quả"}</div>
+  ${cn?`<div class="grid g3">
+   ${L("Tên chi nhánh","cn.ten",{list:"cnopts",ph:"VD: Chi nhánh …"})}
+   ${L("Cán bộ tiếp nhận / phụ trách","cn.canBo")}${L("Điện thoại chi nhánh","cn.sdt")}</div>`
+  :`<div class="grid g3">
+   ${L("Quầy tiếp nhận","tp.quay")}${L("Số phiếu hướng dẫn (…/HĐHS-ĐK)","tp.phieuSo")}${L("Ngày phiếu hướng dẫn","tp.ngayPhieu",{type:"date"})}
+   ${L("Người hướng dẫn","tp.nguoiHD")}${L("Kết quả hướng dẫn","tp.kq",{sel:["","Đủ điều kiện tiếp nhận","Cần bổ sung"]})}
+   ${L("Nội dung yêu cầu bổ sung (nếu có)","tp.bs",{type:"area",rows:2})}</div>`}
+  <div class="sec2">Tiến độ</div>
+  <div class="grid">
+  ${L("Ngày nộp","ngayNop",{type:"date"})}
+  ${L("Số / mã biên nhận","bienNhan")}
+  ${L("Ngày hẹn trả kết quả","ngayHen",{type:"date"})}
+  ${L("Ngày nhận kết quả","ngayNhan",{type:"date"})}
+  ${L("Kết quả (số GCN mới, ghi chú…)","ketQua")}
+  ${L("Ngày ghi trên tờ khai","ngayKy",{type:"date"})}
+  ${L("Ghi chú, vướng mắc, bước tiếp theo","note",{type:"area"})}
+ </div><p class="hint">Mã hồ sơ được cấp khi lưu lần đầu. Đổi “Nơi nộp” sẽ đổi danh mục giấy tờ theo nhánh (mục đã có hoặc đã nộp được giữ lại).</p>`},
+ par:()=>{
+  const m=missing(cur);
+  return `${m.length?`<div class="warnbox"><b>Còn thiếu:</b> ${m.map(esc).join(" · ")}</div>`:""}
+  <div class="lst">${cur.parties.length?cur.parties.map((x,i)=>{const p=P(x.pid)||{};return `<div class="it party">
+    <div><b>${esc(p.name||"(đã xóa)")}</b><span class="sub">${esc((isOrg(p)?["Pháp nhân",p.mst&&"MST "+p.mst,p.dd&&"ĐD: "+p.dd]:[p.cccd&&"CCCD "+p.cccd,p.mst&&"MST "+p.mst]).filter(Boolean).join(" · "))}</span></div>
+    <select data-k="parties.${i}.role">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}" ${x.role===k?"selected":""}>${v}</option>`).join("")}</select>
+    <input data-k="parties.${i}.ratio" placeholder="Tỷ lệ %" value="${esc(x.ratio||"")}" title="Tỷ lệ sở hữu (%)">
+    <span><button data-a="editp" data-i="${i}">Sửa</button> <button class="link" data-a="rmpar" data-i="${i}">Gỡ</button></span></div>`}).join(""):`<div class="it"><span class="sub">Chưa có bên nào.</span></div>`}</div>
+  <div class="fgrp"><span class="fl nm">Thêm từ danh bạ<select id="addsel"><option value="">— chọn người —</option>${db.people.filter(p=>!cur.parties.some(x=>x.pid===p.id)).map(p=>`<option value="${p.id}">${esc(p.name)}${p.cccd?" – "+esc(p.cccd):""}</option>`).join("")}</select></span>
+   <select id="addrole">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
+   <button data-a="addpar">Thêm vào hồ sơ</button><button data-a="newp">+ Người mới</button></div>
+  <p class="hint">Bên nhận lần lượt thành “người sử dụng đất / người nộp thuế” trên tờ khai; bên chuyển nhượng điền vào tờ khai TNCN. Tỷ lệ % dùng khi có đồng sở hữu.</p>`},
+ prop:()=>{
+  const apt=cur.p.kind==="Căn hộ chung cư";
+  return `<div class="grid g3">
+  ${L("Loại tài sản","p.kind",{sel:PKIND})}
+  ${L("Số Giấy chứng nhận","p.gcnSo")}${L("Số vào sổ cấp GCN (GCN cũ)","p.soVaoSo")}${L("Ngày cấp GCN","p.gcnNgay",{type:"date"})}
+  ${L("Cơ quan cấp GCN","p.gcnCQ")}${L("Thửa đất số","p.thua")}${L("Tờ bản đồ số","p.to")}
+  ${L("Diện tích thửa đất (m²)","p.dt")}${L("Mục đích sử dụng đất","p.mucDich")}${L("Vị trí thửa đất","p.viTri")}
+  ${L("Số nhà, đường / phố","p.dc",{cls:"sp2"})}${L("Phường / xã","p.px")}
+  ${L("Quận / huyện (nếu có)","p.qh")}${L("Tỉnh / thành phố","p.tp")}${L("Nguồn gốc đất","p.nguonGoc")}
+  </div>
+  ${apt?`<div class="hd"><h3>Căn hộ chung cư</h3></div><div class="grid g3">
+   ${L("Dự án / tòa nhà","p.duAn")}${L("Chủ đầu tư (chủ dự án)","p.cdt")}${L("Số căn hộ","p.can")}
+   ${L("Tòa","p.toa")}${L("Tầng","p.tang")}${L("Diện tích sở hữu riêng (m²)","p.dtRieng")}
+   ${L("Diện tích sở hữu chung (m²)","p.dtChung")}${L("Kết cấu","p.ketCau")}${L("Năm hoàn thành","p.namHT")}
+   ${L("Số tầng nổi","p.tangNoi")}${L("Số tầng hầm","p.tangHam")}${L("Cấp / hạng nhà","p.capNha")}</div>`
+  :`<div class="hd"><h3>Nhà, công trình trên đất</h3></div><div class="grid g3">
+   ${L("Cấp nhà","p.capNha")}${L("Diện tích xây dựng (m²)","p.dtXD")}${L("Diện tích sàn (m²)","p.dtRieng")}
+   ${L("Kết cấu","p.ketCau")}${L("Năm hoàn thành","p.namHT")}</div>`}`},
+ deal:()=>{
+  const t=TYPES[cur.type]||{},fs=feeStat(cur);
+  return `<div class="grid g3">
+  ${L("Số hợp đồng / văn bản","d.hdSo")}${L("Ngày lập","d.hdNgay",{type:"date"})}${L("Ngày công chứng, chứng thực","d.hdNgayCT",{type:"date"})}
+  ${L("Nơi công chứng","d.hdNoi",{cls:"sp2"})}${L("Hợp đồng mua bán với chủ đầu tư (số)","d.cdtSo")}
+  ${L("Ngày hợp đồng với chủ đầu tư","d.cdtNgay",{type:"date"})}
+  ${L("Giá chuyển nhượng / giá trị tài sản (đồng)","d.gia",{type:"money"})}
+  ${L("Giá tính lệ phí trước bạ (nếu khác) (đồng)","d.giaLP",{type:"money"})}
+  ${L("Nội dung biến động ghi trên Đơn (Mẫu 18)","d.nd",{type:"area",rows:2})}
+  ${L("Giấy tờ nộp kèm ghi trên Đơn – mỗi dòng một giấy tờ, ghi rõ số, ngày, cơ quan (để trống thì lấy từ tab Giấy tờ)","d.kem",{type:"area",rows:3})}
+  ${L("Thuộc diện miễn thuế TNCN","d.mienTNCN",{type:"check"})}${L("Thuộc diện miễn lệ phí trước bạ","d.mienLP",{type:"check"})}
+  ${L("Lý do miễn (nếu có)","d.lyDoMien",{cls:"full"})}</div>
+  <div class="hd"><h3>Thuế, phí, lệ phí</h3><span><button data-a="autofee">Tính tự động từ giá</button> <button data-a="addfee">+ Khoản</button></span></div>
+  <div class="lst" id="feel">${feeRows()}</div>
+  <div class="sum" id="feesum">${feeSum()}</div>
+  <p class="hint">${t.tax==="cn"?`Thuế TNCN chuyển nhượng = giá × ${db.cfg.rCN}%.`:t.tax==="qt"?`Thuế TNCN thừa kế, tặng cho = (giá − ${fmt(db.cfg.qtMien)}) × ${db.cfg.rQT}%.`:"Loại thủ tục này không có thuế TNCN."} Lệ phí trước bạ = giá tính × ${db.cfg.rLP}%. Mức phí thẩm định và lệ phí cấp GCN tùy địa phương, hãy tự nhập. Tỷ lệ sửa trong Cài đặt.</p>`},
+ docs:()=>{
+  const s=docStat(cur),tp=cur.noiNop!=="CN";
+  const gs=[LAND,TAX];let h="";
+  gs.forEach(g=>{
+    const items=cur.docs.map((x,i)=>[x,i]).filter(([x])=>(x.g||LAND)===g);
+    if(!items.length)return;
+    h+=`<div class="gh">${g==="Hồ sơ thuế"?"II. ":"I. "}${g}</div>`+items.map(([x,i])=>`<div class="it doc"><div style="display:flex;gap:6px;align-items:center">${x.no?`<span class="sub" style="min-width:20px">${x.no}.</span>`:""}<input data-k="docs.${i}.n" value="${esc(x.n)}" title="${esc(x.n)}"></div>
+   <select data-k="docs.${i}.s">${DOC_ST.map(o=>`<option ${o===x.s?"selected":""}>${o}</option>`).join("")}</select>
+   <input data-k="docs.${i}.f" list="formopts" placeholder="Bản chính / sao y / photo" value="${esc(x.f||"")}">
+   <input data-k="docs.${i}.note" placeholder="Ghi chú" value="${esc(x.note||"")}">
+   <button class="link" data-a="rmdoc" data-i="${i}">Xóa</button></div>`).join("");
+  });
+  return `<div class="hd"><h3>Đã chuẩn bị ${s.done}/${s.total}</h3><button data-a="adddoc">+ Thêm giấy tờ</button></div>
+  <div class="lst">${h}</div>
+  <p class="hint">${tp?"Danh mục theo Phiếu hướng dẫn của VPĐK Thành phố (đánh số như trên phiếu); mục không cần dùng để “Không áp dụng”. ":"Danh mục của Chi nhánh (sửa trong Cài đặt). "}“Đã có” là đã có trong tay, “Đã nộp” là đã nộp cho VPĐK. Cột thứ ba ghi hình thức nộp.</p>`},
+ log:()=>`<div class="fgrp"><input type="date" id="lgd" value="${today()}"><input id="lgt" class="nm" placeholder="VD: Nhận yêu cầu bổ sung giấy ủy quyền; đã nộp thuế qua cổng điện tử…"><button data-a="addlog">Thêm</button></div>
+  <div class="lst">${cur.log.length?cur.log.map((x,i)=>`<div class="it log"><b>${fd(x.d)}</b><span>${esc(x.t)}</span><button class="link" data-a="rmlog" data-i="${i}">Xóa</button></div>`).join(""):`<div class="it"><span class="sub">Chưa có ghi chép.</span></div>`}</div>`,
+ print:()=>{
+  const tpb=cur.noiNop!=="CN";const sel=((TYPES[cur.type]||{}).forms||["cover"]).map(k=>k==="cover"&&tpb?"phieu":k);
+  const mp=cur.mst;
+  return `<p class="hint" style="margin-top:0">Chọn các mẫu cần in cho hồ sơ này. Dữ liệu lấy từ các tab Các bên, Tài sản, Giao dịch.</p>
+  ${Object.entries(FORMS_LAB).filter(([k])=>k==="phieu"?tpb:k==="cover"?!tpb:true).map(([k,l])=>`<div class="fgrp"><label class="ck nm"><input type="checkbox" class="fsel" value="${k}" ${sel.includes(k)?"checked":""}> ${l}</label><button data-a="showform" data-f="${k}">Xem / in riêng</button></div>`).join("")}
+  <div class="foot" style="margin-top:6px"><button class="primary" data-a="showsel">Xem và in các mẫu đã chọn</button></div>
+  <details style="margin-top:14px"><summary style="cursor:pointer;font-weight:600">Dữ liệu cho tờ khai tiền sử dụng đất (01/TSDD)</summary>
+  <div class="grid" style="margin-top:8px">
+   ${L("Giấy tờ về quyền sử dụng đất (để trống = lấy từ GCN ở tab Tài sản)","ts.giayTo",{cls:"full"})}
+   ${L("Vị trí của thửa đất","ts.viTri")}${L("Thời điểm được quyền sử dụng đất","ts.tuNgay",{type:"date"})}
+   ${L("Loại đất trước khi chuyển mục đích","ts.loaiTruoc")}${L("Loại đất sau khi chuyển mục đích","ts.loaiSau")}
+   ${L("Nguồn gốc sử dụng đất","ts.nguonGoc",{cls:"full"})}
+   ${L("Đất ở nông thôn – trong hạn mức (m²)","ts.dtNTtrong")}${L("Đất ở nông thôn – ngoài hạn mức (m²)","ts.dtNTngoai")}
+   ${L("Đất ở đô thị – trong hạn mức (m²)","ts.dtDT")}${L("Diện tích đất sử dụng chung (m²)","ts.dtChung")}
+   ${L("Đất SXKD, dịch vụ (m²)","ts.dtSXKD")}${L("Đất nông, lâm nghiệp, nuôi trồng, làm muối (m²)","ts.dtNN")}
+   ${L("Tiền bồi thường, hỗ trợ về đất thực tế","ts.boiThuong")}${L("Tiền sử dụng đất, thuê đất đã nộp trước","ts.daNop")}
+   ${L("Miễn, giảm (ghi căn cứ văn bản)","ts.mien",{cls:"full"})}${L("Giấy tờ chứng minh miễn, giảm; chứng từ đã nộp","ts.giayToMien",{cls:"full"})}
+  </div></details>
+  <div class="hd"><h3>Dữ liệu cho tờ khai 08-MST</h3><button data-a="addmst">+ Dòng</button></div>
+  <label class="fl">Người nộp thuế<select data-k="mst.pid"><option value="">— chọn trong các bên của hồ sơ —</option>${cur.parties.map(x=>{const p=P(x.pid);return p?`<option value="${p.id}" ${mp.pid===p.id?"selected":""}>${esc(p.name)}</option>`:""}).join("")}</select></label>
+  <div class="lst">${mp.rows.map((r,i)=>`<div class="it mst"><input data-k="mst.rows.${i}.k" placeholder="Chỉ tiêu" value="${esc(r.k)}"><input data-k="mst.rows.${i}.o" placeholder="Thông tin cũ" value="${esc(r.o)}"><input data-k="mst.rows.${i}.n" placeholder="Thông tin mới" value="${esc(r.n)}"><button class="link" data-a="rmmst" data-i="${i}">Xóa</button></div>`).join("")}</div>`}
+};
+function feeRows(){return cur.fees.length?cur.fees.map((f,i)=>`<div class="it fee"><input data-k="fees.${i}.n" value="${esc(f.n)}" title="Khoản">
+  <input data-k="fees.${i}.due" data-money="1" inputmode="numeric" placeholder="Phải nộp" value="${f.due===""?"":fmt(num(f.due))}">
+  <input data-k="fees.${i}.paid" data-money="1" inputmode="numeric" placeholder="Đã nộp" value="${f.paid===""?"":fmt(num(f.paid))}">
+  <input data-k="fees.${i}.date" type="date" title="Ngày nộp" value="${esc(f.date||"")}">
+  <input data-k="fees.${i}.rc" placeholder="Số biên lai" value="${esc(f.rc||"")}"><button class="link" data-a="rmfee" data-i="${i}">Xóa</button></div>`).join(""):`<div class="it"><span class="sub">Chưa có khoản nào.</span></div>`}
+function feeSum(){const s=feeStat(cur);return `<span>Phải nộp: <b>${fmt(s.due)||0}</b></span><span>Đã nộp: <b>${fmt(s.paid)||0}</b></span><span>Còn lại: <b>${fmt(Math.max(0,s.due-s.paid))||0}</b></span>`}
+function setFee(n,v){let f=cur.fees.find(x=>x.n===n);if(!f){f={n,due:"",paid:"",date:"",rc:""};cur.fees.unshift(f)}f.due=v}
+function autoFee(c){
+  const t=TYPES[c.type]||{},g=num(c.d.gia),gl=num(c.d.giaLP)||g;
+  if(!g&&!gl){toast("Nhập giá chuyển nhượng trước");return false}
+  if(t.tax==="cn")setFee("Thuế thu nhập cá nhân",c.d.mienTNCN?0:Math.round(g*db.cfg.rCN/100));
+  if(t.tax==="qt")setFee("Thuế thu nhập cá nhân",c.d.mienTNCN?0:Math.max(0,Math.round((g-db.cfg.qtMien)*db.cfg.rQT/100)));
+  if(t.lptb)setFee("Lệ phí trước bạ",c.d.mienLP?0:Math.round(gl*db.cfg.rLP/100));
+  return true;
+}
+/* nhập liệu */
+$("#cbody").addEventListener("input",e=>{
+  const t=e.target,k=t.dataset.k;if(!k)return;
+  let v=t.type==="checkbox"?t.checked:t.value;
+  if(t.dataset.money)v=num(v)||"";
+  setp(cur,k,v);
+  if(k.startsWith("fees."))$("#feesum").innerHTML=feeSum();
+});
+$("#cbody").addEventListener("change",e=>{
+  const t=e.target,k=t.dataset.k;if(!k)return;
+  if(t.dataset.money){t.value=t.value===""?"":fmt(num(t.value))}
+  if(k==="type"||k==="noiNop"){syncType(cur);renderCase()}
+  else if(k==="status"){cur.log.push({d:today(),t:"Chuyển trạng thái: "+cur.status});if(cur.status==="Đã nộp"&&!cur.ngayNop)cur.ngayNop=today();renderCase()}
+  else if(k==="p.kind"||k==="mst.pid"||k.startsWith("d.mien")){renderCase()}
+  else if(/^docs\.\d+\.s$/.test(k)){renderCase()}
+});
+$("#cbody").addEventListener("click",e=>{
+  const b=e.target.closest("[data-a]");if(!b)return;
+  const a=b.dataset.a,i=+b.dataset.i;
+  if(a==="rmpar")cur.parties.splice(i,1);
+  else if(a==="addpar"){const v=$("#addsel").value;if(!v)return toast("Chọn một người");cur.parties.push({pid:v,role:$("#addrole").value,ratio:""})}
+  else if(a==="newp"){openPerson(null,id=>{cur.parties.push({pid:id,role:"B",ratio:""});renderCase()});return}
+  else if(a==="editp"){openPerson(cur.parties[i].pid,()=>renderCase());return}
+  else if(a==="adddoc")cur.docs.push({n:"Giấy tờ khác",s:"Thiếu",f:"",note:"",c:1,g:LAND});
+  else if(a==="rmdoc")cur.docs.splice(i,1);
+  else if(a==="addfee")cur.fees.push({n:"Khoản mới",due:"",paid:"",date:"",rc:""});
+  else if(a==="rmfee")cur.fees.splice(i,1);
+  else if(a==="autofee"){if(!autoFee(cur))return}
+  else if(a==="addlog"){const t=$("#lgt").value.trim();if(!t)return;cur.log.push({d:$("#lgd").value||today(),t})}
+  else if(a==="rmlog")cur.log.splice(i,1);
+  else if(a==="addmst")cur.mst.rows.push({k:"",o:"",n:""});
+  else if(a==="rmmst")cur.mst.rows.splice(i,1);
+  else if(a==="showform"){showForms([b.dataset.f]);return}
+  else if(a==="showsel"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chưa chọn mẫu nào");showForms(l);return}
+  else return;
+  renderCase();
+});
+function commit(){
+  cur.upd=Date.now();
+  if(!cur.code){const y=new Date().getFullYear();db.seq[y]=(db.seq[y]||0)+1;cur.code=`HS-${y}-${String(db.seq[y]).padStart(3,"0")}`}
+  if(isNew&&!cur.log.length)cur.log.push({d:today(),t:"Tạo hồ sơ"});
+  const i=db.cases.findIndex(c=>c.id===cur.id);if(i>=0)db.cases[i]=cur;else db.cases.push(cur);
+  persist();
+}
+$("#csave").onclick=()=>{commit();$("#cd").close();renderList();toast("Đã lưu "+cur.code)};
+$("#cclose").onclick=()=>{if(JSON.stringify(cur)!==orig&&!confirm("Đóng mà chưa lưu thay đổi?"))return;$("#cd").close()};
+$("#cdel").onclick=()=>{if(!confirm("Xóa hồ sơ "+cur.code+"? Không khôi phục được (trừ khi đã sao lưu)."))return;db.cases=db.cases.filter(c=>c.id!==cur.id);persist();$("#cd").close();renderList()};
+$("#cdup").onclick=()=>{
+  const c=JSON.parse(JSON.stringify(cur));c.id=uid();c.code="";c.status="Chuẩn bị";c.ngayNop=c.bienNhan=c.ngayHen=c.ngayNhan=c.ketQua="";c.log=[];c.fees.forEach(f=>{f.paid="";f.date="";f.rc=""});c.docs.forEach(d=>{if(d.s==="Đã nộp")d.s="Đã có"});
+  commit();cur=c;isNew=true;orig="";ctab="gen";renderCase();toast("Đã nhân bản – chỉnh rồi bấm Lưu");
+};
+$("#addc").onclick=()=>{if(brF)openCase(null,brF);else $("#bd").showModal()};
+$("#bTP").onclick=()=>{$("#bd").close();openCase(null,"TP")};
+$("#bCN").onclick=()=>{$("#bd").close();openCase(null,"CN")};
+$("#bclose").onclick=()=>$("#bd").close();
+
+/* ===== Tờ khai in ===== */
+const v=(x,w=14)=>(x||x===0)?`<span class="v">${esc(x)}</span>`:`<span class="bl" style="min-width:${w}ch"></span>`;
+const cb=on=>on?"☒":"☐";
+const ln=(x,w)=>v(x,w);
+function ctx(c){
+  const by=r=>c.parties.filter(x=>x.role===r).map(x=>Object.assign({},P(x.pid)||{},{ratio:x.ratio}));
+  const A=by("A"),B=by("B"),U=by("U");
+  return {c,p:c.p||{},d:c.d||{},A,B,U,a:A[0]||{},b:B[0]||{},u:U[0]||{},place:db.cfg.place};
+}
+const adr=p=>[p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", ");
+function sdate(c,place){const q=dparts(c.ngayKy);return `${esc(place)}, ngày ${q?`<span class="v">${q[0]}</span>`:"…….."} tháng ${q?`<span class="v">${q[1]}</span>`:"……."} năm ${q?`<span class="v">${q[2]}</span>`:"………"}`}
+const head=(t,sub,note)=>`<div class="c b">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div><div class="c b">Độc lập - Tự do - Hạnh phúc</div><div class="c">---------------</div><h2>${t}</h2>${sub?`<div class="ss">${sub}</div>`:""}`;
+const sig=(left,right,name,title)=>`<div class="sig"><div>${left}</div><div>${right}<br><br><br><br><b class="v">${esc(name||"")}</b>${title?`<br><span class="v sm">${esc(title)}</span>`:""}</div></div>`;
+function signP(x,pref){return pref==="A"?(x.u.name?x.u:x.a.name?x.a:x.b):(x.u.name?x.u:x.b.name?x.b:x.a)}
+function signer(x,pref){const p=signP(x,pref);return (isOrg(p)?p.dd||p.name:p.name)||""}
+function signT(x,pref){const p=signP(x,pref);return isOrg(p)?(p.ddCv||"Người đại diện theo pháp luật"):""}
+const FORMS={
+ don18(c){
+  const x=ctx(c),p=x.p;
+  let nd=x.d.nd;
+  if(!nd){nd=c.type+(propAddr(c)?" – "+propAddr(c):"");
+    if(/^Cấp đổi/.test(c.type))nd="Cấp đổi Giấy chứng nhận"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?", số vào sổ cấp Giấy chứng nhận: "+p.soVaoSo:"")+(p.gcnNgay?" ngày "+fd(p.gcnNgay):"")+(p.gcnCQ?" do "+p.gcnCQ+" cấp":"")}
+  const att=x.d.kem&&x.d.kem.trim()?x.d.kem.split("\n").map(t=>t.trim()).filter(Boolean).map(t=>`<p><span class="v">- ${esc(t)}</span></p>`).join(""):c.docs.filter(d=>d.s!=="Không áp dụng"&&!/^Đơn/i.test(d.n)).map((d,i)=>`<p>(${i+1}) ${esc(d.n)};</p>`).join("");
+  return `<div class="fd"><div class="r i b">Mẫu số 18</div><div class="i sm">(Xem kỹ hướng dẫn viết đơn trước khi kê khai; không tẩy xóa, sửa chữa trên đơn)</div>
+  ${head("ĐƠN ĐĂNG KÝ BIẾN ĐỘNG ĐẤT ĐAI, TÀI SẢN GẮN LIỀN VỚI ĐẤT")}
+  <p><b>Kính gửi:</b> Văn phòng đăng ký đất đai ${v(dest(c),24)} (1)</p>
+  <p class="sec">1. Người sử dụng đất, chủ sở hữu tài sản gắn liền với đất, người quản lý đất:</p>
+  <p class="ind">a) Tên (2): ${v(x.B.map(q=>q.name).join(" - "),40)}</p>
+  <p class="ind">b) Giấy tờ nhân thân/pháp nhân (2): ${v(x.B.map(idText).filter(Boolean).join(" - "),40)}</p>
+  <p class="ind">c) Địa chỉ (2): ${v(x.B.map(adr).filter((s,i,a)=>s&&a.indexOf(s)===i).join(" ; "),50)}</p>
+  <p class="ind">d) Điện thoại liên hệ (nếu có): ${v(x.b.phone,16)} Hộp thư điện tử (nếu có): ${v(x.b.email,20)}</p>
+  <p class="sec">2. Nội dung biến động (3):</p><p class="ind">- ${v(nd,60)}</p>
+  <p class="sec">3. Giấy tờ liên quan đến nội dung biến động nộp kèm theo đơn này gồm có (4):</p>${att||`<p>(1) ${v("",50)};</p>`}
+  <p>Cam đoan nội dung kê khai trên đơn là đúng sự thật và chịu trách nhiệm trước pháp luật.</p>
+  ${sig("", `${sdate(c,x.place)}<br><b>Người viết đơn</b><br><i class="sm">(Ký, ghi rõ họ tên và đóng dấu nếu có)</i>`,signer(x),signT(x))}</div>`;
+ },
+ lptb(c){
+  const x=ctx(c),p=x.p,d=x.d,apt=p.kind==="Căn hộ chung cư",gia=num(d.gia);
+  const own=x.B.length?x.B:[{}];
+  const q=dparts(d.hdNgayCT||d.hdNgay);
+  return `<div class="fd">${head("TỜ KHAI LỆ PHÍ TRƯỚC BẠ","(Áp dụng đối với nhà, đất)")}
+  <p>[01] Kỳ tính thuế: Theo từng lần phát sinh ngày ${v(q&&q[0],4)} tháng ${v(q&&q[1],4)} năm ${v(q&&q[2],6)}</p>
+  <p>[02] Lần đầu: ${cb(1)} &nbsp; [03] Bổ sung lần thứ: ${cb(0)}</p>
+  <p class="i">Tổ chức, cá nhân được ủy quyền khai thay cho người nộp thuế</p>
+  <p>[04] Người nộp thuế: ${v(x.b.name,34)}</p><p>[05] Mã số thuế: ${v(x.b.mst,16)}</p>
+  <p>[06] Số CMND/CCCD/Hộ chiếu (trường hợp chưa có mã số thuế): ${v(x.b.cccd,18)}</p>
+  <p>[07] Địa chỉ: ${v([x.b.dc,x.b.px].filter(Boolean).join(", "),40)}</p>
+  <p>[08] Quận/huyện: ${v(x.b.qh,14)} [09] Tỉnh/Thành phố: ${v(x.b.tp,18)}</p>
+  <p>[10] Điện thoại: ${v(x.b.phone,14)} [11] Fax: ${v("",8)} [12] Email: ${v(x.b.email,18)}</p>
+  <p>[13] Đại lý thuế; hoặc tổ chức, cá nhân được ủy quyền khai thay (nếu có): ${v(x.u.name,26)}</p>
+  <p>[14] Mã số thuế: ${v(x.u.mst,16)} [15] Hợp đồng đại lý thuế: Số ${v("",10)} ngày ${v("",10)}</p>
+  <p class="sec">ĐẶC ĐIỂM NHÀ ĐẤT:</p>
+  <p><b>1. Đất:</b></p>
+  <p class="ind">1.1. Thửa đất số (Số hiệu thửa đất): ${v(p.thua,8)} ; Tờ bản đồ số: ${v(p.to,8)}</p>
+  <p class="ind">1.2. Địa chỉ thửa đất:</p>
+  <p class="ind">1.2.1. Số nhà: ${v(apt?"":p.dc,10)} Tòa nhà: ${v(apt?p.duAn:"",22)} Ngõ/Hẻm: ${v("",6)} Đường/Phố: ${v(apt?p.dc:"",16)}</p>
+  <p class="ind">1.2.2. Phường/xã: ${v(p.px,16)} 1.2.3. Quận/huyện: ${v(p.qh,12)} 1.2.4. Tỉnh/thành phố: ${v(p.tp,16)}</p>
+  <p class="ind">1.3. Vị trí thửa đất: ${v(p.viTri,30)}</p>
+  <p class="ind">1.4. Mục đích sử dụng đất: ${v(p.mucDich,30)}</p>
+  <p class="ind">1.5. Diện tích (m²): ${v(p.dt,12)}</p>
+  <p class="ind">1.6. Nguồn gốc nhà đất: ${v(p.nguonGoc,30)}</p>
+  <p class="ind">a) Tên tổ chức, cá nhân chuyển giao QSDĐ: ${v(x.A.map(q=>q.name).join(", "),30)}</p>
+  <p class="ind">- Mã số thuế: ${v(x.a.mst,16)} &nbsp; - Số CMND/CCCD/Hộ chiếu: ${v(x.a.cccd,18)}</p>
+  <p class="ind">- Địa chỉ người giao QSDĐ: ${v(adr(x.a),40)}</p>
+  <p class="ind">b) Thời điểm làm giấy tờ chuyển giao QSDĐ: ngày ${v(q&&q[0],4)} tháng ${v(q&&q[1],4)} năm ${v(q&&q[2],6)}</p>
+  <p class="ind">1.7. Giá trị đất thực tế chuyển giao (nếu có): ${v("",20)}</p>
+  <p><b>2. Nhà:</b></p>
+  <p class="ind">2.1. Thông tin về nhà ở, nhà làm việc, nhà sử dụng cho mục đích khác:</p>
+  <p class="ind">Cấp nhà: ${v(p.capNha,8)} Loại nhà: ${v(apt?"chung cư":"",10)} Hạng nhà: ${v("",6)}</p>
+  ${apt?`<p class="ind">Trường hợp là nhà ở chung cư: Chủ dự án: ${v(p.cdt,24)} Địa chỉ dự án, công trình chung cư: ${v(p.duAn,24)}</p>
+  <p class="ind">Kết cấu: ${v(p.ketCau,22)} Số tầng nổi: ${v(p.tangNoi,4)} Số tầng hầm: ${v(p.tangHam,4)}</p>
+  <p class="ind">Diện tích sở hữu chung (m²): ${v(p.dtChung,8)} Diện tích sở hữu riêng (m²): ${v(p.dtRieng,8)}</p>`:`<p class="ind">Kết cấu: ${v(p.ketCau,22)} Diện tích xây dựng (m²): ${v(p.dtXD,8)} Diện tích sàn (m²): ${v(p.dtRieng,8)}</p>`}
+  <p class="ind">2.3. Nguồn gốc nhà: &nbsp; a) Tự xây dựng - năm hoàn công: ${v(p.namHT,8)} &nbsp; b) Mua, thừa kế, tặng cho - thời điểm làm giấy tờ chuyển giao nhà: ${v(fd(d.hdNgayCT||d.hdNgay),12)}</p>
+  <p class="ind">2.4. Giá trị nhà (đồng): ${v("",20)}</p>
+  <p><b>3.</b> Giá trị nhà, đất thực tế nhận chuyển nhượng, nhận thừa kế, nhận tặng cho (đồng): ${v(fmt(gia),20)}</p>
+  <p><b>4.</b> Tài sản thuộc diện được miễn lệ phí trước bạ (lý do): ${v(d.mienLP?d.lyDoMien:"",40)}</p>
+  <p><b>5. Thông tin đồng chủ sở hữu nhà, đất (nếu có):</b></p>
+  <table><tr><th>STT</th><th>Tên tổ chức/cá nhân đồng sở hữu</th><th>Mã số thuế</th><th>Số CMND/CCCD/Hộ chiếu</th><th>Tỷ lệ sở hữu (%)</th></tr>
+  ${(x.B.length>1?x.B:[{},{}]).map((q,i)=>`<tr><td class="c">${String(i+1).padStart(2,"0")}</td><td>${v(q.name,20)}</td><td>${v(q.mst,10)}</td><td>${v(q.cccd,12)}</td><td class="c">${v(q.ratio,4)}</td></tr>`).join("")}</table>
+  <p><b>6. Giấy tờ có liên quan, gồm:</b></p>${c.docs.filter(z=>z.s!=="Không áp dụng"&&!/^Tờ khai/i.test(z.n)).slice(0,6).map(z=>`<p class="ind">- ${esc(z.n)}</p>`).join("")||`<p class="ind">- ${v("",50)}</p>`}
+  <p>Tôi cam đoan số liệu khai trên là đúng và chịu trách nhiệm trước pháp luật về số liệu đã khai./.</p>
+  ${sig(`<b>NHÂN VIÊN ĐẠI LÝ THUẾ</b><br>Họ và tên: ${v("",16)}<br>Chứng chỉ hành nghề số: ${v("",8)}`,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ<br>hoặc TỔ CHỨC, CÁ NHÂN ĐƯỢC ỦY QUYỀN KHAI THAY</b><br><i class="sm">(Chữ ký, ghi rõ họ tên; chức vụ và đóng dấu (nếu có)/Ký điện tử)</i>`,signer(x),signT(x))}</div>`;
+ },
+ tncn(c){
+  const x=ctx(c),p=x.p,d=x.d,apt=p.kind==="Căn hộ chung cư",t=TYPES[c.type]||{},gia=num(d.gia),cn=t.tax!=="qt";
+  const q=dparts(d.hdNgayCT||d.hdNgay);
+  let t46=0,t50=0;
+  if(cn)t46=Math.round(gia*db.cfg.rCN/100);else t50=Math.max(0,Math.round((gia-db.cfg.qtMien)*db.cfg.rQT/100));
+  const exempt=d.mienTNCN,t49=exempt?0:t46,t50x=exempt?0:t50;
+  const owners=x.A.length?x.A:[{}];
+  return `<div class="fd">${head("TỜ KHAI THUẾ THU NHẬP CÁ NHÂN","(Áp dụng đối với cá nhân có thu nhập từ chuyển nhượng bất động sản;<br>thu nhập từ nhận thừa kế và nhận quà tặng là bất động sản)")}
+  <p>[01] Kỳ tính thuế: Lần phát sinh: Ngày ${v(q&&q[0],4)} tháng ${v(q&&q[1],4)} năm ${v(q&&q[2],6)}</p>
+  <p>[02] Lần đầu: ${cb(1)} &nbsp; [03] Bổ sung lần thứ: ${cb(0)}</p>
+  <p class="sec">I. THÔNG TIN NGƯỜI CHUYỂN NHƯỢNG, NHẬN THỪA KẾ, QUÀ TẶNG</p>
+  <p>[04] Tên người nộp thuế: ${v(x.a.name,36)}</p><p>[05] Mã số thuế (nếu có): ${v(x.a.mst,16)}</p>
+  <p>[06] Số CMND/CCCD/Hộ chiếu: ${v(x.a.cccd,18)} [06.1] Ngày cấp: ${v(fd(x.a.cccdDate),10)} [06.2] Nơi cấp: ${v(x.a.cccdPlace,16)}</p>
+  <p>[08] Địa chỉ cư trú hiện tại: ${v([x.a.dc,x.a.px].filter(Boolean).join(", "),38)}</p>
+  <p>[09] Quận/huyện: ${v(x.a.qh,14)} [10] Tỉnh/Thành phố: ${v(x.a.tp,18)}</p>
+  <p>[11] Điện thoại: ${v(x.a.phone,14)} [12] Email: ${v(x.a.email,20)}</p>
+  <p>[13] Tên tổ chức, cá nhân khai thay (nếu có): ${v(x.u.name,26)} [14] Mã số thuế: ${v(x.u.mst,14)}</p>
+  <p>[15] Địa chỉ: ${v(adr(x.u),40)}</p>
+  <p>[20] Tên đại lý thuế (nếu có): ${v("",26)} [21] Mã số thuế: ${v("",12)} [27] Hợp đồng đại lý thuế: [28] Số ${v("",8)} [29] Ngày ${v("",8)}</p>
+  <p>[30] Giấy tờ về quyền sử dụng đất, quyền sở hữu nhà ở và tài sản gắn liền với đất: Giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở và tài sản gắn liền với đất</p>
+  <p class="ind">[30.1] Số: ${v(p.gcnSo,14)} [30.2] Do cơ quan: ${v(p.gcnCQ,18)} [30.3] Cấp ngày: ${v(fd(p.gcnNgay),10)}</p>
+  <p>[31] Hợp đồng mua bán nhà ở, công trình xây dựng hình thành trong tương lai ký với chủ dự án cấp 1, cấp 2 hoặc Sàn giao dịch của chủ dự án: ${v(p.cdt,22)}</p>
+  <p class="ind">[31.1] Số: ${v(d.cdtSo,16)} [31.2] Ngày: ${v(fd(d.cdtNgay),10)}</p>
+  <p>[32] Hợp đồng chuyển nhượng, trao đổi bất động sản:</p>
+  <p class="ind">[32.1] Số: ${v(d.hdSo,12)} [32.2] Nơi lập: ${v(d.hdNoi,20)} [32.3] Ngày lập: ${v(fd(d.hdNgay),10)}</p>
+  <p class="ind">[32.4] Cơ quan chứng thực: ${v(d.hdNoi,20)} [32.5] Ngày chứng thực: ${v(fd(d.hdNgayCT),10)}</p>
+  <p class="sec">II. THÔNG TIN NGƯỜI NHẬN CHUYỂN NHƯỢNG, NHẬN THỪA KẾ, QUÀ TẶNG</p>
+  <p>[33] Họ và tên đại diện: ${v(x.B.map(q=>q.name).join(" - "),34)}</p><p>[34] Mã số thuế (nếu có): ${v(x.b.mst,16)}</p>
+  <p>[35] Số CMND/CCCD/Hộ chiếu (trường hợp chưa có mã số thuế): ${v(x.B.map(q=>q.cccd).filter(Boolean).join(" - "),24)}</p>
+  <p class="ind">[35.1] Ngày cấp: ${v(fd(x.b.cccdDate),10)} [35.2] Nơi cấp: ${v(x.b.cccdPlace,18)}</p>
+  <p class="sec">III. LOẠI BẤT ĐỘNG SẢN CHUYỂN NHƯỢNG, NHẬN THỪA KẾ, QUÀ TẶNG</p>
+  <p>[37] Quyền sử dụng đất và tài sản gắn liền trên đất ${cb(!apt&&p.kind!=="Khác")} &nbsp; [38] Quyền sở hữu hoặc sử dụng nhà ở ${cb(apt||p.kind==="Nhà ở riêng lẻ")} &nbsp; [39] Quyền thuê đất, thuê mặt nước ${cb(0)} &nbsp; [40] Bất động sản khác ${cb(p.kind==="Khác")}</p>
+  <p class="sec">IV. ĐẶC ĐIỂM BẤT ĐỘNG SẢN</p>
+  <p>[41] Thông tin về đất:</p>
+  <p class="ind">[41.1] Thửa đất số: ${v(p.thua,8)} ; Tờ bản đồ số: ${v(p.to,8)}</p>
+  <p class="ind">[41.2] Địa chỉ: ${v([apt?p.duAn:"",p.dc].filter(Boolean).join(", "),40)}</p>
+  <p class="ind">[41.4] Phường/xã: ${v(p.px,16)} [41.5] Quận/huyện: ${v(p.qh,12)} [41.6] Tỉnh/thành phố: ${v(p.tp,16)}</p>
+  <p class="ind">[41.7] Loại đất, vị trí thửa đất: Loại đất ${v(p.mucDich,14)} Vị trí ${v(p.viTri,8)} Diện tích: ${v(p.dt,10)} m²</p>
+  <p class="ind">[41.9] Nguồn gốc đất: ${v(p.nguonGoc,34)}</p>
+  <p>[42] Thông tin về nhà ở, công trình xây dựng</p>
+  ${apt?`<p class="ind">[42.5] Nhà ở chung cư: [42.6] Chủ dự án: ${v(p.cdt,24)}</p>
+  <p class="ind">[42.7] Địa chỉ dự án, công trình: ${v(p.duAn,30)}</p>
+  <p class="ind">[42.10] Diện tích sở hữu chung: ${v(p.dtChung,8)} m² [42.11] Diện tích sở hữu riêng: ${v(p.dtRieng,8)} m²</p>
+  <p class="ind">[42.12] Kết cấu: ${v(p.ketCau,24)} [42.13] Số tầng nổi: ${v(p.tangNoi,4)} [42.14] Số tầng hầm: ${v(p.tangHam,4)}</p>
+  <p class="ind">[42.15] Năm hoàn công: ${v(p.namHT,8)}</p>`:`<p class="ind">[42.1] Nhà ở riêng lẻ: Cấp nhà ${v(p.capNha,8)} Diện tích sàn xây dựng: ${v(p.dtRieng,8)} m² Diện tích xây dựng: ${v(p.dtXD,8)} m²</p><p class="ind">Kết cấu: ${v(p.ketCau,24)} Năm hoàn công: ${v(p.namHT,8)}</p>`}
+  <p>[43] Tài sản gắn liền với đất: [43.1] Loại tài sản: ${v(apt?"nhà ở chung cư":"",20)}</p>
+  <p class="sec">V. THU NHẬP TỪ CHUYỂN NHƯỢNG BẤT ĐỘNG SẢN; TỪ NHẬN THỪA KẾ, QUÀ TẶNG LÀ BẤT ĐỘNG SẢN</p>
+  <p>[44] Loại thu nhập: [44.1] Thu nhập từ chuyển nhượng bất động sản ${cb(cn)} &nbsp; [44.2] Thu nhập từ nhận thừa kế, quà tặng ${cb(!cn)}</p>
+  <p>[45] Giá trị chuyển nhượng bất động sản và tài sản khác gắn liền với đất hoặc giá trị bất động sản nhận thừa kế, quà tặng: ${v(fmt(gia),16)} đồng</p>
+  <p>[46] Thuế TNCN phát sinh đối với chuyển nhượng bất động sản ([46]=[45]x${db.cfg.rCN}%): ${cn?v(fmt(t46),14):v("",14)} đồng</p>
+  <p>[47] Thu nhập miễn thuế: ${exempt?v(fmt(gia),14):v("",14)} &nbsp; [48] Thuế TNCN được miễn ([48]=[47]x${db.cfg.rCN}%): ${exempt&&cn?v(fmt(t46),12):v("",12)} đồng</p>
+  <p>[49] Thuế TNCN phải nộp đối với chuyển nhượng bất động sản {[49]=([46]-[48])}: ${cn?v(fmt(t49),14):v("",14)} đồng</p>
+  <p>[50] Thuế TNCN phải nộp đối với nhận thừa kế, quà tặng là bất động sản {[50]=([45]-[47]-${fmt(db.cfg.qtMien)})x${db.cfg.rQT}%}: ${!cn?v(fmt(t50x),14):v("",14)} đồng</p>
+  <p>[51] Số thuế phải nộp, được miễn của chủ sở hữu (chỉ khai trong trường hợp có đồng sở hữu hoặc có chủ sở hữu được miễn thuế):</p>
+  <table><tr><th>STT</th><th>Họ và tên</th><th>Mã số thuế</th><th>Tỷ lệ sở hữu (%)</th><th>Số thuế phải nộp</th><th>Số thuế được miễn</th><th>Lý do miễn</th></tr>
+  ${owners.map((q,i)=>{const r=num(q.ratio)||Math.round(100/owners.length);const tot=cn?t49:t50x;return `<tr><td class="c">${String(i+1).padStart(2,"0")}</td><td>${v(q.name,14)}</td><td>${v(q.mst,10)}</td><td class="c">${v(r,3)}</td><td class="r">${v(fmt(Math.round(tot*r/100)),8)}</td><td class="r">${exempt?v(fmt(Math.round((cn?t46:t50)*r/100)),8):v("",6)}</td><td>${v(exempt?d.lyDoMien:"",12)}</td></tr>`}).join("")}</table>
+  <p class="sec">VII. HỒ SƠ KÈM THEO GỒM:</p>
+  ${c.docs.filter(z=>z.s!=="Không áp dụng"&&!/^Tờ khai thuế TNCN/i.test(z.n)).slice(0,6).map(z=>`<p class="ind">- ${esc(z.n)};</p>`).join("")||`<p class="ind">- ${v("",50)};</p>`}
+  <p>Tôi cam đoan những nội dung kê khai là đúng và chịu trách nhiệm trước pháp luật về những nội dung đã khai./.</p>
+  ${sig(`<b>NHÂN VIÊN ĐẠI LÝ THUẾ</b><br>Họ và tên: ${v("",16)}<br>Chứng chỉ hành nghề số: ${v("",8)}`,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ</b><br><i class="sm">(Chữ ký, ghi rõ họ tên; chức vụ và đóng dấu (nếu có)/Ký điện tử)</i>`,signer(x,"A"),signT(x,"A"))}</div>`;
+ },
+ pnn(c){
+  const x=ctx(c),p=x.p,apt=p.kind==="Căn hộ chung cư",b=x.b;
+  const users=x.B.length?x.B:[{},{}];
+  const n=users.length;
+  const P2=[["h","1. Người nộp thuế"],["27","Họ và tên"],["28","Ngày/tháng/năm sinh"],["29","Mã số thuế"],["30","Số CMND/Hộ chiếu/CCCD"],["31","Ngày cấp"],["32","Nơi cấp"],
+   ["h","2. Thửa đất chịu thuế"],["33","Địa chỉ (số nhà, đường/phố, tổ/thôn, phường/xã, quận/huyện, tỉnh/thành phố)"],["34","Đã có giấy chứng nhận: số GCN, ngày cấp, thửa đất số, tờ bản đồ số, diện tích đất phi nông nghiệp ghi trên GCN, diện tích thực tế sử dụng, loại đất/mục đích, hạn mức"],["35","Chưa có giấy chứng nhận: diện tích, loại đất/mục đích đang sử dụng"],["36","Thời điểm bắt đầu sử dụng đất"],["37","Thời điểm thay đổi thông tin của thửa đất"],
+   ["h","3. Trường hợp miễn, giảm thuế"],["38","Ghi rõ trường hợp thuộc diện được miễn, giảm thuế"],
+   ["h","4. Căn cứ tính thuế"],["39","Diện tích đất thực tế sử dụng"],["40","Hạn mức tính thuế"],["41","Thông tin xác định giá đất: loại đất/mục đích sử dụng, tên đường/vùng, đoạn đường/khu vực, loại đường, vị trí/hạng, giá đất, hệ số (đường/hẻm), giá 1 m² đất"],
+   ["h","5. Diện tích đất tính thuế"],["42","5.1 Đất ở – diện tích trong hạn mức (thuế suất 0,03%)"],["43","Diện tích vượt không quá 3 lần hạn mức (thuế suất 0,07%)"],["44","Diện tích vượt trên 3 lần hạn mức (thuế suất 0,15%)"],["45","5.2 Đất ở nhà nhiều tầng nhiều hộ ở, nhà chung cư – diện tích sàn thực tế sử dụng"],["46","Hệ số phân bổ"],["47","5.3 Đất sản xuất kinh doanh – diện tích sử dụng đúng mục đích"],["48","Hệ số phân bổ"],["49","5.4 Đất sử dụng không đúng mục đích hoặc chưa sử dụng theo đúng quy định – diện tích"],["50","Mục đích thực tế đang sử dụng"],["51","Hệ số phân bổ"],["52","5.5 Đất lấn chiếm – diện tích"],["53","Mục đích thực tế đang sử dụng"],["54","Hệ số phân bổ"]];
+  const q=dparts(c.ngayKy);
+  return `<div class="fd">${head("TỜ KHAI THUẾ SỬ DỤNG ĐẤT PHI NÔNG NGHIỆP","(Áp dụng đối với hộ gia đình, cá nhân trong trường hợp chuyển nhượng, thừa kế, tặng cho quyền sử dụng đất)")}
+  <p>[01] Kỳ tính thuế: Năm ${v(q&&q[2],8)} &nbsp; [02] Lần đầu: ${cb(1)} &nbsp; [03] Bổ sung lần thứ: ${cb(0)}</p>
+  <p class="sec">I. PHẦN NGƯỜI NỘP THUẾ TỰ KHAI</p><p><b>1. Người nộp thuế:</b></p>
+  <p>[04] Họ và tên: ${v(b.name,32)} &nbsp; [05] Ngày/tháng/năm sinh: ${v(fd(b.dob),11)}</p>
+  <p>[06] Mã số thuế: ${v(b.mst,16)}</p>
+  <p>[07] Số CMND/Hộ chiếu/CCCD (trường hợp cá nhân chưa có MST): ${v(b.cccd,18)}</p>
+  <p>[08] Ngày cấp: ${v(fd(b.cccdDate),11)} [09] Nơi cấp: ${v(b.cccdPlace,24)}</p>
+  <p>[10] Địa chỉ cư trú: [10.1] Số nhà, đường/phố: ${v(b.dc,26)} [10.4] Phường/xã/thị trấn: ${v(b.px,14)}</p>
+  <p class="ind">[10.5] Quận/huyện: ${v(b.qh,14)} [10.6] Tỉnh/Thành phố: ${v(b.tp,18)}</p>
+  <p>[11] Địa chỉ nhận thông báo thuế: ${v(b.dcTB||adr(b),40)}</p><p>[12] Điện thoại: ${v(b.phone,14)}</p>
+  <p><b>2. Đại lý thuế (nếu có):</b> [13] Tên đại lý thuế: ${v("",24)} [14] Mã số thuế: ${v("",12)} [15] Hợp đồng đại lý thuế: Số ${v("",8)} Ngày ${v("",8)}</p>
+  <p><b>3. Thửa đất chịu thuế:</b></p><p>[16] Thông tin người sử dụng đất:</p>
+  <table><tr><th>STT</th><th>Họ và tên</th><th>MST</th><th>CMND/CCCD/HC (cá nhân chưa có MST)</th><th>Tỷ lệ</th></tr>${users.map((u,i)=>`<tr><td class="c">${String(i+1).padStart(2,"0")}</td><td>${v(u.name,16)}</td><td>${v(u.mst,10)}</td><td>${v(u.cccd,12)}</td><td class="c">${v(u.ratio?u.ratio+"%":(n>1&&u.name?Math.round(100/n)+"%":""),4)}</td></tr>`).join("")}</table>
+  <p>[17] Địa chỉ thửa đất: [17.1] Số nhà: ${v(apt?p.duAn:p.dc,24)} [17.2] Đường/phố: ${v(apt?p.dc:"",16)}</p>
+  <p class="ind">[17.4] Phường/xã/thị trấn: ${v(p.px,14)} [17.5] Quận/huyện: ${v(p.qh,12)} [17.6] Tỉnh/Thành phố: ${v(p.tp,16)}</p>
+  <p>[18] Là thửa đất duy nhất: ${cb(0)} &nbsp; [19] Đăng ký kê khai tổng hợp tại (Quận/Huyện): ${v("",20)}</p>
+  <p>[20] Đã có giấy chứng nhận: ${cb(!!p.gcnSo)}</p>
+  <p class="ind">[20.1] Số giấy chứng nhận: ${v(p.gcnSo,14)} [20.2] Ngày cấp: ${v(fd(p.gcnNgay),11)}</p>
+  <p class="ind">[20.3] Thửa đất số: ${v(p.thua,8)} [20.4] Tờ bản đồ số: ${v(p.to,8)}</p>
+  <p class="ind">[20.5] Diện tích: ${v(p.dt,10)} m² [20.6] Loại đất/Mục đích sử dụng: ${v(p.mucDich,24)}</p>
+  <p>[21] Tổng diện tích thực tế sử dụng cho mục đích phi nông nghiệp: [21.1] Diện tích đất sử dụng đúng mục đích: ${v("",12)}</p>
+  <p>[22] Chưa có giấy chứng nhận: ${cb(!p.gcnSo)} &nbsp; [23] Thời điểm bắt đầu sử dụng đất: ${v("",12)} &nbsp; [24] Thời điểm thay đổi thông tin của thửa đất: ${v(fd(x.d.hdNgayCT||x.d.hdNgay),11)}</p>
+  <p><b>4. Đối với đất ở nhà nhiều tầng nhiều hộ ở, nhà chung cư [25]</b> (tính trên diện tích sàn thực tế sử dụng):</p>
+  <p class="ind">[25.1] Loại nhà: ${v(apt?"chung cư":"",12)} [25.2] Diện tích: ${v(apt?p.dtRieng:"",8)} m² [25.3] Hệ số phân bổ: ${v("",8)}</p>
+  <p><b>5. Trường hợp miễn, giảm thuế [26]</b> (ghi rõ trường hợp thuộc diện được miễn, giảm thuế): ${v("",40)}</p>
+  <p>Tôi cam đoan số liệu khai trên là đúng và chịu trách nhiệm trước pháp luật về số liệu đã khai./.</p>
+  ${sig(`<b>NHÂN VIÊN ĐẠI LÝ THUẾ</b><br>Họ và tên: ${v("",16)}<br>Chứng chỉ hành nghề số: ${v("",8)}`,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ</b><br><i class="sm">(Chữ ký, ghi rõ họ tên; chức vụ và đóng dấu (nếu có)/Ký điện tử)</i>`,signer(x))}
+  <p class="sec" style="margin-top:14px">II. PHẦN XÁC ĐỊNH CỦA CƠ QUAN CHỨC NĂNG (Đơn vị tiền: đồng Việt Nam)</p>
+  ${P2.map(r=>r[0]==="h"?`<p><b>${r[1]}</b></p>`:`<p class="ind sm">[${r[0]}] ${r[1]}: <span class="bl" style="min-width:14ch"></span></p>`).join("")}
+  <div class="sig"><div>..., ngày ...... tháng ...... năm ......<br><b>CÁN BỘ VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI</b><br><i class="sm">(Ký tên, ghi rõ họ tên)</i><br><br><br></div><div>..., ngày ...... tháng ...... năm ......<br><b>GIÁM ĐỐC VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI</b><br><i class="sm">(Ký tên, ghi rõ họ tên, đóng dấu)</i><br><br><br></div></div></div>`;
+ },
+ mst(c){
+  const x=ctx(c),m=c.mst||{rows:[]},pp=P(m.pid)||x.b;
+  const rows=(m.rows||[]).filter(r=>r.k||r.o||r.n);
+  return `<div class="fd"><div class="b">Mẫu số: 08-MST</div><div class="i sm">(Ban hành kèm theo Thông tư số 105/2020/TT-BTC ngày 03/12/2020 của Bộ Tài chính)</div>
+  ${head("TỜ KHAI","ĐIỀU CHỈNH, BỔ SUNG THÔNG TIN ĐĂNG KÝ THUẾ")}
+  <p>${cb(isOrg(pp))} Doanh nghiệp, hợp tác xã &nbsp; ${cb(0)} Tổ chức &nbsp; ${cb(0)} Hộ kinh doanh, cá nhân kinh doanh &nbsp; ${cb(!isOrg(pp))} Cá nhân &nbsp; ${cb(0)} Khác</p>
+  <p>1. Tên người nộp thuế: ${v(pp.name,36)}</p><p>2. Mã số thuế: ${v(pp.mst,16)}</p>
+  <p>3. Địa chỉ trụ sở chính / cư trú: ${v(adr(pp),42)}</p>
+  <p>4. Thông tin đại lý thuế (nếu có): 4a. Tên: ${v("",22)} 4b. Mã số thuế: ${v("",12)} 4c. Hợp đồng đại lý thuế: Số ${v("",8)} ngày ${v("",8)}</p>
+  <p>Đăng ký bổ sung, thay đổi các chỉ tiêu đăng ký thuế như sau:</p>
+  <table><tr><th style="width:28%">Chỉ tiêu (1)</th><th>Thông tin đăng ký cũ (2)</th><th>Thông tin đăng ký mới (3)</th></tr>
+  <tr><td colspan="3"><b>I- Điều chỉnh thông tin đã đăng ký:</b></td></tr>
+  ${(rows.length?rows:[{},{},{}]).map(r=>`<tr><td>${v(r.k,10)}</td><td>${v(r.o,10)}</td><td>${v(r.n,10)}</td></tr>`).join("")}
+  <tr><td colspan="3"><b>II- Bổ sung thông tin:</b></td></tr><tr><td>&nbsp;</td><td></td><td></td></tr><tr><td>&nbsp;</td><td></td><td></td></tr></table>
+  <p>Người nộp thuế cam đoan những thông tin kê khai trên là hoàn toàn chính xác và chịu trách nhiệm trước pháp luật về những thông tin đã khai./.</p>
+  ${sig(`<b>NHÂN VIÊN ĐẠI LÝ THUẾ</b><br>Họ và tên: ${v("",16)}<br>Chứng chỉ hành nghề số: ${v("",8)}`,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ</b><br><i class="sm">(Ký, ghi họ tên và đóng dấu (nếu có))</i>`,isOrg(pp)?pp.dd||pp.name:pp.name,isOrg(pp)?pp.ddCv:"")}
+  <p class="sm i" style="margin-top:10px">Ghi chú: Cột (1) ghi tên các chỉ tiêu có thay đổi; cột (2) ghi nội dung đã kê khai trong lần đăng ký thuế gần nhất; cột (3) ghi chính xác nội dung mới thay đổi hoặc bổ sung.</p></div>`;
+ },
+ phieu(c){
+  const x=ctx(c),p=x.p,tp=c.tp||{};
+  const own=x.B.map(q=>q.name).filter(Boolean).join(", ")||c.client;
+  const q=dparts(tp.ngayPhieu);
+  const customs=c.docs.filter(d=>!d.no&&d.s!=="Không áp dụng");let ci=0;
+  const cell=d=>d&&d.s!=="Không áp dụng"?`<span class="v">${esc(d.f||(d.s==="Thiếu"?"":"✓"))}</span>`:"";
+  const row=no=>{
+    const it=TP_ITEMS.find(z=>z.no===no),d=it&&c.docs.find(z=>z.no===no);
+    if(it)return `<tr><td class="c">${no}</td><td>${esc(it.n)}</td><td class="c">${cell(d)}</td></tr>`;
+    const cu=customs[ci++];
+    return `<tr><td class="c">${no}</td><td>${cu?`<span class="v">${esc(cu.n)}</span>`:""}</td><td class="c">${cu?cell(cu):""}</td></tr>`;
+  };
+  const rng=(a,b)=>Array.from({length:b-a+1},(_,i)=>row(a+i)).join("");
+  return `<div class="fd"><div class="sig" style="margin-top:0;text-align:center"><div><b>VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI<br>THÀNH PHỐ HỒ CHÍ MINH<br>BỘ PHẬN TIẾP NHẬN<br>VÀ TRẢ KẾT QUẢ</b><br>Số: ${v(tp.phieuSo,10)} /HĐHS-ĐK</div><div><b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br>Độc lập - Tự do - Hạnh phúc</b><br><i>Thành phố Hồ Chí Minh, ngày ${q?`<span class="v">${q[0]}</span>`:"……"} tháng ${q?`<span class="v">${q[1]}</span>`:"……"} năm ${q?`<span class="v">${q[2]}</span>`:"………"}</i></div></div>
+  <h2>PHIẾU YÊU CẦU HƯỚNG DẪN, BỔ SUNG, HOÀN THIỆN HỒ SƠ</h2><div class="ss"><b>(Lĩnh vực Đăng ký cấp Giấy chứng nhận – ${esc(tp.quay||"Quầy số ……")})</b></div>
+  <p><b>Hồ sơ của:</b> ${v(own,40)}</p>
+  <p><b>Nội dung yêu cầu giải quyết:</b> ${v(x.d.nd||c.type,40)}</p>
+  <p><b>Địa chỉ tài sản:</b> ${v(propAddr(c),50)}</p>
+  <p><b>Số điện thoại:</b> ${v(x.u.phone||x.b.phone,14)} &nbsp; <b>Email:</b> ${v(x.u.email||x.b.email,22)}</p>
+  <table><tr><th style="width:38px">STT</th><th>Thành phần hồ sơ nộp<br><i>(Tổ chức, cá nhân chọn các loại văn bản sẽ cung cấp)</i></th><th style="width:130px">Ghi rõ bản chính, bản sao y, bản photo</th></tr>
+  <tr><td class="c b">I</td><td colspan="2"><b>HỒ SƠ ĐẤT ĐAI</b></td></tr>${rng(1,22)}
+  <tr><td class="c b">II</td><td colspan="2"><b>HỒ SƠ THUẾ</b></td></tr>${rng(23,30)}</table>
+  <div class="sig"><div></div><div><b>NGƯỜI KHAI</b> <i>(ký, ghi rõ họ tên)</i><br><br><br><br><b class="v">${esc(signer(x))}</b></div></div>
+  <p class="sec">Yêu cầu hoàn thiện (bổ sung) hồ sơ gồm những nội dung sau</p>
+  <p>1. ${cb(tp.kq==="Đủ điều kiện tiếp nhận")} Không bổ sung, đủ điều kiện tiếp nhận</p>
+  <p>2. ${cb(tp.kq==="Cần bổ sung")} Chưa đủ điều kiện tiếp nhận, cần bổ sung hồ sơ gồm: ${tp.bs?`<span class="v">${esc(tp.bs)}</span>`:`<span class="bl" style="min-width:40ch"></span>`}</p>
+  <p class="sm">Trong quá trình hoàn thiện hồ sơ nếu có vướng mắc, ông (bà) liên hệ số điện thoại (028)38411512 (số nội bộ 208) để được hướng dẫn./.</p>
+  <div class="sig"><div></div><div><b>NGƯỜI HƯỚNG DẪN</b><br><i class="sm">(Ký, ghi rõ họ tên)</i><br><br><br><b class="v">${esc(tp.nguoiHD||"")}</b></div></div>
+  <p class="sm i">Đề nghị Ông (Bà) cung cấp Phiếu hướng dẫn của VPĐKTP (nếu có) cho Bộ phận Tiếp nhận khi nộp hồ sơ.</p></div>`;
+ },
+ tsdd(c){
+  const x=ctx(c),p=x.p,t=c.ts||{},b=x.b,q=dparts(t.tuNgay);
+  const gt=t.giayTo||(p.gcnSo?`Giấy chứng nhận số ${p.gcnSo}${p.soVaoSo?`, số vào sổ ${p.soVaoSo}`:""}${p.gcnNgay?` ngày ${fd(p.gcnNgay)}`:""}${p.gcnCQ?` do ${p.gcnCQ} cấp`:""}`:"");
+  const row=(l,val,w=14)=>`<p class="ind">${l} ${v(val,w)}</p>`;
+  return `<div class="fd">${head("TỜ KHAI TIỀN SỬ DỤNG ĐẤT")}
+  <p>[01] Kỳ tính thuế: Theo từng lần phát sinh ${cb(1)}</p><p>[02] Lần đầu ${cb(1)} &nbsp; &nbsp; [03] Bổ sung lần thứ ${cb(0)}</p>
+  <p><b>1. Tên tổ chức, cá nhân sử dụng đất:</b> ${v(x.B.map(z=>z.name).join(" - "),36)}</p>
+  ${row("1.1. Địa chỉ gửi thông báo nộp tiền sử dụng đất:",b.dcTB||adr(b),40)}
+  <p class="ind">1.2. Số điện thoại (nếu có): ${v(b.phone,14)} Fax: ${v("",8)} Email: ${v(b.email,20)}</p>
+  ${row("1.3. Đại lý thuế (nếu có):","",30)}${row("1.4. Mã số thuế:","",14)}${row("1.5. Địa chỉ:","",36)}
+  <p class="ind">1.6. Quận/huyện: ${v("",12)} Tỉnh/Thành phố: ${v("",14)}</p>
+  <p class="ind">1.7. Số điện thoại (nếu có): ${v("",12)} Fax: ${v("",8)} Email: ${v("",14)}</p>
+  <p class="ind">1.8. Hợp đồng đại lý thuế số: ${v("",8)} ngày ${v("",5)} tháng ${v("",5)} năm ${v("",6)}</p>
+  <p><b>2. Giấy tờ về quyền sử dụng đất</b> (khoản 1, 2, 5 Điều 50 Luật Đất đai 2013), bao gồm: ${v(gt,40)}</p>
+  <p><b>3. Đặc điểm của thửa đất:</b></p>
+  ${row("3.1. Địa chỉ thửa đất:",propAddr(c),44)}${row("3.2. Vị trí của thửa đất:",t.viTri||p.viTri,36)}
+  ${row("3.3. Loại đất trước khi chuyển đổi mục đích sử dụng đất:",t.loaiTruoc,24)}${row("3.4. Loại đất sau khi chuyển đổi mục đích sử dụng đất:",t.loaiSau,24)}
+  <p class="ind">3.5. Thời điểm được quyền sử dụng đất: kể từ ngày ${v(q&&q[0],4)} tháng ${v(q&&q[1],4)} năm ${v(q&&q[2],6)}</p>
+  ${row("3.6. Nguồn gốc sử dụng đất:",t.nguonGoc||p.nguonGoc,36)}
+  <p><b>4. Diện tích nộp tiền sử dụng đất (m²):</b></p>
+  <p class="ind">4.1. Đất ở nông thôn: a) Trong hạn mức giao đất ở: ${v(t.dtNTtrong,10)}</p>
+  <p class="ind" style="padding-left:36px">Diện tích đất trong hạn mức giao đất ở lựa chọn tính giá UBND cấp tỉnh quy định (nếu có): ${v("",8)}</p>
+  <p class="ind" style="padding-left:36px">b) Ngoài hạn mức giao đất ở: ${v(t.dtNTngoai,10)}</p>
+  <p class="ind">4.2. Đất ở tại đô thị: Diện tích đất trong hạn mức giao đất ở lựa chọn tính giá UBND cấp tỉnh quy định (nếu có): ${v(t.dtDT,8)}</p>
+  <p class="ind" style="padding-left:36px">b) Diện tích đất sử dụng chung: ${v(t.dtChung,10)}</p>
+  ${row("4.3. Diện tích đất sản xuất, kinh doanh, dịch vụ:",t.dtSXKD,10)}${row("4.4. Diện tích đất sản xuất nông nghiệp, lâm nghiệp, nuôi trồng thuỷ sản, làm muối:",t.dtNN,10)}
+  <p><b>5. Các khoản được giảm trừ tiền sử dụng đất hoặc thuộc đối tượng được miễn, giảm tiền sử dụng đất (nếu có):</b></p>
+  ${row("5.1. Số tiền thực tế bồi thường thiệt hại, hỗ trợ về đất:",t.boiThuong,16)}${row("5.2. Số tiền sử dụng đất, thuê đất đã được nộp trước (nếu có):",t.daNop,16)}
+  ${row("5.3. Miễn, giảm tiền sử dụng đất (ghi rõ căn cứ văn bản quy phạm pháp luật được áp dụng):",t.mien,30)}
+  <p><b>6. Giấy tờ để chứng minh thuộc đối tượng được miễn, giảm tiền sử dụng đất</b> (nếu sử dụng bản sao phải có công chứng) và các chứng từ về chi phí bồi thường đất, hỗ trợ đất, chứng từ về tiền sử dụng đất, tiền thuê đất đã được nộp trước: ${v(t.giayToMien,30)}</p>
+  <p>Tôi xin cam đoan tất cả số liệu đã được khai ở trên là đúng sự thật và sẽ chịu trách nhiệm trước pháp luật về số liệu kê khai./.</p>
+  ${sig(`<b>NHÂN VIÊN ĐẠI LÝ THUẾ</b><br>Họ và tên: ${v("",16)}<br>Chứng chỉ hành nghề số: ${v("",8)}`,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ</b><br><i class="sm">Ký tên, đóng dấu (ghi rõ họ tên và chức vụ)</i>`,signer(x),signT(x))}</div>`;
+ },
+ cover(c){
+  const x=ctx(c),ds=docStat(c),fs=feeStat(c);
+  return `<div class="fd"><h2>PHIẾU DANH MỤC HỒ SƠ</h2><div class="ss">${esc(c.code)} · ${esc(c.type)}</div>
+  <p>Nơi nộp: Văn phòng đăng ký đất đai ${v(dest(c),24)}${c.cn&&c.cn.canBo?` &nbsp; Cán bộ phụ trách: ${v(c.cn.canBo,14)}`:""}</p>
+  <p>Bên chuyển: ${v(partyNames(c,"A"),30)} &nbsp; Bên nhận: ${v(partyNames(c,"B"),30)}</p>
+  <p>Tài sản: ${v(propAddr(c),50)}</p>
+  <p>Giấy chứng nhận số: ${v(x.p.gcnSo,14)} Thửa đất số: ${v(x.p.thua,6)} Tờ bản đồ số: ${v(x.p.to,6)}</p>
+  <table><tr><th style="width:36px">STT</th><th>Giấy tờ</th><th style="width:90px">Tình trạng</th><th>Ghi chú</th></tr>
+  ${c.docs.map((d,i)=>`<tr><td class="c">${i+1}</td><td>${esc(d.n)}</td><td class="c">${cb(d.s==="Đã có"||d.s==="Đã nộp")} ${esc(d.s)}</td><td>${esc(d.note||"")}</td></tr>`).join("")}</table>
+  <p>Đã chuẩn bị: <b>${ds.done}/${ds.total}</b> giấy tờ.</p>
+  ${c.fees.length?`<table><tr><th>Thuế, phí, lệ phí</th><th style="width:110px">Phải nộp</th><th style="width:110px">Đã nộp</th><th>Biên lai</th></tr>${c.fees.map(f=>`<tr><td>${esc(f.n)}</td><td class="r">${fmt(num(f.due))}</td><td class="r">${fmt(num(f.paid))}</td><td>${esc(f.rc||"")}</td></tr>`).join("")}<tr><td><b>Cộng</b></td><td class="r"><b>${fmt(fs.due)}</b></td><td class="r"><b>${fmt(fs.paid)}</b></td><td></td></tr></table>`:""}
+  <p>Ngày nộp: ${v(fd(c.ngayNop),10)} &nbsp; Biên nhận số: ${v(c.bienNhan,12)} &nbsp; Hẹn trả: ${v(fd(c.ngayHen),10)}</p></div>`;
+ }
+};
+function showForms(list){
+  const html=list.map(k=>FORMS[k](cur)).join("");
+  $("#pbody").innerHTML=html;$("#pdt").textContent=list.length===1?FORMS_LAB[list[0]]:`Xem trước ${list.length} mẫu`;
+  $("#pd").showModal();
+}
+$("#pprint").onclick=()=>{$("#proot").innerHTML=$("#pbody").innerHTML;window.print()};
+$("#pclose2").onclick=()=>$("#pd").close();
+
+/* ===== Cài đặt, sao lưu ===== */
+function fillSettings(){
+  const c=db.cfg;$("#s_place").value=c.place;$("#s_vpdk").value=c.vpdk;$("#s_rcn").value=c.rCN;$("#s_rqt").value=c.rQT;$("#s_qtm").value=c.qtMien;$("#s_rlp").value=c.rLP;$("#s_cn").value=c.cnList.join("\n");
+  $("#s_type").innerHTML=typeNames().map(t=>`<option>${esc(t)}</option>`).join("");stype=typeNames()[0];sbr="TP";$("#s_br").value="TP";showTpl();
+}
+let stype="",sbr="TP";
+function showTpl(){
+  if(sbr==="TP"){$("#s_tpl").value=(db.tpOn[stype]||[]).join(", ");$("#s_hint").innerHTML="VPĐK Thành phố: ghi <b>số thứ tự các mục áp dụng</b> trên Phiếu hướng dẫn, cách nhau dấu phẩy. "+TP_ITEMS.map(i=>i.no+"="+i.n.split(";")[0].slice(0,40)).join(" · ")}
+  else{$("#s_tpl").value=(db.tpl[stype]||[]).join("\n");$("#s_hint").textContent="Chi nhánh: mỗi dòng là một giấy tờ. Hồ sơ mới tạo sẽ lấy danh mục này; hồ sơ cũ không đổi."}
+}
+function stashTpl(){
+  if(sbr==="TP")db.tpOn[stype]=$("#s_tpl").value.split(/[,\s]+/).map(Number).filter(n=>TP_ITEMS.some(i=>i.no===n));
+  else db.tpl[stype]=$("#s_tpl").value.split("\n").map(s=>s.trim()).filter(Boolean);
+}
+$("#s_type").onchange=()=>{stashTpl();stype=$("#s_type").value;showTpl()};
+$("#s_br").onchange=()=>{stashTpl();sbr=$("#s_br").value;showTpl()};
+$("#cfgb").onclick=()=>{fillSettings();$("#sd").showModal()};
+$("#sclose").onclick=()=>{db=loadDb();$("#sd").close()};
+$("#ssave").onclick=()=>{
+  stashTpl();db.cfg.cnList=$("#s_cn").value.split("\n").map(s=>s.trim()).filter(Boolean);
+  const c=db.cfg;c.place=$("#s_place").value.trim()||"TP. Hồ Chí Minh";c.vpdk=$("#s_vpdk").value.trim();
+  c.rCN=parseFloat($("#s_rcn").value)||0;c.rQT=parseFloat($("#s_rqt").value)||0;c.qtMien=num($("#s_qtm").value);c.rLP=parseFloat($("#s_rlp").value)||0;
+  persist();$("#sd").close();renderList();toast("Đã lưu cài đặt");
+};
+$("#swipe").onclick=()=>{if(!confirm("Xóa toàn bộ hồ sơ và danh bạ trên trình duyệt này?"))return;if(!confirm("Chắc chắn? Hãy chắc là đã sao lưu."))return;db=norm({});persist();$("#sd").close();renderList();renderPeople()};
+function dl(name,mime,text){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+$("#bak").onclick=()=>dl("ho-so-dat-dai-"+today()+".json","application/json",JSON.stringify(db,null,1));
+$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=e=>{
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.cases))throw 0;if(!confirm("Thay toàn bộ dữ liệu hiện tại bằng file này?"))return;db=norm(d);persist();renderList();renderPeople();toast("Đã khôi phục")}catch(x){alert("File không đúng định dạng sao lưu.")}};
+  r.readAsText(f);e.target.value="";
+};
+$("#csv").onclick=()=>{
+  const q=s=>'"'+String(s==null?"":s).replace(/"/g,'""')+'"';
+  const h=["Mã","Nơi nộp","Loại thủ tục","Trạng thái","Chủ hồ sơ","Bên chuyển","Bên nhận","Tài sản","Số GCN","Nơi nộp","Ngày nộp","Biên nhận","Hẹn trả","Ngày nhận KQ","Giấy tờ đã có","Giấy tờ tổng","Thuế phí phải nộp","Thuế phí đã nộp","Ghi chú"];
+  const rows=db.cases.map(c=>{const d=docStat(c),f=feeStat(c);return [c.code,brLabel(c),c.type,c.status,c.client,partyNames(c,"A"),partyNames(c,"B"),propAddr(c),c.p.gcnSo,dest(c),fd(c.ngayNop),c.bienNhan,fd(c.ngayHen),fd(c.ngayNhan),d.done,d.total,f.due,f.paid,c.note].map(q).join(",")});
+  dl("ho-so-dat-dai-"+today()+".csv","text/csv;charset=utf-8","﻿"+[h.map(q).join(","),...rows].join("\r\n"));
+};
+$("#sdemo").onclick=()=>{
+  if(db.people.some(p=>p.demo)){toast("Đã có dữ liệu mẫu");return}
+  const a={id:uid(),demo:1,name:"Nguyễn Văn An",dob:"1975-03-12",cccd:"000000000001",cccdDate:"2022-05-20",cccdPlace:"Cục Cảnh sát QLHC về TTXH",mst:"",phone:"0900 000 001",email:"an@example.com",dc:"12 Đường Mẫu",px:"Phường Mẫu",qh:"",tp:"TP. Hồ Chí Minh"};
+  const b={id:uid(),demo:1,name:"Trần Thị Bình",dob:"1980-10-20",cccd:"000000000002",cccdDate:"2021-08-01",cccdPlace:"Cục Cảnh sát QLHC về TTXH",mst:"0000000002",phone:"0900 000 002",email:"binh@example.com",dc:"34 Đường Thử Nghiệm",px:"Phường Giả Định",qh:"",tp:"TP. Hồ Chí Minh"};
+  const b2={id:uid(),demo:1,name:"Lê Văn Cường",dob:"1978-01-05",cccd:"000000000003",mst:"0000000003",dc:"34 Đường Thử Nghiệm",px:"Phường Giả Định",tp:"TP. Hồ Chí Minh"};
+  db.people.push(a,b,b2);
+  const c=newCase();c.client="(Hồ sơ mẫu)";c.status="Đã nộp";Object.assign(c.tp,{phieuSo:"00000",ngayPhieu:today(),nguoiHD:"Cán bộ Mẫu",kq:"Đủ điều kiện tiếp nhận"});c.ngayNop=today();c.bienNhan="BN-DEMO-001";
+  const dd=new Date();dd.setDate(dd.getDate()+7);c.ngayHen=dd.getFullYear()+"-"+String(dd.getMonth()+1).padStart(2,"0")+"-"+String(dd.getDate()).padStart(2,"0");
+  c.parties=[{pid:a.id,role:"A",ratio:"100"},{pid:b.id,role:"B",ratio:"50"},{pid:b2.id,role:"B",ratio:"50"}];
+  Object.assign(c.p,{kind:"Căn hộ chung cư",gcnSo:"CT00000",gcnNgay:"2018-06-15",gcnCQ:"UBND TP. Hồ Chí Minh",thua:"47",to:"07",dt:"7.500,0",mucDich:"xây dựng khu chung cư",dc:"Đường Dự Án",px:"Phường Giả Định",tp:"TP. Hồ Chí Minh",duAn:"Chung cư Demo Riverside",cdt:"Công ty Demo",can:"23",tang:"6",toa:"A1",dtRieng:"59,30",ketCau:"tường gạch, sàn BTCT, mái BTCT",tangNoi:"28",tangHam:"03",nguonGoc:"mua căn hộ chung cư"});
+  Object.assign(c.d,{hdSo:"001234",hdNgay:today(),hdNgayCT:today(),hdNoi:"Văn phòng công chứng Mẫu",gia:"4000000000",nd:"Cập nhật do nhận chuyển nhượng căn hộ số 23, tầng 6, tòa A1, Chung cư Demo Riverside"});
+  ["Đơn đăng ký biến động","Giấy chứng nhận QSDĐ, QSHNO và TSKGLVĐ","Tờ khai lệ phí trước bạ","Tờ khai thuế sử dụng đất phi nông nghiệp","Tờ khai thuế thu nhập từ chuyển nhượng bất động sản"].forEach(n=>{const d=c.docs.find(z=>z.n===n);if(d){d.s="Đã nộp";d.f="Bản chính"}});const gc=c.docs.find(z=>z.no===3);if(gc)gc.f="Bản photo";const hd=c.docs.find(z=>z.no===4);if(hd){hd.s="Đã nộp";hd.f="Bản chính"};
+  cur=c;autoFee(c);c.fees.forEach(f=>{if(f.n==="Thuế thu nhập cá nhân"||f.n==="Lệ phí trước bạ")f.paid=f.due});
+  c.log.push({d:today(),t:"Nộp hồ sơ tại bộ phận một cửa (dữ liệu mẫu)"});
+  cur=c;isNew=true;commit();
+  const org={id:uid(),demo:1,kind:"org",name:"CÔNG TY CỔ PHẦN DEMO",mst:"0000000004",gdkNgay:"2020-01-15",gdkNoi:"Sở Tài chính TP. Hồ Chí Minh",phone:"0900 000 004",email:"congty@example.com",dc:"Số 1 Đường Mẫu",px:"Phường Giả Định",tp:"TP. Hồ Chí Minh",dd:"Nguyễn Văn Đại",ddCv:"Giám đốc"};db.people.push(org);
+  const c2=newCase("Cấp đổi / cấp lại Giấy chứng nhận","CN");c2.client="(Hồ sơ mẫu)";c2.status="Chuẩn bị";c2.cn={ten:"Mẫu",canBo:"Cán bộ Mẫu",sdt:"0900 000 003"};
+  c2.parties=[{pid:org.id,role:"B",ratio:""}];Object.assign(c2.p,{kind:"Đất ở",gcnSo:"CH00000",soVaoSo:"00351",gcnNgay:"2005-04-25",gcnCQ:"UBND Quận Mẫu",thua:"12",to:"3",dc:"Số 1 Đường Mẫu",px:"Phường Giả Định",tp:"TP. Hồ Chí Minh"});
+  c2.d.kem="Giấy chứng nhận quyền sử dụng đất số vào sổ 00351 ngày 25/4/2005 do UBND Quận Mẫu cấp;\nGiấy chứng nhận đăng ký doanh nghiệp;\nPhiếu đo đạc chỉnh lý thửa đất số 000-CT do Văn phòng đăng ký đất đai duyệt.";c2.docs.slice(0,2).forEach(d=>d.s="Đã có");cur=c2;isNew=true;commit();cur=null;
+  persist();$("#sd").close();renderList();renderPeople();toast("Đã nạp 2 hồ sơ mẫu (dữ liệu giả)");
+};
+/* tab chính */
+function setTab(n){tab=n;$("#t1").classList.toggle("on",n===1);$("#t2").classList.toggle("on",n===2);$("#v1").hidden=n!==1;$("#v2").hidden=n!==2;if(n===2)renderPeople()}
+$("#t1").onclick=()=>setTab(1);$("#t2").onclick=()=>setTab(2);
+["cd","pe","sd","pd"].forEach(i=>$("#"+i).addEventListener("cancel",e=>{if(i==="cd"){e.preventDefault();$("#cclose").click()}}));
+renderList();
+</script>
+</body>
+</html>
