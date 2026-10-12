@@ -191,6 +191,43 @@ dialog h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 14px}
 #toast{background:rgba(29,29,31,.88);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .num,.kp b,.stat b{font-variant-numeric:tabular-nums}
 @media(max-width:700px){h1{font-size:23px}header{padding:12px 14px}.tabs,.brtabs,#fsub{margin-left:14px;max-width:calc(100% - 28px)}.filters{padding-left:14px;padding-right:14px}.wrap{padding-left:14px;padding-right:14px}.stats{padding-left:14px;padding-right:14px}.overview{margin-left:14px;margin-right:14px}}
+
+/* ===== Căn lại cột: cột ngắn ôm sát nội dung, cột chữ dài chiếm phần còn lại ===== */
+table.m{min-width:0}
+table.jt th,table.jt td,table.jf th,table.jf td,table.jl th,table.jl td,table.jp th,table.jp td,table.jr th,table.jr td{white-space:nowrap;width:1%}
+table.jt th:nth-child(4),table.jt td:nth-child(4){width:40%;min-width:230px;white-space:normal}
+table.jt th:nth-child(11),table.jt td:nth-child(11){width:26%;min-width:170px;white-space:normal}
+table.jf th:nth-child(3),table.jf td:nth-child(3){width:42%;min-width:230px;white-space:normal}
+table.jf th:nth-child(5),table.jf td:nth-child(5){width:16%;min-width:150px;white-space:normal}
+table.jl th:nth-child(2),table.jl td:nth-child(2){width:36%;min-width:260px;white-space:normal}
+table.jl th:nth-child(3),table.jl td:nth-child(3),table.jl th:nth-child(4),table.jl td:nth-child(4){width:15%;min-width:130px;white-space:normal}
+table.jl th:nth-child(5),table.jl td:nth-child(5){width:16%;min-width:150px;white-space:normal}
+table.jp th:nth-child(1),table.jp td:nth-child(1){width:20%;min-width:170px;white-space:normal}
+table.jp th:nth-child(3),table.jp td:nth-child(3){width:14%;min-width:140px;white-space:normal}
+table.jp th:nth-child(5),table.jp td:nth-child(5){width:34%;min-width:220px;white-space:normal}
+table.jr th:nth-child(1),table.jr td:nth-child(1){width:16%;min-width:140px;white-space:normal}
+table.jr th:nth-child(9),table.jr td:nth-child(9){width:34%;min-width:320px;white-space:normal}
+table.jt td:nth-child(11) .fc{white-space:normal}
+.rr{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.rr select,.rr input{width:auto!important;min-width:90px}.rr label{display:flex;gap:6px;align-items:center}
+table.jr td:nth-child(10) select{max-width:150px}
+.stats,.kp{display:flex;flex-wrap:wrap;gap:12px}
+.stats>*,.kp>*{flex:1 1 150px;min-width:0}
+.kp{margin-bottom:16px}
+dialog .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:700px){dialog .kp{grid-template-columns:1fr 1fr}}
+table.jt th,table.jt td,table.jf th,table.jf td,table.jr th,table.jr td,table.jl th,table.jl td{padding-left:8px;padding-right:8px}
+table.jt th:nth-child(4),table.jt td:nth-child(4){min-width:190px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){min-width:150px}
+table.jf th:nth-child(3),table.jf td:nth-child(3){min-width:200px}
+.rr select{max-width:150px}.rr input[data-rv]{width:90px!important;min-width:0}.rr input[type=date]{width:128px!important}
+table.jt th:nth-child(4),table.jt td:nth-child(4){width:32%;min-width:170px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){width:34%;min-width:200px}
+table.jt td:nth-child(11) .fc{border-radius:12px;line-height:1.35;margin-bottom:3px}
+table.jt th:nth-child(5),table.jt td:nth-child(5){padding-right:0}
+table.jf td:nth-child(7) .fc,table.jf td:nth-child(4) .fc{white-space:nowrap}
+table.jt th:nth-child(4),table.jt td:nth-child(4){min-width:150px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){min-width:180px}
+#fin svg{margin:14px 0 4px;display:block}
 </style>
 </head>
 <body>
@@ -508,7 +545,7 @@ function renderList(){
   if(!db.cases.length){$("#list").innerHTML=`<div class="empty">Chưa có thửa đất nào. Bấm <b>+ Thửa đất mới</b>, hoặc vào <b>Cài đặt → Nạp hồ sơ mẫu</b> để xem thử.</div>`;return}
   const l=filtered();
   if(!l.length){$("#list").innerHTML=`<div class="empty">Không tìm thấy.</div>`;return}
-  $("#list").innerHTML=`<table class="m"><thead><tr><th>Mã</th><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
+  $("#list").innerHTML=`<table class="m jl"><thead><tr><th>Mã</th><th>Thửa đất (theo GCN)</th><th>Bên bán</th><th>Bên mua</th><th>Giao dịch</th><th>Sửa lần cuối</th></tr></thead><tbody>${l.map(c=>{
     const a=partyNames(c,"A"),b=partyNames(c,"B"),m=missing(c);
     const g=[c.p.gcnSo&&"GCN "+c.p.gcnSo,c.p.thua&&"thửa "+c.p.thua,c.p.to&&"tờ "+c.p.to].filter(Boolean).join(" · ");
     return `<tr data-id="${c.id}"><td style="white-space:nowrap"><b>${esc(c.code||"")}</b></td><td><b>${esc(caseTitle(c))}</b>${g?`<small>${esc(g)}</small>`:""}${m.length?`<span class="chip">còn thiếu ${m.length}</span>`:""}${finChip(c)}</td>
@@ -532,7 +569,7 @@ function renderPeople(){
     if(rows.length)G.push({k:c.id,t:(c.code?`<span class="fc b">${esc(c.code)}</span> `:"")+esc(caseTitle(c)),n:rows.length,rows})});
   const free=l.filter(p=>!inCase.has(p.id));if(free.length)G.push({k:"_free",t:"<i>Chưa gắn hồ sơ nào</i>",n:free.length,rows:free.map(p=>[p,""])});
   const open=g=>q?true:!(pAll?!pCol.has("o"+g.k):pCol.has(g.k));
-  $("#plist").innerHTML=`<table class="m"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead>${G.map(g=>{const o=open(g);return `<tbody><tr class="gh" data-g="${esc(g.k)}"><td colspan="7"><b>${o?"▾":"▸"}</b> ${g.t} <span class="lg">· ${g.n} người</span></td></tr>${o?g.rows.map(([p,r])=>rowOf(p,r)).join(""):""}</tbody>`}).join("")}</table>`;
+  $("#plist").innerHTML=`<table class="m jp"><thead><tr><th>Họ tên / pháp nhân</th><th>Ngày sinh</th><th>CCCD</th><th>MST</th><th>Địa chỉ thường trú</th><th>Liên hệ</th><th>Số hồ sơ</th></tr></thead>${G.map(g=>{const o=open(g);return `<tbody><tr class="gh" data-g="${esc(g.k)}"><td colspan="7"><b>${o?"▾":"▸"}</b> ${g.t} <span class="lg">· ${g.n} người</span></td></tr>${o?g.rows.map(([p,r])=>rowOf(p,r)).join(""):""}</tbody>`}).join("")}</table>`;
 }
 $("#plist").onclick=e=>{const g=e.target.closest("tr.gh");if(g){const k=g.dataset.g;if(pAll){pCol.has("o"+k)?pCol.delete("o"+k):pCol.add("o"+k)}else{pCol.has(k)?pCol.delete(k):pCol.add(k)}renderPeople();return}const r=e.target.closest("tr[data-pid]");if(r)openPerson(r.dataset.pid)};
 $("#pcol").onclick=()=>{pAll=true;pCol=new Set();renderPeople()};
@@ -1389,9 +1426,9 @@ function issues(j,s,dup){const o=[];
   if(dup.has(j.id))o.push(["trung","Nghi trùng","y"]);
   return o}
 const REASONS=[["","Tất cả vướng"],["lo","Lỗ"],["vuot","Chi vượt thu"],["dh","Đến/quá hạn thu"],["hh","Cần trả hoa hồng"],["hhq","HH trả quá"],["treo","Báo giá treo"],["stale","Cần xem lại"],["thieu","Thiếu thông tin"],["trung","Nghi trùng"],["no","Còn nợ"]];
-function chart(rows){const W=640,H=220,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)return"";
+function chart(rows){const W=1000,H=250,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)return"";
   const mx=Math.max(1,...rows.flatMap(r=>[r.thu,r.chi,Math.abs(r.ln)])),gw=(W-pl)/bw;
-  let o='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:760px;background:var(--card);border:1px solid var(--line);border-radius:6px">';
+  let o='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;background:var(--card);border-radius:16px;box-shadow:var(--sh)">';
   for(let i=0;i<=4;i++){const y=pt+(H-pt-pb)*(1-i/4);o+='<line x1="'+pl+'" x2="'+W+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(pl-4)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" fill="var(--mute)">'+fshort(mx*i/4)+'</text>'}
   rows.forEach((r,i)=>{const x0=pl+i*gw+gw*.12,b=gw*.76/3;
     [[r.thu,"var(--brand)"],[r.chi,"var(--warn)"],[r.ln,r.ln<0?"var(--seal)":"var(--ok)"]].forEach(([v,c],j)=>{const h=(H-pt-pb)*Math.abs(v)/mx;
@@ -1410,7 +1447,7 @@ function yearData(y,mode,T,S){
 const fcs=(j,s,dup)=>issues(j,s,dup).map(i=>'<span class="fc '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("");
 function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
   return'<tr data-j="'+esc(j.id)+'"><td style="white-space:nowrap"><b>'+esc(j.code||"")+'</b></td><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+dmy(j.ngay||"")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+(j.cid?' <span class="fc b" title="Đã liên kết thửa đất">⛓</span>':'')+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+fnum(t)+'</td><td class="num">'+fnum(c)+'</td><td class="num '+((t-c)<0?'neg':'pos')+'">'+fnum(t-c)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td><td>'+fcs(j,s,dup)+'</td></tr>'}
-function jtable(L,y,mode,dup){L=L.slice().sort((a,b)=>String(b.j.ngay||"").localeCompare(String(a.j.ngay||"")));return'<div class="nt"><table class="m"><tr><th>Mã</th><th>Quận</th><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
+function jtable(L,y,mode,dup){L=L.slice().sort((a,b)=>String(b.j.ngay||"").localeCompare(String(a.j.ngay||"")));return'<div class="nt"><table class="m jt"><tr><th>Mã</th><th>Quận</th><th>Ngày nhận</th><th>Địa chỉ · loại</th><th>Bước</th><th class="num">Báo khách</th><th class="num">Thu'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Chi'+(y&&mode==="cash"?" (năm)":"")+'</th><th class="num">Lãi</th><th class="num">Còn nợ</th><th>Vướng</th></tr>'+L.map(x=>jrow(x,y,mode,dup)).join("")+'</table></div>'}
 function matchQ(j){const q=fqv.trim().toLowerCase();return!q||[j.code,j.dc,j.chu,j.gt,j.loai,j.nd,j.quan,j.gc].join(" ").toLowerCase().includes(q)}
 const isVan=(j,s,dup)=>issues(j,s,dup).some(i=>VAN.includes(i[0]));
 let fwch="";
@@ -1432,7 +1469,7 @@ function followTable(F){
   const cs=[["","Tất cả"],["tre","Trễ hẹn"],["sap","Sắp đến hẹn"],["bg","Báo giá chờ khách"],["dang","Đang làm"]],n=k=>k?F.filter(x=>x.g===k).length:F.length;
   const R=fwch?F.filter(x=>x.g===fwch):F,cl={tre:"r",sap:"y",bg:"b",dang:""};
   return '<p>'+cs.map(([k,t])=>'<button data-w="'+k+'" class="'+(fwch===k?"primary":"")+'">'+t+' ('+n(k)+')</button>').join(" ")+'</p>'+
-   (R.length?'<div class="nt"><table class="m"><tr><th>Mã</th><th>Quận</th><th>Địa chỉ · loại</th><th>Bước</th><th>Việc tới hạn</th><th>Hạn</th><th>Tình trạng</th><th class="num">Báo khách</th><th class="num">Còn nợ</th></tr>'+
+   (R.length?'<div class="nt"><table class="m jf"><tr><th>Mã</th><th>Quận</th><th>Địa chỉ · loại</th><th>Bước</th><th>Việc tới hạn</th><th>Hạn</th><th>Tình trạng</th><th class="num">Báo khách</th><th class="num">Còn nợ</th></tr>'+
    R.map(({j,s,g,e,note})=>'<tr data-j="'+esc(j.id)+'"><td style="white-space:nowrap"><b>'+esc(j.code||"")+'</b></td><td>'+esc(j.quan?(/^\d+$/.test(j.quan)?"Q."+j.quan:j.quan):"–")+'</td><td>'+esc(j.dc||"(chưa có địa chỉ)")+'<br><span class="lg">'+esc([j.loai,j.chu,canon(j.gt)&&("GT: "+canon(j.gt))].filter(Boolean).join(" · "))+'</span></td><td><span class="fc '+stCls(j)+'">'+esc(stName(j))+'</span></td><td>'+esc(e?e.t:"—")+'</td><td>'+(e?dmy(e.d):"")+'</td><td>'+(note?'<span class="fc '+cl[g]+'">'+esc(note)+'</span>':"")+'</td><td class="num">'+fnum(s.tong)+'</td><td class="num">'+(s.no?fnum(s.no):"–")+'</td></tr>').join("")+'</table></div>'
    :'<p class="lg">Không có hồ sơ nào ở mục này.</p>')}
 function renderFin(){
@@ -1507,9 +1544,9 @@ function renderRefs(box,S,T,dup){
   const aliasN=Object.keys(fin.alias||{}).length;
   box.innerHTML='<p class="lg">Mỗi người một dòng. Đặt <b>mức hoa hồng mặc định</b> cho từng người; hồ sơ nhận từ ngày “áp dụng từ” trở đi sẽ tự tính hoa hồng (hồ sơ cũ không bị ảnh hưởng). Mỗi hồ sơ vẫn ghi đè được mức riêng. Hoa hồng đã trả được ghi bằng khoản chi loại “Hoa hồng” trong hồ sơ.</p>'+
    '<p><select id="rY"><option value="">Tất cả các năm</option>'+yrs.map(y=>'<option'+(y===frefY?' selected':'')+'>'+y+'</option>').join("")+'</select> <button id="rmerge">Gộp tự động tên chỉ khác hoa/thường, dấu</button>'+(aliasN?' <button id="rundo" class="link">Hoàn tác gộp ('+aliasN+')</button>':'')+'</p>'+
-   '<div class="nt"><table class="m"><tr><th>Người giới thiệu</th><th class="num">Số HS</th><th class="num">Doanh thu (thu)</th><th class="num">Chi (không HH)</th><th class="num">HH đã trả</th><th class="num">HH tổng phải trả</th><th class="num">HH còn phải trả</th><th class="num">Lãi sau HH</th><th>Mức hoa hồng mặc định</th><th>Gộp vào…</th></tr>'+
+   '<div class="nt"><table class="m jr"><tr><th>Người giới thiệu</th><th class="num">Số HS</th><th class="num">Doanh thu (thu)</th><th class="num">Chi (không HH)</th><th class="num">HH đã trả</th><th class="num">HH tổng phải trả</th><th class="num">HH còn phải trả</th><th class="num">Lãi sau HH</th><th>Mức hoa hồng mặc định</th><th>Gộp vào…</th></tr>'+
    rows.map((r,i)=>{const q=fin.refs[r.n]||{};const real=r.n!=="(không ghi)";
-    return'<tr><td><b>'+esc(r.n)+'</b></td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chiN)+'</td><td class="num">'+fnum(r.hhP)+'</td><td class="num">'+fnum(r.hhT)+'</td><td class="num '+(r.hhO?'neg':'')+'">'+fnum(r.hhO)+'</td><td class="num '+(r.lai<0?'neg':'pos')+'">'+fnum(r.lai)+'</td><td>'+(real?'<select data-rm="'+i+'">'+HHMODE.map(([k,t])=>'<option value="'+k+'"'+((q.mode||"")===k?' selected':'')+'>'+t+'</option>').join("")+'</select> <input data-rv="'+i+'" value="'+esc(q.v==null?"":q.v)+'" style="width:80px" placeholder="% hoặc đ"> <select data-rk="'+i+'"><option value="dot"'+(q.khi!=="du"?' selected':'')+'>trả theo từng đợt thu</option><option value="du"'+(q.khi==="du"?' selected':'')+'>trả khi thu đủ</option></select> <label class="lg">áp dụng từ <input type="date" data-rt="'+i+'" value="'+esc(q.tu||"2026-01-01")+'" style="width:130px"></label>':'')+'</td><td>'+(real?'<select data-ra="'+i+'"><option value="">—</option>'+names.filter(n=>n!==r.n).map(n=>'<option>'+esc(n)+'</option>').join("")+'</select>':'')+'</td></tr>'}).join("")+'</table></div>';
+    return'<tr><td><b>'+esc(r.n)+'</b></td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chiN)+'</td><td class="num">'+fnum(r.hhP)+'</td><td class="num">'+fnum(r.hhT)+'</td><td class="num '+(r.hhO?'neg':'')+'">'+fnum(r.hhO)+'</td><td class="num '+(r.lai<0?'neg':'pos')+'">'+fnum(r.lai)+'</td><td><div class="rr">'+(real?'<select data-rm="'+i+'">'+HHMODE.map(([k,t])=>'<option value="'+k+'"'+((q.mode||"")===k?' selected':'')+'>'+t+'</option>').join("")+'</select> <input data-rv="'+i+'" value="'+esc(q.v==null?"":q.v)+'" style="width:80px" placeholder="% hoặc đ"> <select data-rk="'+i+'"><option value="dot"'+(q.khi!=="du"?' selected':'')+'>trả theo từng đợt thu</option><option value="du"'+(q.khi==="du"?' selected':'')+'>trả khi thu đủ</option></select> <label class="lg">áp dụng từ <input type="date" data-rt="'+i+'" value="'+esc(q.tu||"2026-01-01")+'" style="width:130px"></label>':'')+'</div></td><td>'+(real?'<select data-ra="'+i+'"><option value="">—</option>'+names.filter(n=>n!==r.n).map(n=>'<option>'+esc(n)+'</option>').join("")+'</select>':'')+'</td></tr>'}).join("")+'</table></div>';
   const setR=(i,k,v)=>{const n=rows[i].n;fin.refs[n]=Object.assign({mode:"",v:0,khi:"dot",tu:"2026-01-01"},fin.refs[n]||{});fin.refs[n][k]=v;finSave();renderFin()};
   box.querySelectorAll("[data-rm]").forEach(e=>e.onchange=()=>setR(+e.dataset.rm,"mode",e.value));
   box.querySelectorAll("[data-rv]").forEach(e=>e.onchange=()=>setR(+e.dataset.rv,"v",+String(e.value).replace(",",".")||0));
