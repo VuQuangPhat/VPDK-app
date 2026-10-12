@@ -343,6 +343,10 @@ function finMigrate(f){
       (r.chi||[]).forEach((a,i)=>{if(a>0)f.tx.push({id:"m"+r.id+"c"+i,j:r.id,k:"chi",a,d,n:"Chi đợt "+(i+1),est:1})});});
     f.rows=[];f.done={};f.ex={};
     (f.jobs||[]).forEach(j=>{if(!j.st)j.st=j.tt==="huy"?"huy":j.tt==="xong"?"bangiao":"cho"});}
+  /* hồ sơ cũ chưa thu đồng nào = chỉ báo giá, khách chưa/không làm */
+  const th={};f.tx.forEach(t=>{if(t.k==="thu")th[t.j]=(th[t.j]||0)+t.a});
+  (f.jobs||[]).forEach(j=>{if(j.mau&&!j.mg2){j.mg2=1;
+    if(!th[j.id]&&j.gia>0){if(j.mau==="ketthuc")j.st="nobg";else if(j.mau==="theodoi")j.st="baogia"}}});
 }
 function norm(d){
   d=d&&typeof d==="object"?d:{};
@@ -1237,8 +1241,8 @@ $("#sdemo").onclick=()=>{
 let fin=db.fin;
 const STAGES=[["tiepnhan","Tiếp nhận"],["baogia","Báo giá"],["kyhd","Ký hợp đồng"],["nop","Soạn & nộp hồ sơ"],["cho","Chờ kết quả"],["nhan","Nhận kết quả"],["bangiao","Bàn giao khách"],["dong","Đóng hồ sơ"]];
 const stIdx=j=>STAGES.findIndex(x=>x[0]===j.st);
-const stName=j=>j.st==="huy"?"Hủy":j.st==="fail"?"Fail":(STAGES[stIdx(j)]||[0,"—"])[1];
-const isHuy=j=>j.st==="huy",isFail=j=>j.st==="fail",isDone=j=>stIdx(j)>=6,isDangTD=j=>stIdx(j)>=0&&stIdx(j)<6;
+const stName=j=>j.st==="huy"?"Hủy":j.st==="fail"?"Fail":j.st==="nobg"?"Báo giá – khách không làm":(STAGES[stIdx(j)]||[0,"—"])[1];
+const isHuy=j=>j.st==="huy",isFail=j=>j.st==="fail",isNobg=j=>j.st==="nobg",isDone=j=>stIdx(j)>=6,isDangTD=j=>stIdx(j)>=0&&stIdx(j)<6;
 const stCls=j=>isHuy(j)?"":isFail(j)?"r":isDone(j)?"g":"b";
 const HHMODE=[["","Chưa có"],["phi","% phí dịch vụ"],["lai","% lãi (báo khách − chi)"],["cd","Số tiền cố định"]];
 const fsum=a=>(a||[]).reduce((x,y)=>x+(+y||0),0);
@@ -1257,7 +1261,7 @@ function txIdx(){const T={};fin.tx.forEach(t=>{(T[t.j||""]=T[t.j||""]||[]).push(
 function refRate(j){if(j.hh&&j.hh.mode)return j.hh;const r=fin.refs[canon(j.gt)];if(r&&r.mode&&(!r.tu||(j.ngay||"")>=r.tu))return r;return null}
 function jstat(j,T,y){const L=T[j.id]||[];let thu=0,chi=0,hhP=0,yt=0,yc=0,yh=0;
   L.forEach(t=>{const inY=y&&t.d.slice(0,4)===y;if(t.k==="thu"){thu+=t.a;if(inY)yt+=t.a}else{chi+=t.a;if(t.cat==="hh")hhP+=t.a;if(inY){yc+=t.a;if(t.cat==="hh")yh+=t.a}}});
-  const chiN=chi-hhP,tong=(+j.gia||0)+(+j.lephi||0),huy=isHuy(j)||isFail(j),no=(j.mien||huy)?0:Math.max(0,tong-thu),age=ageM(j),r=refRate(j);
+  const chiN=chi-hhP,tong=(+j.gia||0)+(+j.lephi||0),huy=isHuy(j)||isFail(j)||isNobg(j),no=(j.mien||huy||(thu===0&&stIdx(j)<2))?0:Math.max(0,tong-thu),age=ageM(j),r=refRate(j);
   let hhT=0;if(r&&r.mode){const v=+r.v||0;hhT=r.mode==="phi"?(+j.gia||0)*v/100:r.mode==="lai"?Math.max(0,tong-chiN)*v/100:v}hhT=Math.round(hhT);
   const due=!r?0:(r.khi==="dot"?hhT*Math.min(1,tong?thu/tong:0):(no===0&&thu>0?hhT:0));
   const hhOwe=Math.max(0,Math.round(due)-hhP),hhOver=hhT>0&&hhP>hhT+1;
@@ -1271,11 +1275,12 @@ function dupSet(S){const g={},g2={},out=new Set();
   Object.values(g).filter(v=>v.length>1).forEach(v=>v.slice(1).forEach(j=>out.add(j.id)));
   Object.values(g2).filter(v=>new Set(v.map(j=>j.src)).size>1).forEach(v=>v.slice(1).forEach(j=>{if(j.src!==v[0].src)out.add(j.id)}));
   return out}
-const VAN=["lo","vuot","stale","thieu","trung","dh","hh","hhq"];
+const VAN=["lo","vuot","treo","stale","thieu","trung","dh","hh","hhq"];
 function issues(j,s,dup){const o=[];
   if(!isHuy(j)){
-    if(s.lai<0&&(s.no===0||isDone(j)||isFail(j)))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
+    if(s.lai<0&&(s.no===0||isDone(j)||isFail(j)||isNobg(j)))o.push(["lo","Lỗ "+fnum(-s.lai),"r"]);
     else if(s.chi>s.thu&&s.no>0)o.push(["vuot","Chi vượt thu "+fnum(s.chi-s.thu),"y"]);
+    if(!s.thu&&stIdx(j)>=0&&stIdx(j)<2&&s.tong>0&&s.age!=null&&s.age>=12)o.push(["treo","Báo giá treo trên 1 năm — khách chưa làm?","y"]);
     if(s.stale)o.push(["stale","Chưa thu đồng nào, trên 1 năm — xem lại","r"]);
     else if(s.no>0)o.push(["no","Còn nợ "+fnum(s.no),"y"]);
     if(s.dueUnpaid>0)o.push(["dh",(s.over?"Quá hạn thu ":"Đến hạn thu ")+fnum(s.dueUnpaid),s.over?"r":"y"]);
@@ -1285,7 +1290,7 @@ function issues(j,s,dup){const o=[];
   if(th.length)o.push(["thieu","Thiếu "+th.join(", "),"y"]);
   if(dup.has(j.id))o.push(["trung","Nghi trùng","y"]);
   return o}
-const REASONS=[["","Tất cả vướng"],["lo","Lỗ"],["vuot","Chi vượt thu"],["dh","Đến/quá hạn thu"],["hh","Cần trả hoa hồng"],["hhq","HH trả quá"],["stale","Cần xem lại"],["thieu","Thiếu thông tin"],["trung","Nghi trùng"],["no","Còn nợ"]];
+const REASONS=[["","Tất cả vướng"],["lo","Lỗ"],["vuot","Chi vượt thu"],["dh","Đến/quá hạn thu"],["hh","Cần trả hoa hồng"],["hhq","HH trả quá"],["treo","Báo giá treo"],["stale","Cần xem lại"],["thieu","Thiếu thông tin"],["trung","Nghi trùng"],["no","Còn nợ"]];
 function chart(rows){const W=640,H=220,pl=44,pb=26,pt=10,bw=rows.length;if(!bw)return"";
   const mx=Math.max(1,...rows.flatMap(r=>[r.thu,r.chi,Math.abs(r.ln)])),gw=(W-pl)/bw;
   let o='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:760px;background:var(--card);border:1px solid var(--line);border-radius:6px">';
@@ -1302,7 +1307,7 @@ function yearData(y,mode,T,S){
   inY.forEach(({s})=>{thu+=mode==="rec"?s.thu:s.yt;chi+=mode==="rec"?s.chi:s.yc;hh+=mode==="rec"?s.hhP:s.yh});
   gen.forEach(t=>{if(t.k==="thu")thu+=t.a;else{chi+=t.a;if(t.cat==="hh")hh+=t.a}});
   const no=inY.filter(x=>!x.s.stale).reduce((a,x)=>a+x.s.no,0),stale=inY.filter(x=>x.s.stale).reduce((a,x)=>a+x.s.no,0);
-  const lo=inY.filter(({j,s})=>!isHuy(j)&&s.lai<0&&(s.no===0||isDone(j)||isFail(j))).length;
+  const lo=inY.filter(({j,s})=>!isHuy(j)&&s.lai<0&&(s.no===0||isDone(j)||isFail(j)||isNobg(j))).length;
   return{inY,gen,thu,chi,hh,ln:thu-chi,no,stale,n:inY.length,lo}}
 const fcs=(j,s,dup)=>issues(j,s,dup).map(i=>'<span class="fc '+i[2]+'" title="'+esc(i[1])+'">'+esc(i[1])+'</span>').join("");
 function jrow(x,y,mode,dup){const{j,s}=x,t=mode==="rec"||!y?s.thu:s.yt,c=mode==="rec"||!y?s.chi:s.yc;
@@ -1326,19 +1331,19 @@ function renderFin(){
     const rows=yrs.map(y=>({key:y,...yearData(y,mode,T,S)}));
     const tot={thu:fsum(rows.map(r=>r.thu)),chi:fsum(rows.map(r=>r.chi)),hh:fsum(rows.map(r=>r.hh)),no:fsum(S.filter(x=>!x.s.stale).map(x=>x.s.no)),stale:fsum(S.filter(x=>x.s.stale).map(x=>x.s.no)),due:fsum(S.map(x=>x.s.dueUnpaid)),hhO:fsum(S.map(x=>x.s.hhOwe))};
     const stg=STAGES.map(([k,n])=>{const a=S.filter(x=>x.j.st===k);return{k,n,c:a.length,tong:fsum(a.map(x=>x.s.tong)),thu:fsum(a.map(x=>x.s.thu)),no:fsum(a.filter(x=>!x.s.stale).map(x=>x.s.no)),due:fsum(a.map(x=>x.s.dueUnpaid))}});
-    const hu=S.filter(x=>x.j.st==="huy"),fl=S.filter(x=>x.j.st==="fail");
-    box.innerHTML=note+kp([["Hồ sơ",fin.jobs.length],["Đang theo dõi (vàng)",S.filter(x=>isDangTD(x.j)).length],["Tổng thu",fshort(tot.thu)],["Tổng chi",fshort(tot.chi)],["Lãi",fshort(tot.thu-tot.chi),tot.thu-tot.chi<0?"neg":"pos"],["Hoa hồng đã trả",fshort(tot.hh)],["Hoa hồng còn phải trả",fshort(tot.hhO),tot.hhO?"neg":""],["Còn nợ (đáng thu)",fshort(tot.no),"neg"],["Đến hạn thu chưa thu",fshort(tot.due),tot.due?"neg":""],["Nghi không thu được",fshort(tot.stale)]])+
+    const hu=S.filter(x=>x.j.st==="huy"),fl=S.filter(x=>x.j.st==="fail"),nb=S.filter(x=>x.j.st==="nobg");
+    box.innerHTML=note+kp([["Hồ sơ",fin.jobs.length],["Đang theo dõi (vàng)",S.filter(x=>isDangTD(x.j)).length],["Báo giá chưa chốt",fshort(fsum(S.filter(x=>!x.s.thu&&stIdx(x.j)>=0&&stIdx(x.j)<2).map(x=>x.s.tong)))],["Tổng thu",fshort(tot.thu)],["Tổng chi",fshort(tot.chi)],["Lãi",fshort(tot.thu-tot.chi),tot.thu-tot.chi<0?"neg":"pos"],["Hoa hồng đã trả",fshort(tot.hh)],["Hoa hồng còn phải trả",fshort(tot.hhO),tot.hhO?"neg":""],["Còn nợ (đáng thu)",fshort(tot.no),"neg"],["Đến hạn thu chưa thu",fshort(tot.due),tot.due?"neg":""],["Nghi không thu được",fshort(tot.stale)]])+
       chart(rows)+'<div class="nt"><table class="m"><tr><th>Năm (bấm để xem chi tiết)</th><th class="num">Số HS</th><th class="num">Thu</th><th class="num">Chi</th><th class="num">Trong đó hoa hồng</th><th class="num">Lãi</th><th class="num">Biên lãi</th><th class="num">HS lỗ</th><th class="num">Còn nợ</th><th class="num">Nghi không thu được</th></tr>'+
       rows.slice().reverse().map(r=>'<tr data-y="'+r.key+'" style="cursor:pointer"><td><b>'+r.key+'</b></td><td class="num">'+r.n+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.chi)+'</td><td class="num">'+fnum(r.hh)+'</td><td class="num '+(r.ln<0?'neg':'pos')+'">'+fnum(r.ln)+'</td><td class="num">'+(r.thu?Math.round(r.ln/r.thu*100)+"%":"–")+'</td><td class="num">'+(r.lo||"–")+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.stale)+'</td></tr>').join("")+'</table></div>'+
       '<h3 class="fh">Vòng đời hồ sơ — đang ở bước nào (bấm để xem danh sách)</h3><div class="nt"><table class="m"><tr><th>Bước</th><th class="num">Số HS</th><th class="num">Báo khách</th><th class="num">Đã thu</th><th class="num">Còn nợ</th><th class="num">Đến hạn thu chưa thu</th></tr>'+
       stg.map(r=>'<tr data-st="'+r.k+'" style="cursor:pointer"><td>'+esc(r.n)+'</td><td class="num">'+r.c+'</td><td class="num">'+fnum(r.tong)+'</td><td class="num">'+fnum(r.thu)+'</td><td class="num">'+fnum(r.no)+'</td><td class="num">'+fnum(r.due)+'</td></tr>').join("")+
-      (fl.length?'<tr data-st="fail" style="cursor:pointer"><td>Fail (thất bại)</td><td class="num">'+fl.length+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+(hu.length?'<tr data-st="huy" style="cursor:pointer"><td>Hủy</td><td class="num">'+hu.length+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+'</table></div>'+
-      '<p class="lg">Hồ sơ cũ lấy từ màu trong Excel: vàng → đang theo dõi (Chờ kết quả); trắng → Đóng hồ sơ (phần chưa thu coi như đã xóa nợ); xanh → Hủy; đỏ → Fail. Bạn chỉnh bước khi mở từng hồ sơ.</p>';
+      (nb.length?'<tr data-st="nobg" style="cursor:pointer"><td>Báo giá – khách không làm</td><td class="num">'+nb.length+'</td><td class="num">'+fnum(fsum(nb.map(x=>x.s.tong)))+'</td><td class="num">–</td><td class="num">–</td><td class="num">–</td></tr>':'')+(fl.length?'<tr data-st="fail" style="cursor:pointer"><td>Fail (thất bại)</td><td class="num">'+fl.length+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(fl.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+(hu.length?'<tr data-st="huy" style="cursor:pointer"><td>Hủy</td><td class="num">'+hu.length+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.tong)))+'</td><td class="num">'+fnum(fsum(hu.map(x=>x.s.thu)))+'</td><td class="num">–</td><td class="num">–</td></tr>':'')+'</table></div>'+
+      '<p class="lg">Hồ sơ cũ lấy từ màu trong Excel: vàng → đang theo dõi (chưa thu đồng nào thì coi là chỉ báo giá); trắng → Đóng hồ sơ (chưa thu đồng nào thì là “Báo giá – khách không làm”, phần chưa thu coi như đã xóa nợ); xanh → Hủy; đỏ → Fail. Bạn chỉnh bước khi mở từng hồ sơ.</p>';
     box.querySelectorAll("[data-y]").forEach(e=>e.onclick=()=>{fv=e.dataset.y;renderFin();scrollTo(0,0)});
     box.querySelectorAll("[data-st]").forEach(e=>e.onclick=()=>{fv="st:"+e.dataset.st;renderFin();scrollTo(0,0)});
   }else if(fv.startsWith("st:")){
     const k=fv.slice(3),L=S.filter(x=>x.j.st===k&&matchQ(x.j)).sort((a,b)=>b.s.no-a.s.no);
-    box.innerHTML='<p><button id="back">← Tổng quan</button> &nbsp;<b>Bước: '+esc(k==="huy"?"Hủy":k==="fail"?"Fail":(STAGES.find(x=>x[0]===k)||[0,k])[1])+'</b> ('+L.length+' hồ sơ, xếp theo còn nợ giảm dần)</p>'+jtable(L,"",mode,dup);
+    box.innerHTML='<p><button id="back">← Tổng quan</button> &nbsp;<b>Bước: '+esc(k==="huy"?"Hủy":k==="fail"?"Fail":k==="nobg"?"Báo giá – khách không làm":(STAGES.find(x=>x[0]===k)||[0,k])[1])+'</b> ('+L.length+' hồ sơ, xếp theo còn nợ giảm dần)</p>'+jtable(L,"",mode,dup);
     $("#back").onclick=()=>{fv="all";renderFin()};
   }else if(fv==="ref"){
     renderRefs(box,S,T,dup);return;
@@ -1415,8 +1420,8 @@ function drawJob(){
   const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
   const kp=[["Báo khách",fnum(s.tong),""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""]];
   const si=stIdx(j);
-  const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="fail" class="'+(j.st==="fail"?"cur":"")+'" style="margin-left:auto;color:var(--seal)">Fail</button><button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
-    (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st==="fail"?"Fail":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
+  const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="nobg" class="'+(j.st==="nobg"?"cur":"")+'" style="margin-left:auto">Khách không làm</button><button data-st="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
+    (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st==="fail"?"Fail":x.st==="nobg"?"Khách không làm":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
   const trOpts=sel=>'<option value="">Ngay khi nhận</option>'+STAGES.map(([k,n])=>'<option value="'+k+'"'+(sel===k?' selected':'')+'>Khi tới bước: '+n+'</option>').join("");
   const plSum=fsum((j.pl||[]).map(p=>p.a));
   const r=s.rate,hhO=j.hh||{mode:"",v:0,khi:"dot"};
@@ -1484,7 +1489,7 @@ function renderStrip(){const el=$("#cstrip");if(!el)return;
   if(!j){el.innerHTML='<button id="cs_new" class="primary">+ Theo dõi vòng đời &amp; doanh thu hồ sơ này</button> <span class="lg">Điền đơn xong vẫn biết hồ sơ đang ở bước nào, còn thu bao nhiêu.</span>';
     $("#cs_new").onclick=()=>{const n=newJob({dc:propAddr(cur)||caseTitle(cur),loai:cur.type||"",ngay:cur.ngayKy||today(),cid:cur.id});delete n._new;fin.jobs.push(n);finSave();renderStrip();renderList()};return}
   const s=jstat(j,txIdx(),""),si=stIdx(j);
-  el.innerHTML='<div class="stg" style="margin:0">'+STAGES.map(([k,n],i)=>'<button data-ss="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-ss="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-ss="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
+  el.innerHTML='<div class="stg" style="margin:0">'+STAGES.map(([k,n],i)=>'<button data-ss="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-ss="nobg" class="'+(j.st==="nobg"?"cur":"")+'" style="margin-left:auto">Khách không làm</button><button data-ss="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-ss="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
    '<div style="margin-top:6px"><span class="fc b">Báo khách '+fnum(s.tong)+'</span><span class="fc g">Đã thu '+fnum(s.thu)+'</span>'+(s.no?'<span class="fc y">Còn nợ '+fnum(s.no)+'</span>':'')+'<span class="fc">Chi '+fnum(s.chi)+'</span> <button id="cs_open">Mở thẻ doanh thu</button></div>';
   el.querySelectorAll("[data-ss]").forEach(b=>b.onclick=()=>{if(j.st===b.dataset.ss)return;j.st=b.dataset.ss;j.stLog=(j.stLog||[]).concat([{st:j.st,d:today()}]);finSave();renderStrip();renderList()});
   $("#cs_open").onclick=()=>openJob(j.id)}
