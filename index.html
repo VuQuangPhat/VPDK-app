@@ -397,7 +397,7 @@ const ROLES={A:"Bên bán (chuyển nhượng) – khai TNCN",B:"Bên mua (nhậ
 const PKIND=["Căn hộ chung cư","Nhà ở riêng lẻ","Đất ở","Khác"];
 const LOAI18=[["capdoi","Cấp đổi Giấy chứng nhận"],["capnhat","Cập nhật vào Giấy chứng nhận (còn chỗ cập nhật)"],["capmoi","Cấp mới Giấy chứng nhận"]];
 const FORMS_ALL={phieu:"Phiếu yêu cầu hướng dẫn, bổ sung, hoàn thiện hồ sơ (VPĐK TP)",don18:"Đơn đăng ký biến động (Mẫu 18)",lptb:"Tờ khai lệ phí trước bạ (nhà, đất)",tncn:"Tờ khai thuế TNCN (03/BDS-TNCN)",pnn:"Tờ khai thuế sử dụng đất phi nông nghiệp",tsdd:"Tờ khai tiền sử dụng đất (Mẫu 01/TSDD)",mst:"Tờ khai điều chỉnh thông tin đăng ký thuế (08-MST)",cover:"Phiếu danh mục hồ sơ (mang theo khi nộp)"};
-const FORMS_LAB={don18:FORMS_ALL.don18,lptb:FORMS_ALL.lptb,pnn:FORMS_ALL.pnn,tncn:FORMS_ALL.tncn};
+const FORMS_LAB={don18:FORMS_ALL.don18,lptb:FORMS_ALL.lptb,pnn:FORMS_ALL.pnn,tsdd:FORMS_ALL.tsdd,tncn:FORMS_ALL.tncn};
 const ALL_LAB=FORMS_ALL;
 const DOC_COMMON=["Căn cước công dân / hộ chiếu các bên (bản sao)","Giấy tờ chứng minh tình trạng hôn nhân / đăng ký kết hôn","Giấy ủy quyền (nếu nộp thay)"];
 const TYPES={
@@ -739,7 +739,7 @@ const TABS={
   ${L("Diện tích thửa đất (m²)","p.dt")}${L("Mục đích sử dụng đất","p.mucDich")}${L("Nguồn gốc đất","p.nguonGoc")}
   ${L("Vị trí thửa đất (nếu cần)","p.viTri",{cls:"sp2"})}
   </div>
-  ${L("Ghi chú","note",{type:"area",rows:2})}`},
+  <div class="grid">${L("Ghi chú","note",{type:"area",rows:2})}</div>`},
  par:()=>{
   const m=missing(cur);
   const row=(x,i)=>{const p=P(x.pid)||{},w=pMiss(p,x.role);return `<div class="it party">
@@ -780,12 +780,12 @@ const TABS={
    ${L("Mục 3 – tự viết, mỗi dòng một giấy tờ (để trống = tự động)","d.kem",{type:"area",rows:3})}
    ${L("Kính gửi: Văn phòng đăng ký đất đai … (để trống = theo Cài đặt)","d.kg",{cls:"full"})}</div></details>`},
  print:()=>{
-  const row=k=>`<div class="fgrp"><label class="ck tt"><input type="checkbox" class="fsel" value="${k}" checked> ${FORMS_LAB[k]}</label><button class="primary" data-a="docx" data-f="${k}">Xuất Word</button><button data-a="pdf" data-f="${k}">Xuất PDF</button></div>`;
+  const row=(k,off)=>`<div class="fgrp"><label class="ck tt"><input type="checkbox" class="fsel" value="${k}" ${off?"":"checked"}> ${FORMS_LAB[k]}</label><button class="primary" data-a="docx" data-f="${k}">Xuất Word</button><button data-a="pdf" data-f="${k}">Xuất PDF</button></div>`;
   return `<div class="grid"><label>Ngày ghi trên đơn / tờ khai<input type="date" data-k="ngayKy" value="${esc(cur.ngayKy||"")}"></label></div>
   <div class="hd"><h3>Bên mua điền</h3></div>
-  ${row("don18")}${row("lptb")}${row("pnn")}
+  ${row("don18")}${row("lptb")}${row("pnn")}${row("tsdd",1)}
   <div class="hd"><h3>Bên bán điền</h3></div>
-  ${row("tncn")}
+  ${ctx(cur).A.some(isOrg)?`<p class="hint">Bên bán là doanh nghiệp (pháp nhân) nên không phải kê khai thuế TNCN.</p>`:row("tncn")}
   <div class="foot" style="margin-top:6px"><button class="primary" data-a="docxsel">Xuất Word các mẫu đã chọn</button><button data-a="pdfsel">Xuất PDF các mẫu đã chọn</button></div>
   <div id="preflightBox">${renderPreflight()}</div>
   <p class="hint">Word và PDF đều điền vào đúng mẫu gốc. Với PDF: bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”; có thể bấm vào chữ để sửa trước khi in. Nhiều mẫu Word sẽ nén thành một file .zip.</p>`}
