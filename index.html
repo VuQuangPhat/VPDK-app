@@ -407,6 +407,7 @@ button.qi{text-align:left;display:flex;flex-direction:column;gap:2px;white-space
 @media print{#proot .fd.lp{font-size:11pt;line-height:1.28;page:lp}#proot .fd.lp p{margin:1.4pt 0}#proot .fd.lp h2{margin:6pt 0 2pt}#proot .fd.lp .bx{margin-bottom:6pt}#proot .fd.lp .t11 td,#proot .fd.lp .t11 th{font-size:10pt}@page lp{size:A4;margin:11mm 12mm 11mm 18mm}}
 .fd .sd{white-space:nowrap}.fd .sig>div:first-child{flex:1 1 40%}.fd .sig>div:last-child{flex:0 0 58%}.fd.dk .sig>div:first-child{flex:1 1 20%}.fd.dk .sig>div:last-child{flex:0 0 75%}
 @media print{#proot .fd.dk .sm,#proot .fd.dk .v.sm{font-size:inherit}}
+.fd table.nb,.fd table.nb td{border:0}.fd.tx h2{margin:12px 0 6px}
 </style>
 </head>
 <body>
@@ -2201,13 +2202,25 @@ function luongRows(c,b){
     const dk=h.dk?`<div class="hint" style="margin:2px 0 0">Khi: ${esc(h.dk.replace(/^nếu /,""))}</div>`:"";
     return `<tr class="${s==="Không áp dụng"?"na":""}"><td><select data-q="ds" data-i="${h.key}">${QD_DOC_ST.map(x=>`<option ${x===s?"selected":""}>${x}</option>`).join("")}</select></td><td>${esc(h.t)}${dk}</td><td></td><td><input data-q="dsl" data-i="${h.key}" placeholder="01 bản sao" value="${esc(m.sl||"")}" style="width:100%"><input data-q="dgc" data-i="${h.key}" placeholder="Ghi chú" value="${esc(m.gc||"")}" style="width:100%;margin-top:3px"></td></tr>`}).join("");
 }
+const qdMetaTd=(key,ph,m)=>`<td><input data-q="dsl" data-i="${key}" placeholder="${esc(ph)}" value="${esc(m.sl||"")}" style="width:100%"><input data-q="dgc" data-i="${key}" placeholder="Ghi chú" value="${esc(m.gc||"")}" style="width:100%;margin-top:3px"></td>`;
+function qdDocView(p,b,c){
+  const rows=[],opt=[];
+  const dkT=h=>h.dk?`<div class="hint" style="margin:2px 0 0">${/^(nếu |chỉ khi |trường hợp )/.test(h.dk)?esc("Khi: "+h.dk.replace(/^(nếu |chỉ khi |trường hợp )/,"")):esc(h.dk)}</div>`:"";
+  p.hs.forEach((h,i)=>{const s=qdDocState(p,b,i,c),m=(b.meta&&b.meta[i])||{};
+    if(s==="Không áp dụng"){opt.push(`<label class="ck" style="display:block;margin:2px 0"><input type="checkbox" data-q="dopt" data-i="${i}"> ${esc(h.t)}${h.dk?` <span class="hint">(${esc(h.dk)})</span>`:""}</label>`);return}
+    rows.push(`<tr><td><b>${rows.length+1}</b></td><td>${esc(h.t)}${dkT(h)}</td><td>${h.f?qdFormChip(h.f,true):""}</td>${qdMetaTd(i,qdSl(h),m)}</tr>`)});
+  luongDocs(c).forEach(h=>{const s=luongState(b,h),m=(b.meta&&b.meta[h.key])||{};
+    if(s==="Không áp dụng"){opt.push(`<label class="ck" style="display:block;margin:2px 0"><input type="checkbox" data-q="dopt" data-i="${h.key}"> ${esc(h.t)}${h.dk?` <span class="hint">(${esc(h.dk)})</span>`:""}</label>`);return}
+    rows.push(`<tr><td><b>${rows.length+1}</b></td><td>${esc(h.t)}${dkT(h)}</td><td></td>${qdMetaTd(h.key,"01 bản sao",m)}</tr>`)});
+  return {rows:rows.join(""),opt:opt.join(""),n:rows.length};
+}
 /* ----- Tab trong hộp thoại hồ sơ ----- */
 {const ip=CTABS.findIndex(x=>x[0]==="print");if(ip>=0)CTABS.splice(ip,1);CTABS.push(["qd","4. Thủ tục & thành phần hồ sơ (QĐ 44)"]);CTABS.push(["print","5. In bộ đơn & mục lục"])}
 TABS.qd=()=>{
   const pid=qdPid(cur),p=QD_BY[pid],st=qdStat(cur),b=st.b;
   const opts=QD44.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.nhom+" – "+x.ten)}</option>`).join("");
   const hanTxt=st.han?`${fd(st.han)} <span class="chip ${st.left<0?"r":st.left<=2?"y":""}">${st.left<0?"quá hạn "+(-st.left)+" ngày":st.left===0?"hết hạn hôm nay":"còn "+st.left+" ngày"}</span>`:`<span class="hint">Nhập ngày nộp để tính hạn</span>`;
-  return luongBadge(cur)+`<p class="hint" style="margin-top:0">Căn cứ QĐ 44/2026/QĐ-UBND (hiệu lực 01/7/2026). Chọn đúng thủ tục để hệ thống đưa ra thành phần hồ sơ, mẫu đơn và các bước cần theo dõi.</p>
+  return luongBadge(cur)+`<p class="hint" style="margin-top:0">Căn cứ QĐ 44/2026/QĐ-UBND (hiệu lực 01/7/2026). Chọn đúng thủ tục để hệ thống đưa ra hồ sơ cần chuẩn bị, mẫu đơn và thời hạn giải quyết.</p>
   <div class="grid"><label class="full">Thủ tục áp dụng<select data-q="pid">${opts}</select></label></div>
   <div class="qbox"><div><b>${esc(p.ten)}</b></div><div class="hint">${esc(p.ref)}</div>
    <div class="qk"><div><span>Thời hạn quy định</span><b>${esc(p.tdText)}</b></div>
@@ -2217,12 +2230,11 @@ TABS.qd=()=>{
     <label>Cộng thêm ngày (xã đảo, vùng khó khăn: 10)<input type="number" min="0" data-q="tg" value="${st.tg||0}"></label>
     <label>Ngày nộp hồ sơ<input type="date" data-k="ngayNop" value="${esc(cur.ngayNop||"")}"></label></div>
    <p class="hint">Hạn chỉ là ước tính. Thời gian thuế, niêm yết, trích đo, giám định không tính vào hạn: khi các bước đó phát sinh, hãy cộng thêm số ngày thực tế vào ô “Cộng thêm ngày”.</p></div>
-  <div class="hd"><h3>Thành phần hồ sơ (${st.got}/${st.total} đã có)</h3><span class="hint" style="margin:0">Mục “tùy trường hợp” mặc định không áp dụng; chuyển sang “Thiếu” nếu hồ sơ này cần.</span></div>
-  <table class="qt"><thead><tr><th style="width:150px">Tình trạng</th><th>Giấy tờ</th><th>Mẫu đơn</th><th style="width:170px">Số lượng · ghi chú (in trên mục lục)</th></tr></thead><tbody>${qdDocRows(p,b,true,cur)}</tbody></table>
-  ${luongDocs(cur).length?`<div class="hd"><h3>Giấy tờ theo luồng và loại tài sản${luongTxt(cur)?" ("+esc(luongTxt(cur))+")":""}</h3><span class="hint" style="margin:0">Theo loại bên chuyển, bên nhận và loại tài sản; tính vào mục lục và số giấy tờ đã có.</span></div>
-  <table class="qt"><thead><tr><th style="width:150px">Tình trạng</th><th>Giấy tờ</th><th></th><th style="width:170px">Số lượng · ghi chú</th></tr></thead><tbody>${luongRows(cur,b)}</tbody></table>`:""}
-  <div class="hd"><h3>Quy trình (${st.stepsDone}/${st.nSteps} bước)</h3>${st.next>=0?`<span class="chip">Bước tiếp theo: ${st.next+1}</span>`:`<span class="chip g">Đã đủ các bước</span>`}</div>
-  <ol class="qsl">${qdSteps(p,b,true)}</ol>
+  ${(()=>{const dv=qdDocView(p,b,cur);return `<div class="hd"><h3>Hồ sơ cần chuẩn bị (${dv.n} mục)</h3><span class="hint" style="margin:0">Chỉ hiện giấy tờ cần theo thủ tục, luồng và loại tài sản của hồ sơ này.</span></div>
+  <table class="qt"><thead><tr><th style="width:40px">STT</th><th>Giấy tờ</th><th>Mẫu đơn</th><th style="width:170px">Số lượng · ghi chú (in trên mục lục)</th></tr></thead><tbody>${dv.rows}</tbody></table>
+  <div class="foot" style="margin:8px 0"><button class="primary" data-q="hdprint">Xem, in hướng dẫn cho khách</button><button data-q="hdword">Tải hướng dẫn (Word)</button></div>
+  ${dv.opt?`<details style="margin:6px 0"><summary style="cursor:pointer">Giấy tờ tùy trường hợp (bấm để thêm nếu hồ sơ này cần)</summary><div style="padding:6px 0">${dv.opt}</div></details>`:""}`})()}
+  <details style="margin-top:10px"><summary style="cursor:pointer"><b>Quy trình ${st.nSteps} bước của thủ tục</b> <span class="hint">(để nắm, không cần theo dõi từng bước)</span></summary><ol class="qsl">${qdSteps(p,b,false)}</ol></details>
   ${p.luu.length?`<div class="hd"><h3>Lưu ý</h3></div><ul class="ql">${p.luu.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}`;
 };
 (function(){
@@ -2234,6 +2246,7 @@ TABS.qd=()=>{
     if(q==="only"){qdEnsure(cur);cur.qd.only=t.checked;return}
     const b=qdEnsure(cur);
     if(q==="ds")b.docs[t.dataset.i]=t.value;
+    else if(q==="dopt")b.docs[t.dataset.i]=t.checked?"Thiếu":"Không áp dụng";
     else if(q==="st")b.steps[t.dataset.i]=t.checked?today():0;
     else if(q==="td")b.td=t.value===""?null:+t.value;
     else if(q==="tg")b.tg=+t.value||0;
@@ -2732,7 +2745,7 @@ function huongDan(c){
   const ban=hdApps(c).filter(a=>!HD_BANSELL.includes(a)),ban2=hdApps(c).filter(a=>HD_BANSELL.includes(a));
   const donTxt=ban.map((a,i)=>`${i+1}. ${esc(HD_APP[a])}`).concat(ban2.map((a,i)=>`${ban.length+i+1}. <b>${esc(HD_APP[a])} (bên chuyển nhượng ký)</b>`)).join("<br>");
   const buoc=pr.buoc.map((s,i)=>`${i+1}. ${esc(QD_WHO[s.w]||s.w)}: ${esc(s.t)}`).join("<br>");
-  const t2=`<table>${R("I. Bản chính hồ sơ",`1. 01 bộ giấy tờ pháp lý của tài sản (mục III bảng trên), kèm 01 bộ photo.<br>2. Phiếu đo đạc chỉnh lý thửa đất${x.A.length||1?" (nếu có)":""}.`)}${R("II. Bản sao",bsa.concat(cns).map((t,i)=>`${i+1}. ${esc(t)}`).join("<br>")||"Theo yêu cầu của cơ quan tiếp nhận.")}${R("III. Các mẫu đơn <small>(bên nhận chuyển nhượng ký tên"+(bOrg?" và đóng dấu":"")+")</small>",(donTxt||"Theo thủ tục đã chọn.")+`<br><br><u>Dự phòng:</u> 02 bộ để trống không điền.`)}${R("IV. Quy trình tiếp nhận",`<i>${esc(pr.ten)}</i>. Thời hạn: ${esc(pr.tdText)}.<br>${buoc}`)}${R("Lưu ý",`- Đối với ủy quyền thì phải có thể hiện nội dung “được thay mặt các bên để nhận hoặc nộp bản chính hồ sơ và được phép ký tên lên các biên bản làm việc, biên bản xử phạt của cơ quan nhà nước, đơn vị sự nghiệp chuyên môn có liên quan.”`)}</table>`;
+  const t2=`<table>${R("I. Bản chính hồ sơ",`1. 01 bộ giấy tờ pháp lý của tài sản (mục III bảng trên), kèm 01 bộ photo.<br>2. Phiếu đo đạc chỉnh lý thửa đất${x.A.length||1?" (nếu có)":""}.`)}${R("II. Bản sao",bsa.concat(cns).map((t,i)=>`${i+1}. ${esc(t)}`).join("<br>")||"Theo yêu cầu của cơ quan tiếp nhận.")}${R("III. Các mẫu đơn <small>(bên nhận chuyển nhượng ký tên"+(bOrg?" và đóng dấu":"")+")</small>",(donTxt||"Theo thủ tục đã chọn.")+`<br><br><u>Dự phòng:</u> 02 bộ để trống không điền.`)}${R("IV. Thời hạn giải quyết",`<i>${esc(pr.ten)}</i>.<br>Thời hạn giải quyết: <b>${esc(pr.tdText)}</b>.`)}${R("Lưu ý",`- Đối với ủy quyền thì phải có thể hiện nội dung “được thay mặt các bên để nhận hoặc nộp bản chính hồ sơ và được phép ký tên lên các biên bản làm việc, biên bản xử phạt của cơ quan nhà nước, đơn vị sự nghiệp chuyên môn có liên quan.”`)}</table>`;
   const tt=l?"Luồng "+l+": "+QD_LUONG_TEN[l]:"";
   return `<div class="fd"><div class="c b">HƯỚNG DẪN HỒ SƠ VÀ THỦ TỤC CÔNG CHỨNG</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b>${tt?" · "+esc(tt):""}</div>${t1}</div>
   <div class="fd"><div class="c b">HỒ SƠ NỘP VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b></div>${t2}</div>`;
@@ -3007,7 +3020,7 @@ FORMS.lptb=c=>{const x=ctx(c),V=docxVals(c,"lptb"),b=x.b,p=x.p,hasU=!!(x.u&&x.u.
   ${sig(sigL,`${sdate(c,x.place)}<br><b>NGƯỜI NỘP THUẾ hoặc<br>ĐẠI DIỆN HỢP PHÁP CỦA NGƯỜI NỘP THUẾ<br>hoặc<br>TỔ CHỨC, CÁ NHÂN ĐƯỢC ỦY QUYỀN KHAI THAY</b><br><i class="sm">(Ký, ghi rõ họ tên; chức vụ và đóng dấu (nếu có)/Ký điện tử/Xác nhận điện tử)</i>`,(x.u.name?"(UQ) ":"")+signer(x,""),signT(x,""))}</div>`};
 FORMS_LAB.lptb="Tờ khai lệ phí trước bạ nhà, đất 01/LPTB (TT 89/2026)";FORMS_ALL.lptb=FORMS_LAB.lptb;
 try{delete OV.lptb}catch(e){}
-HTML_DOC_FORMS.push("lptb");HTML_DOC_NAME.lptb="to-khai-01-LPTB";
+HTML_DOC_FORMS.push("lptb");HTML_DOC_NAME.lptb="to-khai-01-LPTB";HTML_DOC_NAME.guq="giay-uy-quyen";
 
 
 FORMS.tndn=c=>{
@@ -3057,6 +3070,35 @@ gcnText=function(p){
   return "Giấy chứng nhận quyền sử dụng đất, QSHNỞ & TSKGLVĐ"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?(p.gcnSo?", ":" ")+"số vào sổ cấp GCN "+p.soVaoSo:"")+(cq?" do "+cq+" cấp":"")+(dt?(cq?"":" cấp")+" ngày "+dt:"");
 };
 {const _dv=docxVals;docxVals=function(c,k){const r=_dv(c,k);if(r){r.S_d="";r.S_m="";if(typeof r.kem==="string")r.kem=r.kem.replace(/\^\^/g,"………….")}return r}}
+
+/* Giấy uỷ quyền dành cho công ty (bên nhận là pháp nhân); cá nhân vẫn dùng mẫu cũ */
+try{PFO.push(["gdkDau","Đăng ký DN lần đầu ngày","date"],["gdkLan","Đăng ký thay đổi lần thứ (số)"])}catch(e){}
+const GUQ_O_PHAM="Trích lục các giấy tờ pháp lý có liên quan; xác nhận vị trí đất, ranh đất liền kề; nộp hồ sơ đo vẽ, xin xác nhận nội nghiệp bản vẽ; xin xác nhận tình trạng bất động sản; ký tên trên các đơn cam kết, tường trình về việc tăng giảm diện tích đất, diện tích xây dựng, diện tích sàn xây dựng (nếu có); đăng ký, ký và nhận kết quả đăng ký mã số thuế thu nhập doanh nghiệp; kê khai, nộp thuế, phí, lệ phí, thuế thu nhập doanh nghiệp; kê khai, nộp thuế, phí, lệ phí trước bạ; nộp và nhận phiếu chuyển thuế; ký và nhận các biên bản xử phạt vi phạm hành chính, ký và nhận biên bản giải trình (nếu có), ký và nhận quyết định xử phạt và đóng phạt (nếu có) theo quy định của pháp luật, ký và nhận biên bản phạt vi phạm về việc nộp chậm hồ sơ; ký và nhận quyết định phạt vi phạm về việc nộp chậm hồ sơ và thực hiện việc nộp phạt theo quy định pháp luật; trích lục tờ khai lệ phí trước bạ/thông báo nộp lệ phí trước bạ; kê khai, nộp thuế sử dụng đất phi nông nghiệp hằng năm; làm thủ tục miễn, giảm thuế, phí, lệ phí; đóng các khoản phí, lệ phí khác (nếu có), nộp hồ sơ đăng ký quyền sở hữu, sử dụng, đăng ký cập nhật hoặc cấp đổi và ký, nhận bản chính Giấy chứng nhận quyền sử dụng đất quyền sở hữu nhà ở và tài sản khác gắn liền với đất hoặc Giấy chứng nhận quyền sử dụng đất, quyền sở hữu tài sản gắn liền với đất đối với bất động sản nêu trên theo quy định pháp luật.";
+function guqOrg(c){
+  const x=ctx(c),p=x.p,o=x.B.find(isOrg)||x.b,u=x.U[0]||{};
+  const tp=String(c.type||"").toLowerCase(),vb=tp?"nhận "+tp:"thực hiện giao dịch",bn=tp?"bên nhận "+tp:"bên nhận quyền";
+  const gcn=gcnText(p),dt=propAddr(c);
+  const dd=fd=>fd?esc(fd):"";
+  const lan=o.gdkDau||o.gdkLan?`+ Đăng ký lần đầu: ngày ${o.gdkDau?esc(fd(o.gdkDau)):"……………"}; thay đổi lần thứ ${v(o.gdkLan,4)} ngày ${o.gdkNgay?esc(fd(o.gdkNgay)):"……………"}`:`+ Đăng ký lần đầu: ngày ${v("",10)}; thay đổi lần thứ ${v("",4)} ngày ${o.gdkNgay?esc(fd(o.gdkNgay)):v("",10)}`;
+  const nm=String(o.name||"").toUpperCase(),ttl=/^(Ông|Bà)\b/i.test(o.dd||"")?"":"Ông/Bà ";
+  const ten=u.name?esc(u.name):"",id=u.cccd||(u.idAsMst?u.mst:"");
+  const q=dparts(c.ngayKy);
+  return `<div class="fd tx"><table class="nb"><tr><td class="c b" style="width:42%;vertical-align:top">${esc(nm)}<br><span style="font-weight:normal">Số: ${v("",8)}</span></td><td class="c b">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM<br><span class="ul">Độc lập - Tự do - Hạnh phúc</span><br><i style="font-weight:normal">${sdate(c,x.place)}</i></td></tr></table>
+  <h2>GIẤY UỶ QUYỀN</h2>
+  <p>Tên tổ chức: ${v(o.name,30)}</p><p>Mã số Giấy chứng nhận đăng ký doanh nghiệp: ${v(o.mst,14)}</p><p class="ind">${lan}</p><p class="ind">+ Cơ quan cấp: ${v(o.gdkNoi,24)}</p>
+  <p>Người đại diện pháp luật: ${ttl}${v(o.dd,20)} - Chức vụ: ${v(o.ddCv,16)}</p><p>Trụ sở chính: ${v(adr(o),36)}.</p>
+  <p class="gt">Công ty đang thực hiện thủ tục liên quan đến việc ${esc(vb)} và là ${esc(bn)} đối với ${v(gcn,30)}${p.thua||p.to?` thuộc thửa đất số ${v(p.thua,5)}, tờ bản đồ số ${v(p.to,5)}`:""}${dt?`, tại địa chỉ: ${v(dt,30)}`:""}. Để hoàn tất thủ tục liên quan đến việc đăng ký cập nhật bất động sản trên đến với Cơ quan nhà nước có thẩm quyền.</p>
+  <p>Nay Công ty uỷ quyền cho:</p>
+  <p>Ông/Bà: ${v(u.name,22)} CCCD số: ${v(id,14)}</p><p>SĐT: ${v(u.phone||o.phone,12)} - E-mail: ${v(u.email||o.email,24)}</p>
+  <p>Được quyền thay mặt công ty thực hiện nội dung sau đây:</p>
+  <p class="gt">${esc(GUQ_O_PHAM)}</p><p class="gt">${esc(GUQ_TXT.pv)}</p><p>Thù lao ủy quyền: Không.</p>
+  <p class="gt">Giấy ủy quyền này được cấp mà không có quyền ủy quyền lại, trừ trường hợp ủy quyền cho đơn vị Bưu điện thực hiện việc nộp hồ sơ và nhận kết quả.</p>
+  <p>Thời hạn ủy quyền: Kể từ ngày ký cho đến khi hoàn thành công việc ủy quyền.</p>
+  <p class="gt">Chúng tôi xin chịu trách nhiệm trước pháp luật về mọi cam kết do người được ủy quyền nhân danh chúng tôi thực hiện trong phạm vi ủy quyền nêu trên. Chúng tôi công nhận đã hiểu rõ quyền, nghĩa vụ, lợi ích hợp pháp của mình và hậu quả pháp lý của việc ủy quyền.</p>
+  ${sig("",`<b>Người chịu trách nhiệm theo pháp luật</b><br><i class="sm">(Ký và ghi rõ họ tên, đóng dấu)</i>`,String(o.dd||"").toUpperCase(),"")}</div>`;
+}
+{const f=FORMS.guq;FORMS.guq=c=>ctx(c).B.some(isOrg)?guqOrg(c):f(c)}
+FORMS_LAB.guq="Giấy ủy quyền (công ty: mẫu pháp nhân; cá nhân: mẫu cá nhân)";FORMS_ALL.guq=FORMS_LAB.guq;
 /* Xuất Word (.doc) cho các mẫu chữ: mở bằng Word sửa được ngay */
 const DOC_CSS="@page Section1{size:21cm 29.7cm;margin:2cm 1.5cm 2cm 2.5cm}div.Section1{page:Section1}body{font-family:'Times New Roman';font-size:13pt;line-height:1.3}p{margin:3pt 0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:3pt 4pt;font-size:11pt;vertical-align:top}.c{text-align:center}.r{text-align:right}.b{font-weight:bold}.sm{font-size:11pt}h2{text-align:center;font-size:14pt;margin:10pt 0 2pt}.ss{text-align:center;font-style:italic}.ind{margin-left:20pt}.ind2{margin-left:40pt}.gt{text-indent:24pt}.bx{border:1px solid #000;text-align:center;font-size:11pt}.fn{font-size:11pt}.u{border-bottom:1px solid #000;width:120pt}.ul{text-decoration:underline}";
 htmlDoc=function(c,k){
@@ -3068,7 +3110,7 @@ htmlDoc=function(c,k){
 const _exW=exportDocx;
 exportDocx=async function(list){
   list=list.map(k=>mapKey(k,cur));
-  const hh=list.filter(k=>HTML_DOC_FORMS.includes(k)&&HTML_DOC_NAME[k]),rest=list.filter(k=>!hh.includes(k));
+  const hh=list.filter(k=>(HTML_DOC_FORMS.includes(k)&&HTML_DOC_NAME[k])||(k==="guq"&&ctx(cur).B.some(isOrg))),rest=list.filter(k=>!hh.includes(k));
   if(hh.length){
     try{
       if(hh.length===1&&!rest.length){dl(caseSlug(cur)+"_"+HTML_DOC_NAME[hh[0]]+".doc","application/msword",new Blob([htmlDoc(cur,hh[0])],{type:"application/msword"}));toast("Đã xuất "+HTML_DOC_NAME[hh[0]]+".doc");return}
@@ -3090,6 +3132,12 @@ exportDocx=async function(list){
 ["pnn1","pnn2","tmdn","sddnn1","sddnn2","sddnn3","tsdd"].forEach(k=>{try{delete OV2[k]}catch(e){}try{delete OV[k]}catch(e){}});
 if(typeof HTML_DOC_NAME!=="undefined")Object.assign(HTML_DOC_NAME,{sddnn1:"to-khai-01-SDDNN",sddnn2:"to-khai-02-SDDNN",sddnn3:"to-khai-03-SDDNN",tsdd:"to-khai-tien-su-dung-dat"});
 })();
+
+/* Chỗ điền tay: ngày/tháng/năm luôn nằm trọn một dòng; ô trống ngắn được nới đủ để viết tay */
+{const post=h=>String(h)
+  .replace(/min-width:([1-6])ch/g,"min-width:7ch")
+  .replace(/ngày(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…\s]+)(\s|&nbsp;)*tháng(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…\s]+)(\s|&nbsp;)*năm(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…]+)/g,m=>`<span class="sd">${m}</span>`);
+ Object.keys(FORMS).forEach(k=>{const f=FORMS[k];if(typeof f==="function"&&k!=="huongdan"&&k!=="mucluc")FORMS[k]=c=>post(f(c))});}
 
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
