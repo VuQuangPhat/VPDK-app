@@ -2235,7 +2235,7 @@ TABS.qd=()=>{
   const opts=QD44.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.nhom+" – "+x.ten)}</option>`).join("");
   const hanTxt=st.han?`${fd(st.han)} <span class="chip ${st.left<0?"r":st.left<=2?"y":""}">${st.left<0?"quá hạn "+(-st.left)+" ngày":st.left===0?"hết hạn hôm nay":"còn "+st.left+" ngày"}</span>`:`<span class="hint">Nhập ngày nộp để tính hạn</span>`;
   return luongBadge(cur)+`<p class="hint" style="margin-top:0">Căn cứ QĐ 44/2026/QĐ-UBND (hiệu lực 01/7/2026). Chọn đúng thủ tục để hệ thống đưa ra hồ sơ cần chuẩn bị, mẫu đơn và thời hạn giải quyết.</p>
-  <div class="grid g3"><label class="sp2">Thủ tục áp dụng<select data-q="pid">${opts}</select></label><label>Ngày ghi trên đơn (để trống ngày/tháng nếu không chọn)<input type="date" data-k="ngayKy" value="${esc(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(cur.ngayKy||"")?cur.ngayKy:"")}"></label></div>
+  <div class="grid"><label class="full">Thủ tục áp dụng<select data-q="pid">${opts}</select></label></div>
   <div class="qbox"><div><b>${esc(p.ten)}</b></div><div class="hint">${esc(p.ref)}</div>
    <div class="qk"><div><span>Thời hạn quy định</span><b>${esc(p.tdText)}</b></div>
    <div><span>Ngày nộp</span><b>${cur.ngayNop?fd(cur.ngayNop):"chưa nhập"}</b></div>
@@ -2317,10 +2317,7 @@ TABS.print=()=>{
   else if(!uq.so&&!uq.ngay)warn.push("Chưa nhập số và ngày Giấy ủy quyền; để trống nếu nộp thay mà không có ủy quyền, mục lục sẽ không ghi câu về ủy quyền.");
   if(thieu)warn.push(`Còn ${thieu} thành phần ở tình trạng “Thiếu” (tab 4).${only?" Các mục này không in vào mục lục.":" Các mục này in kèm ghi chú “Chưa có”."}`);
   if(miss.length)warn.push("Thủ tục này cần "+miss.map(k=>QDF(k).n.split(" – ")[0]).join(", ")+" nhưng app chưa có mẫu điền; dùng mẫu của VPĐK hoặc soạn tay.");
-  return luongBadge(cur)+`<div class="qbox"><b>${esc(p.ten)}</b><div class="hint">${esc(p.ref)} · đổi thủ tục ở tab 4</div></div>
-  <div class="hd"><h3>Mục lục thành phần hồ sơ (${rows.length} mục)</h3></div>
-  <label class="ck"><input type="checkbox" data-q="only" ${only?"checked":""}> Mục lục chỉ liệt kê giấy tờ đã có hoặc đã nộp</label>
-  <div class="grid"><label class="full">Giấy tờ bổ sung vào mục lục (mỗi dòng một mục)<textarea data-q="extra" rows="2">${esc(b.extra||"")}</textarea></label></div>
+  return luongBadge(cur)+`<div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap"><div class="qbox" style="flex:1 1 320px;margin:0"><b>${esc(p.ten)}</b><div class="hint">${esc(p.ref)} · đổi thủ tục ở tab 4</div></div><div class="qbox" style="flex:0 0 250px;margin:0"><label>Ngày ghi trên đơn<input type="date" data-k="ngayKy" value="${/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(cur.ngayKy||"")?cur.ngayKy:""}"></label><div class="hint">Mặc định chỉ có năm ${new Date().getFullYear()}; để trống ngày, tháng nếu không chọn.</div></div></div>
   <div class="foot" style="margin:6px 0"><button class="primary" data-q="allpdf">In trọn bộ: mục lục + các đơn đã chọn</button><button data-q="mlprint">Xem, in mục lục</button><button data-q="mlword">Tải mục lục (Word)</button></div>
   <div class="foot" style="margin:6px 0"><button data-q="hdprint">Xem, in hướng dẫn cho khách</button><button data-q="hdword">Tải hướng dẫn (Word)</button><span class="hint" style="margin:0">Hai bảng: pháp lý và công chứng; hồ sơ nộp VPĐK. Lập tự động theo luồng và loại tài sản.</span></div>
   <div class="hd"><h3>Bộ đơn theo thủ tục</h3></div>
