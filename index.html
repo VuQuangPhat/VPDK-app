@@ -571,7 +571,7 @@ const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("on");clearT
 /* ===== Danh mục thủ tục ===== */
 const STATUS=["Chuẩn bị","Đã nộp","Cần bổ sung","Có kết quả","Hoàn thành","Hủy"];
 const DOC_ST=["Thiếu","Đã có","Đã nộp","Không áp dụng"];
-const ROLES={A:"Bên bán (chuyển nhượng) – khai TNCN",B:"Bên mua (nhận) – Đơn 18, LPTB, PNN",U:"Người nộp thay / được ủy quyền"};
+const ROLES={A:"Bên bán (chuyển nhượng) – khai TNCN",B:"Bên mua (nhận) – Đơn 18, LPTB, PNN",U:"Người nộp thay / được ủy quyền",K:"Chủ KCN / bên liên quan (không ký đơn)"};
 const PKIND=["Căn hộ chung cư","Nhà ở riêng lẻ","Đất ở","Khác"];
 const LOAI18=[["capdoi","Cấp đổi Giấy chứng nhận"],["capnhat","Cập nhật vào Giấy chứng nhận (còn chỗ cập nhật)"],["capmoi","Cấp mới Giấy chứng nhận"]];
 const FORMS_ALL={phieu:"Phiếu yêu cầu hướng dẫn, bổ sung, hoàn thiện hồ sơ (VPĐK TP)",don18:"Đơn đăng ký biến động (Mẫu 18)",lptb:"Tờ khai lệ phí trước bạ (nhà, đất)",tncn:"Tờ khai thuế TNCN (03/BDS-TNCN)",pnn:"Tờ khai thuế sử dụng đất phi nông nghiệp",tsdd:"Tờ khai tiền sử dụng đất (Mẫu 01/TSDD)",mst:"Tờ khai điều chỉnh thông tin đăng ký thuế (08-MST)",cover:"Phiếu danh mục hồ sơ (mang theo khi nộp)"};
@@ -763,7 +763,7 @@ function renderPeople(){
   const q=$("#pq").value.trim().toLowerCase();
   const l=db.people.filter(p=>!q||[p.name,p.cccd,p.mst,p.phone,p.dd].join(" ").toLowerCase().includes(q)).sort((a,b)=>(a.name||"").localeCompare(b.name||"","vi"));
   if(!l.length){$("#plist").innerHTML=`<div class="empty">Chưa có ai trong danh bạ. Nhập một lần, dùng lại cho mọi hồ sơ.</div>`;return}
-  const rowOf=(p,role)=>`<tr data-pid="${p.id}"><td><b>${esc(p.name)}</b>${role?` <span class="br">${role==="A"?"Bên bán":role==="B"?"Bên mua":esc(role)}</span>`:""}${isOrg(p)?` <span class="br">Pháp nhân</span><small>ĐD: ${esc([p.dd,p.ddCv].filter(Boolean).join(", "))}</small>`:""}</td><td>${fd(p.dob)}</td><td>${esc(p.cccd)}<small>${p.cccdDate?"cấp "+fd(p.cccdDate):""} ${esc(p.cccdPlace)}</small></td><td>${esc(p.mst)}</td><td>${esc([p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", "))}</td><td>${esc(p.phone)}<small>${esc(p.email)}</small></td><td>${db.cases.filter(c=>c.parties.some(x=>x.pid===p.id)).length}</td></tr>`;
+  const rowOf=(p,role)=>`<tr data-pid="${p.id}"><td><b>${esc(p.name)}</b>${role?` <span class="br">${role==="A"?"Bên bán":role==="B"?"Bên mua":role==="U"?"Người nộp thay":role==="K"?"Chủ KCN / liên quan":esc(role)}</span>`:""}${isOrg(p)?` <span class="br">Pháp nhân</span><small>ĐD: ${esc([p.dd,p.ddCv].filter(Boolean).join(", "))}</small>`:""}</td><td>${fd(p.dob)}</td><td>${esc(p.cccd)}<small>${p.cccdDate?"cấp "+fd(p.cccdDate):""} ${esc(p.cccdPlace)}</small></td><td>${esc(p.mst)}</td><td>${esc([p.dc,p.px,p.qh,p.tp].filter(Boolean).join(", "))}</td><td>${esc(p.phone)}<small>${esc(p.email)}</small></td><td>${db.cases.filter(c=>c.parties.some(x=>x.pid===p.id)).length}</td></tr>`;
   const ids=new Set(l.map(p=>p.id)),inCase=new Set(),G=[];
   db.cases.slice().sort((a,b)=>String(b.code||"").localeCompare(String(a.code||""))).forEach(c=>{
     const rows=[];(c.parties||[]).forEach(x=>{if(ids.has(x.pid)){const p=P(x.pid);if(p){rows.push([p,x.role]);inCase.add(p.id)}}});
@@ -849,7 +849,7 @@ const L=(l,k,o={})=>{
   return `<label class="${o.cls||""}">${l}<input data-k="${k}" type="${t}" value="${esc(v||"")}" ${o.list?`list="${o.list}"`:""} ${o.ph?`placeholder="${esc(o.ph)}"`:""}></label>`;
 };
 /* thông tin còn thiếu của các bên */
-function pMiss(p,role){
+function pMiss(p,role){if(role==="K")return [];
   const w=[];
   if(isOrg(p)){if(!p.mst)w.push("MST");if(!p.dd)w.push("người đại diện");if(role==="B"&&(!p.gdkNgay||!p.gdkNoi))w.push("GCN ĐKDN (ngày/nơi cấp)")}
   else if(!p.cccd&&!p.mst)w.push("CCCD");
@@ -930,6 +930,7 @@ const TABS={
   <div class="lst">${cur.parties.map((x,i)=>x.role==="A"?row(x,i):"").join("")||`<div class="it"><span class="sub">Chưa có bên bán.</span></div>`}</div>
   <div class="hd"><h3>Bên mua (Đơn 18, LPTB, PNN)</h3></div>
   <div class="lst">${cur.parties.map((x,i)=>x.role==="B"?row(x,i):"").join("")||`<div class="it"><span class="sub">Chưa có bên mua.</span></div>`}</div>
+  ${cur.parties.some(x=>x.role==="K")?`<div class="hd"><h3>Chủ KCN / bên liên quan (không ký đơn)</h3></div><div class="lst">${cur.parties.map((x,i)=>x.role==="K"?row(x,i):"").join("")}</div>`:""}
   ${cur.parties.some(x=>x.role==="U")?`<div class="hd"><h3>Người nộp thay / ủy quyền</h3></div><div class="lst">${cur.parties.map((x,i)=>x.role==="U"?row(x,i):"").join("")}</div>`:""}
   <div class="fgrp"><span class="fl nm">Thêm từ danh bạ<select id="addsel"><option value="">— chọn người / pháp nhân —</option>${db.people.filter(p=>!cur.parties.some(x=>x.pid===p.id)).map(p=>`<option value="${p.id}">${esc(p.name)}${p.cccd?" – "+esc(p.cccd):p.mst?" – MST "+esc(p.mst):""}</option>`).join("")}</select></span>
    <select id="addrole">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
