@@ -248,6 +248,150 @@ tr.gh,tr.gh td{text-transform:none;letter-spacing:0;font-size:13px;color:var(--i
 table.m tr.gh td{white-space:normal!important;width:auto!important;max-width:0}
 .lkb{background:var(--fill2);border-radius:14px;padding:12px 14px}.lkr{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}.lkr:last-child{border:0}.lkr span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lkr select{width:auto;max-width:260px}.lkr.add select:first-child{flex:1;max-width:none}
 #pform>*{min-width:0}.lkb{grid-column:1/-1;overflow:hidden}.lkr select{width:120px!important;flex:none}.lkr.add select:first-child{width:auto!important;flex:1}
+.chip.y{color:var(--warn);border-color:var(--warn)}.chip.g{color:var(--ok);border-color:var(--ok)}
+.jg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}.jg label{font-size:12px;color:var(--mute);display:block}.jg input,.jg select{width:100%}
+#fsub button.on{font-weight:700}.stg{display:flex;flex-wrap:wrap;gap:4px;margin:8px 0}.stg button{font-size:12px;padding:3px 8px}.stg button.cur{background:var(--brand);color:#fff;border-color:var(--brand)}.stg button.past{border-color:var(--ok);color:var(--ok)}.sec{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin:10px 0}.sec h4{margin:0 0 6px;font-size:13px}
+.lg{font-size:12px;color:var(--mute)}.lg i{display:inline-block;width:10px;height:10px;margin:0 4px 0 10px;border-radius:2px}
+/* ===== Giao diện kiểu Apple: nền xám nhạt, thẻ trắng bo tròn, xanh hệ thống, segmented control, kính mờ ===== */
+:root{--bg:#f5f5f7;--card:#fff;--ink:#1d1d1f;--mute:#6e6e73;--line:#e5e5ea;--brand:#0071e3;--seal:#d70015;--ok:#248a3d;--warn:#b25000;--r:10px;--fill:rgba(118,118,128,.12);--fill2:rgba(118,118,128,.08);--sh:0 1px 2px rgba(0,0,0,.04),0 0 0 1px rgba(0,0,0,.05);--sh2:0 20px 60px rgba(0,0,0,.28)}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--card:#1c1c1e;--ink:#f5f5f7;--mute:#98989d;--line:#38383a;--brand:#2997ff;--seal:#ff453a;--ok:#30d158;--warn:#ff9f0a;--fill:rgba(118,118,128,.28);--fill2:rgba(118,118,128,.18);--sh:0 0 0 1px rgba(255,255,255,.08);--sh2:0 20px 60px rgba(0,0,0,.7)}}
+body{font:14px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Be Vietnam Pro","Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.008em}
+header{position:sticky;top:0;z-index:20;padding:14px 28px 12px;background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);border-bottom:1px solid transparent}
+h1{font-size:28px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+h1 small{font-size:12px;letter-spacing:0;margin-top:2px}
+button{background:var(--fill2);border:0;border-radius:980px;padding:7px 16px;color:var(--brand);font-weight:500;transition:background .15s,transform .1s}
+button:hover{background:var(--fill);border:0}button:active{transform:scale(.97)}
+button.primary{background:var(--brand);color:#fff!important;border:0}button.primary:hover{background:color-mix(in srgb,var(--brand) 88%,#000)}
+button.link{background:none;color:var(--seal);padding:2px 6px}
+button.ghost{background:none;color:var(--brand);padding:2px 8px}
+:focus-visible{outline:0;box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 30%,transparent)}
+.tabs,.ctabs,.brtabs,#fsub{display:flex;gap:2px;padding:3px;margin:6px 28px 12px;width:fit-content;max-width:calc(100% - 56px);background:var(--fill);border:0;border-radius:11px;overflow-x:auto}
+.ctabs{margin:0 0 14px;max-width:100%}
+#fsub{margin-left:0;margin-right:0;max-width:100%}
+#dsub{margin-top:0}
+.tabs button,.ctabs button,.brtabs button,#fsub button{border:0;border-radius:8px;background:none;color:var(--ink);padding:6px 16px;font-weight:500;white-space:nowrap}
+.tabs button:hover,.ctabs button:hover,.brtabs button:hover,#fsub button:hover{background:none;opacity:.7}
+.tabs button.on,.ctabs button.on,.brtabs button.on,#fsub button.on{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.14),0 0 0 .5px rgba(0,0,0,.04);opacity:1}
+.brtabs{padding:3px;border-radius:11px}
+input,select,textarea{background:var(--fill2);border:1px solid transparent;border-radius:var(--r);padding:8px 11px;transition:box-shadow .15s,background .15s}
+input:focus,select:focus,textarea:focus{outline:0;background:var(--card);border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 25%,transparent)}
+.filters{padding:4px 28px 10px}
+.filters input[type=search]{background:var(--fill);padding:9px 14px;border-radius:12px}
+.wrap{padding:0 28px 48px}
+table.m{border-collapse:separate;border-spacing:0;border:0;border-radius:16px;overflow:hidden;box-shadow:var(--sh);background:var(--card)}
+table.m th{background:transparent;color:var(--mute);font-weight:500;font-size:12px;padding:12px 14px 8px;border-bottom:1px solid var(--line)}
+table.m td{padding:12px 14px;border-bottom:1px solid var(--line)}
+table.m tr:last-child>td{border-bottom:0}
+table.m tr[data-id]:hover td,table.m tr[data-j]:hover td,table.m tr[data-pid]:hover td{background:var(--fill2)}
+table.m tr[data-j],table.m tr[data-pid]{cursor:pointer}
+table.m tr.gh td{background:var(--fill2);border-top:0;font-weight:600;padding:9px 14px}
+td b{font-weight:600}
+.stats{padding:6px 28px 12px;gap:12px}
+.stat,.kp div,.overview{background:var(--card);border:0;border-radius:18px;box-shadow:var(--sh);padding:14px 16px}
+.stat.on{box-shadow:0 0 0 2px var(--brand)}
+.stat b,.kp b{font-weight:600;letter-spacing:-.02em}
+.overview{margin:0 28px 12px}
+.fc,.chip,.tag,.br{border:0!important;border-radius:980px;padding:2px 9px;font-weight:500;background:var(--fill2);color:var(--mute)}
+.fc.r,.chip.r,.tag.bad{background:color-mix(in srgb,var(--seal) 12%,transparent);color:var(--seal)}
+.fc.y,.chip.y,.tag.warn,.br.cn{background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--warn)}
+.fc.g,.chip.g,.chip.ok,.tag.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.fc.b,.tag.info,.br{background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--brand)}
+.stg button{background:var(--fill2);color:var(--ink);border-radius:980px}
+.stg button.cur{background:var(--brand);color:#fff}
+.stg button.past{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+dialog{border:0;border-radius:22px;box-shadow:var(--sh2);padding:24px 26px;background:var(--card)}
+dialog::backdrop{background:rgba(0,0,0,.32);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+dialog h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 0 14px}
+.sec,.lst,.fgrp,.pv{border-radius:14px}
+.lst,.fgrp{border:0;box-shadow:var(--sh)}
+.lst .it{border-bottom:1px solid var(--line)}
+.gh{background:transparent;color:var(--mute);font-weight:600;letter-spacing:.04em}
+.hint,.lg{color:var(--mute)}
+.warnbox{border:0;border-radius:12px;background:color-mix(in srgb,var(--warn) 12%,var(--card))}
+.empty{border:0;border-radius:18px;box-shadow:var(--sh)}
+.choose button{background:var(--card);box-shadow:var(--sh);border-radius:16px;color:var(--ink);padding:16px}
+#toast{background:rgba(29,29,31,.88);color:#fff;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.num,.kp b,.stat b{font-variant-numeric:tabular-nums}
+@media(max-width:700px){h1{font-size:23px}header{padding:12px 14px}.tabs,.brtabs,#fsub{margin-left:14px;max-width:calc(100% - 28px)}.filters{padding-left:14px;padding-right:14px}.wrap{padding-left:14px;padding-right:14px}.stats{padding-left:14px;padding-right:14px}.overview{margin-left:14px;margin-right:14px}}
+
+/* ===== Căn lại cột: cột ngắn ôm sát nội dung, cột chữ dài chiếm phần còn lại ===== */
+table.m{min-width:0}
+table.jt th,table.jt td,table.jf th,table.jf td,table.jl th,table.jl td,table.jp th,table.jp td,table.jr th,table.jr td{white-space:nowrap;width:1%}
+table.jt th:nth-child(4),table.jt td:nth-child(4){width:40%;min-width:230px;white-space:normal}
+table.jt th:nth-child(11),table.jt td:nth-child(11){width:26%;min-width:170px;white-space:normal}
+table.jf th:nth-child(3),table.jf td:nth-child(3){width:42%;min-width:230px;white-space:normal}
+table.jf th:nth-child(5),table.jf td:nth-child(5){width:16%;min-width:150px;white-space:normal}
+table.jl th:nth-child(2),table.jl td:nth-child(2){width:36%;min-width:260px;white-space:normal}
+table.jl th:nth-child(3),table.jl td:nth-child(3),table.jl th:nth-child(4),table.jl td:nth-child(4){width:15%;min-width:130px;white-space:normal}
+table.jl th:nth-child(5),table.jl td:nth-child(5){width:16%;min-width:150px;white-space:normal}
+table.jp th:nth-child(1),table.jp td:nth-child(1){width:20%;min-width:170px;white-space:normal}
+table.jp th:nth-child(3),table.jp td:nth-child(3){width:14%;min-width:140px;white-space:normal}
+table.jp th:nth-child(5),table.jp td:nth-child(5){width:34%;min-width:220px;white-space:normal}
+table.jr th:nth-child(1),table.jr td:nth-child(1){width:16%;min-width:140px;white-space:normal}
+table.jr th:nth-child(9),table.jr td:nth-child(9){width:34%;min-width:320px;white-space:normal}
+table.jt td:nth-child(11) .fc{white-space:normal}
+.rr{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.rr select,.rr input{width:auto!important;min-width:90px}.rr label{display:flex;gap:6px;align-items:center}
+table.jr td:nth-child(10) select{max-width:150px}
+.stats,.kp{display:flex;flex-wrap:wrap;gap:12px}
+.stats>*,.kp>*{flex:1 1 150px;min-width:0}
+.kp{margin-bottom:16px}
+dialog .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:700px){dialog .kp{grid-template-columns:1fr 1fr}}
+table.jt th,table.jt td,table.jf th,table.jf td,table.jr th,table.jr td,table.jl th,table.jl td{padding-left:8px;padding-right:8px}
+table.jt th:nth-child(4),table.jt td:nth-child(4){min-width:190px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){min-width:150px}
+table.jf th:nth-child(3),table.jf td:nth-child(3){min-width:200px}
+.rr select{max-width:150px}.rr input[data-rv]{width:90px!important;min-width:0}.rr input[type=date]{width:128px!important}
+table.jt th:nth-child(4),table.jt td:nth-child(4){width:32%;min-width:170px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){width:34%;min-width:200px}
+table.jt td:nth-child(11) .fc{border-radius:12px;line-height:1.35;margin-bottom:3px}
+table.jt th:nth-child(5),table.jt td:nth-child(5){padding-right:0}
+table.jf td:nth-child(7) .fc,table.jf td:nth-child(4) .fc{white-space:nowrap}
+table.jt th:nth-child(4),table.jt td:nth-child(4){min-width:150px}
+table.jt th:nth-child(11),table.jt td:nth-child(11){min-width:180px}
+#fin svg{margin:14px 0 4px;display:block}
+
+.tdadd{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}
+
+.tdk{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:4px 0 14px}
+.tdc{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--card);border:0;border-top:3px solid var(--line);border-radius:14px;box-shadow:var(--sh);padding:14px 18px;color:var(--mute);font-weight:400}
+.tdc b{font-size:30px;line-height:1.1;font-weight:600;letter-spacing:-.02em}.tdc span{font-size:13px}.tdc.on{box-shadow:0 0 0 2px var(--brand)}
+.tdf{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tdf input{flex:1;min-width:220px;background:var(--fill)}.tdf select{min-width:150px}
+.pr{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:600;background:var(--fill2);color:var(--mute)}
+.pr.p1{background:color-mix(in srgb,var(--seal) 14%,transparent);color:var(--seal)}.pr.p2{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+table.jtd td:first-child{border-left:3px solid transparent}table.jtd tr.p1 td:first-child{border-left-color:var(--seal)}table.jtd tr.p2 td:first-child{border-left-color:var(--warn)}
+table.jtd td{white-space:nowrap;width:1%;vertical-align:middle}table.jtd td.tdw,table.jtd th:nth-child(2){width:50%;white-space:normal;min-width:260px}
+table.jtd .tdt{font-weight:600}table.jtd .tdt.dn{text-decoration:line-through;color:var(--mute)}
+table.jtd tr.tdr{cursor:default}table.jtd td.tda{display:table-cell;text-align:right}table.jtd .tda button{padding:3px 10px;font-size:12px;margin-left:4px}
+tr.gh,tr.gh td{text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
+.tdbig{background:var(--card);border-radius:20px;box-shadow:var(--sh);padding:14px 14px 4px}.tdbig .tdc{box-shadow:none;background:var(--fill2)}.tdbig .tdc.on{box-shadow:0 0 0 2px var(--brand);background:var(--card)}.tdbig .tdk{margin:0 0 10px}.tdbig .nt table.m{box-shadow:none;border-radius:0}.tdbig .nt{margin:0 -14px}
+.dts{margin-top:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.dts>div{padding:6px 8px;border-radius:12px}.dts .dhl{background:color-mix(in srgb,var(--brand) 9%,transparent);box-shadow:inset 0 0 0 1.5px var(--brand)}.dts label{font-size:11.5px}
+table.m tr.gh td{white-space:normal!important;width:auto!important;max-width:0}
+.lkb{background:var(--fill2);border-radius:14px;padding:12px 14px}.lkr{display:flex;gap:8px;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}.lkr:last-child{border:0}.lkr span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lkr select{width:auto;max-width:260px}.lkr.add select:first-child{flex:1;max-width:none}
+#pform>*{min-width:0}.lkb{grid-column:1/-1;overflow:hidden}.lkr select{width:120px!important;flex:none}.lkr.add select:first-child{width:auto!important;flex:1}
+
+.chip.y{color:var(--warn);border-color:var(--warn)}.chip.g{color:var(--ok);border-color:var(--ok)}
+.qbox{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;margin:8px 0}
+.qk{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:6px}.qk span{display:block;font-size:11px;color:var(--mute)}.qk b{font-size:13px}
+table.qt{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:var(--r)}
+table.qt th,table.qt td{padding:7px 8px;text-align:left;border-top:1px solid var(--line);vertical-align:top;font-size:13px}table.qt th{font-size:11px;color:var(--mute);border-top:0}
+table.qt tr.na td{opacity:.55}table.qt tr[data-cid]{cursor:pointer}table.qt tr[data-cid]:hover{background:color-mix(in srgb,var(--brand) 6%,var(--card))}
+table.qt select{width:100%}
+ol.qsl{list-style:none;margin:6px 0;padding:0}li.qs{display:flex;gap:10px;align-items:flex-start;padding:7px 4px;border-top:1px solid var(--line)}li.qs.ok{opacity:.6}li.qs.ok>div{text-decoration:line-through}li.qs input{margin-top:4px}li.qs b{min-width:20px}
+ul.ql{margin:4px 0 0 18px;padding:0;font-size:13px}ul.ql li{margin:3px 0}
+.tw{overflow-x:auto}
+.qcat{display:grid;grid-template-columns:minmax(220px,300px) 1fr;gap:14px;align-items:start}
+.qleft{display:flex;flex-direction:column;gap:4px}.qleft input{margin-bottom:6px;padding:6px 8px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+.qg{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:8px 0 2px}
+button.qi{text-align:left;display:flex;flex-direction:column;gap:2px;white-space:normal}button.qi.on{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,var(--card))}button.qi small{color:var(--mute)}
+@media(max-width:760px){.qcat{grid-template-columns:1fr}}
+
+.mlc{width:210mm;max-width:100%;min-height:290mm;box-sizing:border-box;padding:16mm 20mm;background:#fff;color:#000;margin:0 auto 10px;font:13pt/1.45 "Times New Roman",Times,"Liberation Serif",serif;page-break-after:always;break-after:page}
+.mlc .c{text-align:center}.mlc .b{font-weight:700}.mlc .sm{font-size:11pt}.mlc h2{text-align:center;font-size:15pt;margin:14px 0 4px;color:#000}
+.mlc .v{color:#000}.mlc .bl{display:inline-block;border-bottom:1px dotted #000;height:1em}
+.mlc table{width:100%;border-collapse:collapse;margin:8px 0}.mlc th,.mlc td{border:1px solid #000;padding:4px 6px;font-size:12pt;vertical-align:top;color:#000}.mlc th{text-align:center}.mlc td.c{text-align:center}
+.mlc .sig{display:grid;grid-template-columns:1fr 1fr;margin-top:14px;text-align:center}
+@media print{#proot .mlc{margin:0;width:auto;min-height:0}}
 </style>
 </head>
 <body>
@@ -261,7 +405,7 @@ table.m tr.gh td{white-space:normal!important;width:auto!important;max-width:0}
     <input type="file" id="file" accept=".json" hidden>
   </div>
 </header>
-<nav class="tabs"><button id="t4">Nhắc việc</button><button id="t1" class="on">Điền đơn</button><button id="t3">Hồ sơ &amp; doanh thu</button></nav>
+<nav class="tabs"><button id="t4">Nhắc việc</button><button id="t1" class="on">Điền đơn</button><button id="t3">Hồ sơ &amp; doanh thu</button><button id="t5">Quy trình QĐ 44</button></nav>
 
 <div id="v1">
   <div class="tabs dsub" id="dsub" style="margin-top:0"><button data-d="hs" class="on">Hồ sơ thửa đất</button><button data-d="db">Danh bạ (người, chủ thể)</button></div>
@@ -293,6 +437,10 @@ table.m tr.gh td{white-space:normal!important;width:auto!important;max-width:0}
   </section>
   <div class="wrap" id="fin"></div>
 </div>
+
+<div id="v5" hidden><div class="wrap" style="padding-top:6px">
+  <nav id="qsub" class="tabs" style="border:0;padding:0;margin-bottom:8px"><button data-s="gs" class="on">Giám sát hồ sơ</button><button data-s="dm">Danh mục quy trình QĐ 44/2026</button></nav>
+  <div id="qdbox"></div></div></div>
 
 <dialog id="jd" style="width:min(960px,97vw)">
   <h2 id="jdt">Hồ sơ</h2>
@@ -1053,7 +1201,7 @@ function ovExport(list){
   const fl=list.filter(k=>OV[formKey(cur,k)]);
   if(!fl.length)return toast("Các mẫu đã chọn chưa có bản PDF");
   const html=fl.map(k=>{const fk=formKey(cur,k);return ovPages(fk,docxVals(cur,k))}).join("");
-  $("#pbody").innerHTML=html;$("#pbody").classList.add("ovb");$("#pbody").contentEditable="true";$("#pbody").spellcheck=false;$("#phint").textContent="Bản in giữ nguyên mẫu gốc: nền là trang mẫu, chữ điền đúng vị trí (bấm vào chữ để sửa trước khi in). Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pdt").textContent=fl.length===1?FORMS_LAB[fl[0]]:`Bản in ${fl.length} mẫu (giữ nguyên mẫu gốc)`;
+  $("#pbody").innerHTML=(window.QD_PRE||"")+html;$("#pbody").classList.add("ovb");$("#pbody").contentEditable="true";$("#pbody").spellcheck=false;$("#phint").textContent="Bản in giữ nguyên mẫu gốc: nền là trang mẫu, chữ điền đúng vị trí (bấm vào chữ để sửa trước khi in). Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pdt").textContent=fl.length===1?FORMS_LAB[fl[0]]:`Bản in ${fl.length} mẫu (giữ nguyên mẫu gốc)`;
   $("#pd").showModal();ovFit($("#pbody"));
 }
 
@@ -1733,13 +1881,436 @@ function renderTodo(){
   box.innerHTML=block(Y)+block(Y-1);
   box.querySelectorAll("[data-card]").forEach(b=>b.onclick=()=>{fwx[b.dataset.wk]=b.dataset.card;renderTodo()});
   box.querySelectorAll("tr[data-j]").forEach(r=>r.onclick=()=>openJob(r.dataset.j))}
+/* ===== QĐ 44/2026/QĐ-UBND (TP.HCM, ký 30/6/2026, hiệu lực 01/7/2026) – dữ liệu quy trình ===== */
+const QD_WHO={ng:"Người nộp",mc:"Bộ phận Một cửa / Chi nhánh VPĐK (tiếp nhận)",vp:"VPĐK / Chi nhánh VPĐK",thue:"Cơ quan thuế",xa:"UBND cấp xã",tinh:"Cơ quan quản lý đất đai cấp tỉnh"};
+/* Mẫu biểu Phụ lục V. app = khóa mẫu đã có sẵn trong tab Điền đơn; không có app = chưa có trong hệ thống */
+const QD_FORMS={
+ m15:{n:"Mẫu 15 – Đơn đăng ký đất đai, tài sản gắn liền với đất (lần đầu)",who:"ng"},
+ m15d:{n:"Mẫu 15d – Báo cáo kết quả rà soát hiện trạng sử dụng đất (tổ chức)",who:"ng"},
+ m16:{n:"Mẫu 16 – Thông báo xác nhận kết quả đăng ký đất đai",who:"cq"},
+ m17:{n:"Mẫu 17 – Danh sách công khai kết quả kiểm tra hồ sơ",who:"cq"},
+ m18:{n:"Mẫu 18 – Đơn đăng ký biến động đất đai, tài sản gắn liền với đất",who:"ng",app:"don18"},
+ m19:{n:"Mẫu 19 – Phiếu chuyển thông tin xác định nghĩa vụ tài chính",who:"cq"},
+ m21:{n:"Mẫu 21 – Đơn đề nghị tách, hợp thửa đất",who:"ng"},
+ m22:{n:"Mẫu 22 – Bản vẽ tách, hợp thửa đất",who:"ng"},
+ lptb:{n:"Tờ khai lệ phí trước bạ (ngoài QĐ 44)",who:"ng",app:"lptb",thue:1},
+ tncn:{n:"Tờ khai thuế TNCN 03/BDS-TNCN (ngoài QĐ 44)",who:"ng",app:"tncn",thue:1},
+ pnn:{n:"Tờ khai thuế sử dụng đất phi nông nghiệp (ngoài QĐ 44)",who:"ng",app:"pnn",thue:1},
+ tsdd:{n:"Tờ khai tiền sử dụng đất 01/TSDD (ngoài QĐ 44)",who:"ng",app:"tsdd",thue:1}
+};
+/* Các bước dùng chung */
+const S_NOP={w:"ng",t:"Nộp 01 bộ hồ sơ tại Bộ phận Một cửa hoặc Chi nhánh VPĐK (trực tiếp, bưu chính hoặc Cổng dịch vụ công Quốc gia)."};
+const S_TN={w:"mc",t:"Kiểm tra thành phần hồ sơ, cấp Giấy tiếp nhận và hẹn trả kết quả; thiếu thì trả hồ sơ kèm Phiếu yêu cầu bổ sung, hoàn thiện."};
+const S_CH={w:"mc",t:"Bộ phận Một cửa chuyển hồ sơ đến VPĐK (nếu nộp trực tiếp tại Chi nhánh VPĐK thì Chi nhánh xử lý luôn)."};
+const S_DK={w:"vp",t:"Kiểm tra điều kiện thực hiện quyền; không đủ điều kiện thì thông báo lý do và trả hồ sơ."};
+const S_19={w:"vp",t:"Gửi Phiếu chuyển thông tin (Mẫu 19) đến cơ quan thuế để xác định nghĩa vụ tài chính (nếu phải nộp).",f:"m19"};
+const S_NVTC={w:"ng",t:"Nhận thông báo thuế, nộp thuế / lệ phí / tiền sử dụng đất và giữ chứng từ. Thời gian này không tính vào thời hạn giải quyết.",tg:1};
+const S_CL={w:"vp",t:"Chỉnh lý hồ sơ địa chính, cơ sở dữ liệu đất đai; cấp mới Giấy chứng nhận hoặc xác nhận thay đổi trên Giấy chứng nhận (khi đã có chứng từ hoặc dữ liệu liên thông về nghĩa vụ tài chính)."};
+const S_TRA={w:"ng",t:"Nhận kết quả. Nếu đã nộp bản sao hoặc bản số hóa thì nộp bản chính các giấy tờ thuộc thành phần hồ sơ (trừ giấy phép xây dựng, quyết định đầu tư, giấy chứng nhận đầu tư…)."};
+const DOC_UQ={t:"Văn bản về việc đại diện / ủy quyền theo pháp luật dân sự",dk:"nếu nộp thông qua người đại diện",k:"uq"};
+const DOC_GCN={t:"Giấy chứng nhận đã cấp (bản gốc)",k:"gcn"};
+const DOC_M18={t:"Đơn đăng ký biến động – Mẫu 18",f:"m18",k:"don"};
+const DOC_THUE=[
+ {t:"Tờ khai lệ phí trước bạ",f:"lptb",dk:"theo quy định thuế – ngoài QĐ 44",def:"Thiếu",k:"thue"},
+ {t:"Tờ khai thuế TNCN (bên chuyển nhượng, cá nhân)",f:"tncn",dk:"theo quy định thuế – ngoài QĐ 44",def:"Thiếu",k:"thue"},
+ {t:"Tờ khai thuế sử dụng đất phi nông nghiệp",f:"pnn",dk:"theo quy định thuế – ngoài QĐ 44",def:"Thiếu",k:"thue"},
+ {t:"Chứng từ thực hiện nghĩa vụ tài chính / giấy tờ miễn, giảm",dk:"nộp khi VPĐK chưa nhận được dữ liệu liên thông",k:"ctu"}
+];
+const KT_COMMON="Thời hạn tính từ ngày nhận đủ hồ sơ hợp lệ, không tính: thời gian xác định và thực hiện nghĩa vụ tài chính, xử lý vi phạm, giám định, niêm yết / đăng tin, trích đo thửa đất, chia thừa kế (nếu người SDĐ chết trước khi trao Giấy chứng nhận). Xã đảo, vùng khó khăn: cộng thêm 10 ngày làm việc.";
+
+const QD44=[
+{id:"bd_chuyenquyen",nhom:"Đăng ký biến động",ten:"Chuyển nhượng, tặng cho, thừa kế, góp vốn bằng quyền sử dụng đất / tài sản gắn liền với đất",
+ ref:"Phụ lục IV – Phần C.VI (mục 1–3); Phần B.II.1 và II.2 (mục 1)",td:8,tdText:"Không quá 8 ngày làm việc",
+ types:["Chuyển nhượng","Tặng cho","Thừa kế"],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Hợp đồng / văn bản chuyển quyền (chuyển nhượng, tặng cho, góp vốn, văn bản khai nhận / phân chia thừa kế) đã công chứng hoặc chứng thực",k:"hd"},
+  {t:"Văn bản thỏa thuận cấp chung một Giấy chứng nhận",dk:"nếu có nhiều người nhận chuyển quyền và thỏa thuận cấp chung",k:"chung"},
+  {t:"Văn bản của người sử dụng đất đồng ý cho chủ sở hữu tài sản được chuyển nhượng / tặng cho / góp vốn tài sản",dk:"nếu chủ sở hữu tài sản không có quyền sử dụng đất thửa đó",k:"vbsd"},
+  {t:"Văn bản của bên nhận thế chấp đồng ý cho bên thế chấp chuyển nhượng / tặng cho",dk:"nếu tài sản đang thế chấp đã đăng ký tại VPĐK",k:"tc"},
+  {t:"Hợp đồng thể hiện đầy đủ thông tin thành viên hộ gia đình có chung quyền sử dụng đất tại thời điểm được giao, công nhận, nhận chuyển quyền",dk:"nếu Giấy chứng nhận cấp cho hộ gia đình",k:"hgd"},
+  {t:"Bản vẽ tách thửa đất, hợp thửa đất – Mẫu 22",f:"m22",dk:"nếu phải tách / hợp thửa",k:"bv"},
+  {t:"Mảnh trích đo bản đồ địa chính thửa đất",dk:"nếu người sử dụng đất có nhu cầu đo đạc lại kích thước, diện tích",k:"td"},
+  {t:"Giấy tờ tình trạng hôn nhân (đăng ký kết hôn / ly hôn)",dk:"chỉ khi VPĐK không khai thác được từ cơ sở dữ liệu dân cư, hộ tịch",k:"hn"},
+  DOC_UQ,...DOC_THUE],
+ buoc:[S_NOP,S_TN,S_CH,S_DK,S_19,S_NVTC,S_CL,S_TRA],
+ luu:["Nếu thửa đất đã cấp Giấy chứng nhận theo bản đồ địa chính hoặc trích đo thì VPĐK không phải đo đạc lại, trừ khi người sử dụng đất có nhu cầu.","Đất Nhà nước cho thuê trả tiền thuê hằng năm mà chuyển quyền sở hữu tài sản gắn liền với đất: thêm bước ký hợp đồng thuê đất với bên nhận (UBND cấp xã đối với cá nhân, cơ quan cấp tỉnh đối với tổ chức), Giấy chứng nhận trao cùng hợp đồng thuê đất; thời hạn vẫn không quá 8 ngày làm việc, không tính thời gian xác định giá đất, ký hợp đồng thuê đất.","Chuyển quyền sử dụng đất kèm tách thửa: thời gian tách thửa (Mẫu 21, 22) là thủ tục riêng, xem “Tách thửa, hợp thửa”.",KT_COMMON]},
+
+{id:"bd_thaydoi_tt",nhom:"Đăng ký biến động",ten:"Đổi tên hoặc thay đổi thông tin người sử dụng đất / số hiệu, địa chỉ thửa đất",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 5); Phần C.VI (mục 8, 10, 21)",td:4,tdText:"Không quá 4 ngày làm việc (giảm diện tích do sạt lở tự nhiên: 10 ngày làm việc)",
+ types:[],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Giấy tờ chứng minh việc đổi tên, thay đổi thông tin (cá nhân)",dk:"chỉ khi không khai thác được từ Cơ sở dữ liệu quốc gia về dân cư",k:"gt"},
+  {t:"Văn bản của cơ quan có thẩm quyền cho phép hoặc công nhận việc đổi tên / thay đổi thông tin",dk:"đối với tổ chức, người gốc Việt Nam định cư ở nước ngoài, cộng đồng dân cư",k:"cq"},
+  {t:"Văn bản của cơ quan có thẩm quyền về thay đổi số hiệu, địa chỉ thửa đất do sắp xếp đơn vị hành chính",dk:"nếu có",k:"dc"},
+  {t:"Xác nhận của UBND cấp xã về tình trạng sạt lở tự nhiên",dk:"trường hợp giảm diện tích do sạt lở (do UBND xã chuyển cho VPĐK)",k:"sl"},
+  DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Kiểm tra, khai thác thông tin từ cơ sở dữ liệu; chỉnh lý hồ sơ địa chính; xác nhận thay đổi trên Giấy chứng nhận hoặc cấp mới."},S_TRA],
+ luu:["Cơ quan giải quyết ưu tiên khai thác dữ liệu dân cư; chỉ yêu cầu bổ sung giấy tờ khi không khai thác được.",KT_COMMON]},
+
+{id:"bd_hanche",nhom:"Đăng ký biến động",ten:"Thay đổi hạn chế quyền sử dụng đất, quyền đối với thửa đất liền kề",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 6); Phần C.VI (mục 8)",td:5,tdText:"Không quá 5 ngày làm việc",types:[],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Văn bản thay đổi quyền của người có quyền lợi liên quan theo pháp luật dân sự (hoặc văn bản của cơ quan nhà nước về hạn chế quyền)",k:"vb"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Kiểm tra hồ sơ; chỉnh lý biến động vào hồ sơ địa chính, cơ sở dữ liệu; xác nhận trên Giấy chứng nhận."},S_TRA],luu:[KT_COMMON]},
+
+{id:"bd_thoathuan",nhom:"Đăng ký biến động",ten:"Thay đổi theo thỏa thuận (vợ chồng, hộ gia đình, nhóm đồng sử dụng) hoặc do chia, tách, hợp nhất, chuyển đổi loại hình doanh nghiệp",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 10, 11); Phần C.VI (mục 9, 13)",td:8,tdText:"Không quá 8 ngày làm việc",types:[],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Văn bản thỏa thuận về việc thay đổi (vợ chồng, thành viên hộ gia đình, nhóm đồng sử dụng, đồng sở hữu)",dk:"trường hợp thay đổi theo thỏa thuận; với hộ gia đình phải ghi thông tin thành viên tại thời điểm được giao đất, công nhận hoặc nhận chuyển quyền",k:"tt"},
+  {t:"Quyết định của cơ quan có thẩm quyền hoặc văn bản về việc chia, tách, hợp nhất, sáp nhập, chuyển đổi mô hình tổ chức / loại hình doanh nghiệp (xác định rõ tổ chức sử dụng đất sau thay đổi)",dk:"trường hợp của tổ chức, doanh nghiệp",k:"dn"},
+  {t:"Giấy chứng nhận đăng ký doanh nghiệp / văn bản thành lập tổ chức sau thay đổi",dk:"chỉ khi không khai thác được từ Cơ sở dữ liệu quốc gia về đăng ký doanh nghiệp",k:"dkdn"},
+  {t:"Giấy đăng ký kết hôn / ly hôn hoặc giấy tờ chứng minh tình trạng hôn nhân",dk:"chỉ khi không khai thác được từ cơ sở dữ liệu dân cư, hộ tịch",k:"hn"},
+  DOC_UQ,{t:"Chứng từ nghĩa vụ tài chính / giấy tờ miễn, giảm",dk:"nếu có",k:"ctu"}],
+ buoc:[S_NOP,S_TN,S_CH,S_DK,S_19,S_NVTC,S_CL,S_TRA],luu:["Tổ chức kinh tế có vốn đầu tư nước ngoài nhận quyền sử dụng đất qua chia, tách, sáp nhập… thực hiện theo Phần C.XIX.",KT_COMMON]},
+
+{id:"bd_taisan",nhom:"Đăng ký biến động",ten:"Đăng ký tài sản gắn liền với thửa đất đã có Giấy chứng nhận / thay đổi tài sản",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 9); Phần C.VI (mục 11)",td:8,tdText:"Không quá 8 ngày làm việc (đã chứng nhận tài sản mà đăng ký thay đổi: 5 ngày làm việc)",types:[],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Giấy tờ theo Điều 148, 149 Luật Đất đai (nếu có) và sơ đồ nhà ở, công trình xây dựng",k:"gt148"},
+  {t:"Hồ sơ thiết kế xây dựng đã thẩm định hoặc văn bản chấp thuận nghiệm thu hoàn thành",dk:"công trình trên đất nông nghiệp không có giấy tờ theo Điều 149, hoặc công trình miễn giấy phép",k:"tk"},
+  {t:"Văn bản chấp thuận gia hạn thời hạn sở hữu nhà ở của cơ quan có thẩm quyền",dk:"trường hợp gia hạn sở hữu nhà ở của tổ chức, cá nhân nước ngoài",k:"gh"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Kiểm tra hiện trạng tài sản (nếu cần thiết), gửi Mẫu 19 cho cơ quan thuế khi phát sinh nghĩa vụ, chỉnh lý hồ sơ, cấp Giấy chứng nhận / xác nhận thay đổi.",f:"m19"},S_TRA],
+ luu:["Nhà ở, công trình thuộc diện phải xin phép xây dựng nhưng hiện trạng khác giấy tờ: VPĐK không xác nhận đủ điều kiện tồn tại và không cấp Giấy chứng nhận quyền sở hữu tài sản.",KT_COMMON]},
+
+{id:"bd_xulytc",nhom:"Đăng ký biến động",ten:"Nhận quyền do xử lý tài sản thế chấp, hòa giải thành, bản án / quyết định của Tòa án, thi hành án, trọng tài",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 12, 13); Phần C.VI (mục 13)",td:8,tdText:"Không quá 8 ngày làm việc",types:[],
+ hs:[DOC_M18,
+  DOC_GCN,
+  {t:"Một trong các văn bản: biên bản hòa giải thành được công nhận; quyết định giải quyết tranh chấp, khiếu nại, tố cáo đã có hiệu lực; bản án / quyết định của Tòa án, quyết định thi hành án đã thi hành; quyết định hoặc phán quyết của Trọng tài thương mại",dk:"trường hợp nhận quyền theo kết quả giải quyết tranh chấp",k:"tc1"},
+  {t:"Hợp đồng chuyển nhượng / bán tài sản thế chấp, hợp đồng mua bán tài sản đấu giá hoặc văn bản xác nhận kết quả thi hành án, hợp đồng thế chấp có thỏa thuận nhận chính tài sản bảo đảm",dk:"trường hợp xử lý tài sản thế chấp (một trong các văn bản)",k:"tc2"},DOC_UQ,...DOC_THUE.slice(0,3),DOC_THUE[3]],
+ buoc:[S_NOP,S_TN,S_CH,S_DK,S_19,S_NVTC,S_CL,S_TRA],
+ luu:["Không phải nộp Giấy chứng nhận đã cấp nếu thực hiện quyết định hoặc bản án đã có hiệu lực, hoặc đấu giá theo yêu cầu Tòa án, cơ quan thi hành án mà không thu hồi được Giấy chứng nhận.","Xử lý tài sản thế chấp, kê biên đấu giá thi hành án: tổ chức xử lý hoặc người nhận quyền nộp hồ sơ.",KT_COMMON]},
+
+{id:"bd_xoano",nhom:"Đăng ký biến động",ten:"Xóa ghi nợ tiền sử dụng đất, lệ phí trước bạ",
+ ref:"Phụ lục IV – Phần B.II.2 (mục 17); Phần C.VI (mục 15)",td:0,tdText:"Trong ngày làm việc nhận đủ hồ sơ (nhận sau 15 giờ thì có thể giải quyết trong ngày làm việc tiếp theo)",types:[],
+ hs:[DOC_M18,DOC_GCN,{t:"Giấy tờ chứng minh đã hoàn thành việc thanh toán nợ tiền sử dụng đất, lệ phí trước bạ",k:"ctu"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Xóa ghi nợ trên Giấy chứng nhận và cập nhật cơ sở dữ liệu."},S_TRA],luu:[KT_COMMON]},
+
+{id:"tach_hop",nhom:"Tách thửa, hợp thửa",ten:"Tách thửa đất, hợp thửa đất",
+ ref:"Phụ lục IV – Phần C.I",td:12,tdText:"Không quá 12 ngày làm việc (không đủ điều kiện: trả hồ sơ trong 3 ngày làm việc; ghi số thứ tự thửa và ký xác nhận bản vẽ trong 5 ngày làm việc)",types:[],
+ hs:[{t:"Đơn đề nghị tách thửa đất, hợp thửa đất – Mẫu 21",f:"m21",k:"m21"},
+  {t:"Bản vẽ tách thửa, hợp thửa – Mẫu 22 (do VPĐK, Chi nhánh hoặc đơn vị đo đạc có giấy phép lập)",f:"m22",dk:"nếu đã có; chưa có thì VPĐK lập",k:"bv"},
+  {t:"Giấy chứng nhận đã cấp (bản gốc)",dk:"trừ trường hợp phân chia theo bản án, quyết định của Tòa án mà không thu hồi được Giấy chứng nhận",k:"gcn"},
+  {t:"Văn bản của cơ quan có thẩm quyền thể hiện nội dung tách, hợp thửa",dk:"nếu có",k:"cq"},
+  {t:"Văn bản cam kết của người sử dụng đất liền kề đồng ý cho đi qua để nối với đường giao thông công cộng",dk:"nếu có",k:"loi"},DOC_UQ],
+ buoc:[{w:"ng",t:"Nộp hồ sơ tại Bộ phận Một cửa."},S_TN,{w:"vp",t:"Kiểm tra điều kiện tách thửa, hợp thửa theo Điều 220 Luật Đất đai và quy định diện tích tối thiểu của TP.HCM; không đủ điều kiện thì trả hồ sơ, nêu rõ lý do (3 ngày làm việc)."},{w:"vp",t:"Lập bản vẽ (nếu chưa có), ghi số thứ tự thửa chính thức và ký xác nhận vào bản vẽ (5 ngày làm việc); trả bản vẽ cho người sử dụng đất."},{w:"ng",t:"Làm tiếp đăng ký biến động (chuyển quyền, cấp Giấy chứng nhận cho từng thửa mới); thời gian này không tính vào thời hạn tách thửa.",tg:1}],
+ luu:["Thông tin chính thức của các thửa sau tách, hợp chỉ được xác lập vào bản đồ địa chính sau khi đã đăng ký biến động và cấp Giấy chứng nhận cho thửa mới.","Hộ gia đình, cá nhân đang ghi nợ tiền sử dụng đất mà chia thừa kế dẫn đến tách thửa: những người nhận thừa kế phải có văn bản thỏa thuận số tiền nợ theo từng thửa.",KT_COMMON]},
+
+{id:"cap_doi",nhom:"Giấy chứng nhận",ten:"Cấp đổi Giấy chứng nhận đã cấp",
+ ref:"Phụ lục IV – Phần C.VII",td:5,tdText:"Không quá 5 ngày làm việc (thay đổi kích thước, diện tích, số hiệu do đo đạc: 10 ngày làm việc; cấp đổi đồng loạt: theo dự án được duyệt)",types:[],
+ hs:[DOC_M18,DOC_GCN,
+  {t:"Mảnh trích đo bản đồ địa chính thửa đất",dk:"bắt buộc nếu cấp đổi do thay đổi kích thước, diện tích do đo đạc; các trường hợp khác nộp khi có nhu cầu đo lại",k:"td"},
+  {t:"Thông tin các thành viên có chung quyền sử dụng đất của hộ gia đình ghi trong Mẫu 18",dk:"trường hợp Giấy chứng nhận ghi tên hộ gia đình, nay đổi sang ghi đủ thành viên",k:"hgd"},
+  {t:"Bản sao giấy đăng ký kết hôn hoặc giấy tờ tình trạng hôn nhân",dk:"trường hợp ghi thêm tên vợ / chồng và không khai thác được dữ liệu",k:"hn"}],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Kiểm tra (kiểm tra thực địa nếu vị trí thửa đất ghi sai); trích lục / đo đạc nếu cần; khai thác dữ liệu hôn nhân nếu cần."},S_19,{w:"vp",t:"Chỉnh lý hồ sơ địa chính; cấp Giấy chứng nhận mới và trao cho người được cấp (Giấy chứng nhận cũ thu lại)."},S_TRA],
+ luu:["Các trường hợp cấp đổi: đổi Giấy chứng nhận cấp trước 01/01/2025; Giấy chứng nhận ố, nhòe, rách, hư hỏng; tách Giấy chứng nhận cấp chung cho nhiều thửa; mục đích sử dụng ghi khác phân loại đất hiện hành; vị trí thửa đất ghi sai; ghi đủ tên vợ và chồng; ghi đủ thành viên hộ gia đình; thay đổi kích thước, diện tích, số hiệu do đo đạc.","Giấy chứng nhận đang thế chấp do đo đạc lập bản đồ địa chính: trao đồng thời ba bên (VPĐK, người sử dụng đất, bên nhận thế chấp).",KT_COMMON]},
+
+{id:"cap_lai_mat",nhom:"Giấy chứng nhận",ten:"Cấp lại Giấy chứng nhận đã cấp do bị mất",
+ ref:"Phụ lục IV – Phần C.VIII",td:10,tdText:"Không quá 10 ngày làm việc, không tính thời gian niêm yết thông báo mất (12 ngày) và thời gian đăng tin",types:[],
+ hs:[{t:"Đơn đăng ký biến động – Mẫu 18 (thể hiện thông tin Giấy chứng nhận bị mất)",f:"m18",k:"don"},
+  {t:"Giấy tờ nhân thân của người sử dụng đất (khai thác từ dữ liệu dân cư; nộp nếu không khai thác được)",k:"nt"},
+  {t:"Chứng từ nộp phí đăng tin (tổ chức, người gốc Việt Nam định cư ở nước ngoài, người nước ngoài)",dk:"trường hợp đăng tin 3 lần trên phương tiện thông tin đại chúng",k:"tin"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Kiểm tra hồ sơ địa chính: nếu thửa đất đã chuyển quyền hoặc đang thế chấp thì thông báo và trả hồ sơ."},{w:"xa",t:"Niêm yết công khai việc mất Giấy chứng nhận tại trụ sở UBND xã và điểm dân cư 12 ngày; lập biên bản kết thúc niêm yết trong 4 ngày làm việc (hộ gia đình, cá nhân). Tổ chức: VPĐK đăng tin 3 lần trong 12 ngày làm việc.",tg:1},{w:"vp",t:"Hủy Giấy chứng nhận cũ, chỉnh lý hồ sơ địa chính, cấp lại Giấy chứng nhận."},S_TRA],
+ luu:["Trang bổ sung của Giấy chứng nhận (cấp trước khi Nghị định 101/2024 có hiệu lực) bị mất: nộp Mẫu 18 và bản gốc Giấy chứng nhận; VPĐK cấp lại kèm thông tin trên trang bổ sung.",KT_COMMON]},
+
+{id:"dinh_chinh",nhom:"Giấy chứng nhận",ten:"Đính chính Giấy chứng nhận đã cấp",
+ ref:"Phụ lục IV – Phần C.XIV",td:6,tdText:"Không quá 6 ngày làm việc",types:[],
+ hs:[DOC_M18,{t:"Giấy chứng nhận đã cấp (bản gốc)",k:"gcn"},
+  {t:"Giấy tờ chứng minh sai sót thông tin về thửa đất, tài sản so với Giấy chứng nhận",k:"ss"},
+  {t:"Giấy tờ chứng minh sai sót thông tin của người được cấp",dk:"chỉ khi không khai thác được từ dữ liệu dân cư",k:"nt"},DOC_UQ],
+ buoc:[S_NOP,S_TN,{w:"mc",t:"Giấy chứng nhận cấp lần đầu sai: chuyển cơ quan quản lý đất đai; Giấy chứng nhận sai trong lần đăng ký biến động: chuyển VPĐK."},{w:"vp",t:"Kiểm tra, lập biên bản kết luận nội dung và nguyên nhân sai sót; xác nhận đính chính trên Giấy chứng nhận hoặc cấp mới."},{w:"vp",t:"Chỉnh lý hồ sơ địa chính, cơ sở dữ liệu; trao Giấy chứng nhận."},S_TRA],luu:[KT_COMMON]},
+
+{id:"lan_dau_cn",nhom:"Đăng ký lần đầu",ten:"Đăng ký đất đai, cấp Giấy chứng nhận lần đầu – hộ gia đình, cá nhân, cộng đồng dân cư, người gốc Việt Nam định cư ở nước ngoài",
+ ref:"Phụ lục IV – Phần C.II",td:20,tdText:"Đăng ký lần đầu không quá 17 ngày làm việc; đăng ký và cấp Giấy chứng nhận lần đầu không quá 20 ngày làm việc (xã đảo, vùng khó khăn: 27 và 30 ngày)",types:[],
+ hs:[{t:"Đơn đăng ký đất đai, tài sản gắn liền với đất – Mẫu 15",f:"m15",k:"m15"},
+  {t:"Một trong các giấy tờ về quyền sử dụng đất theo Điều 137, khoản 1, 5 Điều 148, khoản 1, 5 Điều 149 Luật Đất đai; sơ đồ nhà ở, công trình (nếu có)",k:"gt137"},
+  {t:"Giấy tờ nhận thừa kế quyền sử dụng đất theo pháp luật dân sự",dk:"nếu nhận thừa kế chưa được cấp Giấy chứng nhận",k:"tk"},
+  {t:"Giấy tờ chuyển quyền có chữ ký của bên chuyển và bên nhận",dk:"nếu nhận chuyển quyền mà chưa làm thủ tục chuyển quyền",k:"cq"},
+  {t:"Văn bản xác định các thành viên có chung quyền sử dụng đất của hộ gia đình",dk:"nếu hộ gia đình đang sử dụng đất",k:"hgd"},
+  {t:"Mảnh trích đo bản đồ địa chính hoặc Phiếu đo đạc chỉnh lý thửa đất",k:"td"},
+  {t:"Hồ sơ thiết kế xây dựng đã thẩm định / văn bản chấp thuận nghiệm thu",dk:"công trình trên đất nông nghiệp không có giấy tờ theo Điều 149, hoặc miễn giấy phép",k:"tk2"},
+  {t:"Giấy xác nhận đủ điều kiện tồn tại nhà ở, công trình của cơ quan quản lý xây dựng cấp huyện (cấp trước 01/7/2025)",dk:"nếu thuộc trường hợp phải xin phép xây dựng",k:"xn"},
+  {t:"Quyết định xử phạt vi phạm hành chính đất đai và chứng từ nộp phạt",dk:"nếu có vi phạm",k:"xp"},
+  {t:"Văn bản thỏa thuận cấp chung một Giấy chứng nhận",dk:"nếu nhiều người chung quyền",k:"chung"},
+  {t:"Chứng từ nghĩa vụ tài chính, giấy tờ miễn, giảm",dk:"nếu có",k:"ctu"},DOC_UQ,
+  {t:"Thông báo xác nhận kết quả đăng ký đất đai – Mẫu 16 (kèm Mẫu 15)",f:"m16",dk:"chỉ khi đã có thông báo và nay xin cấp Giấy chứng nhận",k:"m16"}],
+ buoc:[{w:"ng",t:"Nộp hồ sơ tại Bộ phận Một cửa (Trung tâm phục vụ hành chính công)."},S_TN,{w:"mc",t:"Chuyển hồ sơ đến UBND cấp xã nơi có đất."},{w:"xa",t:"Trích lục / trích đo bản đồ; xác định hiện trạng, tranh chấp, nguồn gốc và thời điểm sử dụng đất, sự phù hợp quy hoạch."},{w:"xa",t:"Niêm yết công khai kết quả kiểm tra (Mẫu 17) 15 ngày tại UBND xã và khu dân cư; xem xét ý kiến phản ánh.",f:"m17",tg:1},{w:"xa",t:"Xác nhận đủ / không đủ điều kiện cấp Giấy chứng nhận; không đủ điều kiện hoặc không có nhu cầu thì ban hành Thông báo xác nhận kết quả (Mẫu 16).",f:"m16"},{w:"xa",t:"Gửi Phiếu chuyển thông tin (Mẫu 19) cho cơ quan thuế xác định nghĩa vụ tài chính.",f:"m19"},S_NVTC,{w:"xa",t:"Chủ tịch UBND xã cấp Giấy chứng nhận (thuê đất thì ký quyết định và hợp đồng thuê đất); chuyển Bộ phận Một cửa trao kết quả; chuyển hồ sơ cho Chi nhánh VPĐK cập nhật hồ sơ địa chính."}],
+ luu:["Hồ sơ lần đầu nộp tại Bộ phận Một cửa; nơi nộp không phụ thuộc địa giới hành chính trong TP.HCM.",KT_COMMON]},
+
+{id:"lan_dau_tc",nhom:"Đăng ký lần đầu",ten:"Đăng ký đất đai, cấp Giấy chứng nhận lần đầu – tổ chức đang sử dụng đất",
+ ref:"Phụ lục IV – Phần C.III",td:20,tdText:"Đăng ký lần đầu không quá 17 ngày làm việc; đăng ký và cấp Giấy chứng nhận lần đầu không quá 20 ngày làm việc (xã đảo, vùng khó khăn: 27 và 30 ngày)",types:[],
+ hs:[{t:"Đơn đăng ký đất đai, tài sản gắn liền với đất – Mẫu 15",f:"m15",k:"m15"},
+  {t:"Báo cáo kết quả rà soát hiện trạng sử dụng đất – Mẫu 15d",f:"m15d",k:"m15d"},
+  {t:"Giấy tờ về quyền sử dụng đất theo Điều 137, khoản 4, 5 Điều 148, khoản 4, 5 Điều 149 Luật Đất đai (nếu có)",k:"gt137"},
+  {t:"Sơ đồ, bản trích lục bản đồ địa chính, mảnh trích đo hoặc phiếu đo đạc chỉnh lý thửa đất (nếu có)",k:"td"},
+  {t:"Quyết định phê duyệt dự án / quyết định đầu tư / giấy phép đầu tư / giấy chứng nhận đầu tư / giấy phép xây dựng; văn bản nghiệm thu đưa vào sử dụng; sơ đồ tài sản",dk:"chủ đầu tư đề nghị chứng nhận quyền sở hữu nhà ở, công trình",k:"da"},
+  {t:"Hồ sơ thiết kế xây dựng đã thẩm định / văn bản chấp thuận nghiệm thu",dk:"công trình trên đất nông nghiệp không có giấy tờ theo Điều 149, hoặc miễn giấy phép",k:"tk"},
+  {t:"Chứng từ nghĩa vụ tài chính, giấy tờ miễn, giảm",dk:"nếu có",k:"ctu"},DOC_UQ],
+ buoc:[{w:"ng",t:"Nộp hồ sơ tại Bộ phận Một cửa."},S_TN,{w:"tinh",t:"Cơ quan quản lý đất đai cấp tỉnh chủ trì cùng UBND xã kiểm tra thực tế, xác định ranh giới thửa đất."},{w:"tinh",t:"Trình UBND cấp tỉnh quyết định hình thức sử dụng đất (Mẫu 20); xác định giá đất, gửi Phiếu chuyển thông tin (Mẫu 10) cho cơ quan thuế."},S_NVTC,{w:"tinh",t:"Ký Giấy chứng nhận (thuê đất thì ký hợp đồng thuê đất); chuyển Bộ phận Một cửa trao kết quả; chuyển VPĐK cập nhật hồ sơ địa chính."}],
+ luu:[KT_COMMON]},
+
+{id:"chua_chuyen_quyen",nhom:"Đăng ký lần đầu",ten:"Đã nhận chuyển quyền sử dụng đất nhưng chưa làm thủ tục chuyển quyền",
+ ref:"Phụ lục IV – Phần C.XI",td:8,tdText:"Không quá 8 ngày làm việc (chưa tính 30 ngày niêm yết, thông báo)",types:[],
+ hs:[DOC_M18,
+  {t:"Hợp đồng, văn bản chuyển quyền sử dụng đất đã lập, có đủ chữ ký bên chuyển và bên nhận",dk:"trường hợp chỉ có hợp đồng mà bên chuyển không trao Giấy chứng nhận",k:"hd"},
+  {t:"Giấy chứng nhận đã cấp của bên chuyển quyền (bản gốc)",dk:"trường hợp chỉ có Giấy chứng nhận mà không có hợp đồng",k:"gcn"},
+  {t:"Giấy tờ về việc chuyển quyền có đủ chữ ký bên chuyển và bên nhận",dk:"trường hợp không có hợp đồng, văn bản theo quy định",k:"gt"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Thông báo bằng văn bản cho bên chuyển quyền và UBND xã để niêm yết; không rõ địa chỉ thì đăng tin 3 lần trên phương tiện thông tin đại chúng (chi phí do người đề nghị trả).",tg:1},{w:"vp",t:"Sau 30 ngày kể từ ngày thông báo mà không có đơn giải quyết tranh chấp: gửi Mẫu 19 cho cơ quan thuế.",f:"m19",tg:1},S_NVTC,{w:"vp",t:"Cấp Giấy chứng nhận cho bên nhận; bên chuyển không nộp Giấy chứng nhận thì hủy Giấy chứng nhận đã cấp."},S_TRA],
+ luu:["Có đơn đề nghị giải quyết tranh chấp: VPĐK hướng dẫn các bên nộp đơn đến cơ quan có thẩm quyền.",KT_COMMON]},
+
+{id:"duan_bds_nhan",nhom:"Dự án bất động sản",ten:"Cấp Giấy chứng nhận cho người nhận chuyển nhượng nhà ở, công trình, đất trong dự án bất động sản (căn hộ mua của chủ đầu tư)",
+ ref:"Phụ lục IV – Phần C.X; thời hạn: Phần A.II (mục 6)",td:8,tdText:"Không quá 8 ngày làm việc",types:[],
+ hs:[{t:"Đơn đăng ký biến động – Mẫu 18 (do người nhận chuyển nhượng kê khai)",f:"m18",k:"don"},
+  {t:"Hợp đồng chuyển nhượng quyền sử dụng đất, quyền sở hữu nhà ở, công trình xây dựng",k:"hd"},
+  {t:"Biên bản bàn giao nhà, đất, công trình",k:"bg"},
+  {t:"Văn bản nhà ở, công trình đã được nghiệm thu đưa vào sử dụng",dk:"chủ đầu tư cung cấp (nếu có nhận chuyển nhượng nhà ở, công trình)",k:"nt"},
+  {t:"Văn bản đủ điều kiện chuyển nhượng cho cá nhân tự xây dựng nhà ở",dk:"chủ đầu tư cung cấp, trường hợp chuyển nhượng đất đã có hạ tầng",k:"dk"},
+  {t:"Giấy chứng nhận đã cấp cho chủ đầu tư dự án",dk:"chủ đầu tư cung cấp",k:"gcn"},
+  {t:"Chứng từ hoàn thành nghĩa vụ tài chính",dk:"nếu dự án điều chỉnh quy hoạch chi tiết làm phát sinh nghĩa vụ",k:"ctu"},DOC_UQ,...DOC_THUE.slice(0,3)],
+ buoc:[{w:"ng",t:"Chủ đầu tư nộp hồ sơ thay cho người mua; hoặc người mua tự nộp tại Bộ phận Một cửa (hồ sơ tối thiểu: Mẫu 18, hợp đồng, biên bản bàn giao)."},S_TN,S_CH,{w:"vp",t:"Kiểm tra; nếu người mua tự nộp mà chủ đầu tư chưa nộp giấy tờ thì trong 3 ngày làm việc thông báo chủ đầu tư bổ sung."},S_19,S_NVTC,{w:"vp",t:"Cấp Giấy chứng nhận cho người mua; xác nhận thay đổi trên Giấy chứng nhận của chủ đầu tư; chỉnh lý hồ sơ địa chính; trao kết quả."}],
+ luu:["Chi tiết giấy tờ phía chủ đầu tư theo mục 1 Phần C.X; rà soát từng dự án cụ thể.",KT_COMMON]},
+
+{id:"chuyennhuong_duan",nhom:"Dự án bất động sản",ten:"Chuyển nhượng dự án đầu tư có sử dụng đất",
+ ref:"Phụ lục IV – Phần C.XII",td:20,tdText:"Đất dự án chưa có Giấy chứng nhận: không quá 20 ngày làm việc; đã có Giấy chứng nhận: không quá 8 ngày làm việc",types:[],
+ hs:[{t:"Đơn đăng ký đất đai – Mẫu 15 (chưa có Giấy chứng nhận) hoặc Đơn đăng ký biến động – Mẫu 18 (đã có)",f:"m18",k:"don"},
+  {t:"Giấy chứng nhận đã cấp cho bên chuyển nhượng dự án",dk:"nếu đất dự án đã có Giấy chứng nhận",k:"gcn"},
+  {t:"Quyết định giao đất, cho thuê đất, cho phép chuyển mục đích và chứng từ hoàn thành nghĩa vụ tài chính của hai bên",dk:"nếu đất dự án chưa có Giấy chứng nhận",k:"qd"},
+  {t:"Văn bản cho phép chuyển nhượng dự án hoặc một phần dự án của cơ quan có thẩm quyền",k:"vbcp"},
+  {t:"Hợp đồng chuyển nhượng dự án hoặc một phần dự án",k:"hd"},
+  {t:"Mảnh trích đo bản đồ địa chính đã được VPĐK ký duyệt (chưa có Giấy chứng nhận) / Bản vẽ tách thửa Mẫu 22 (đã có Giấy chứng nhận)",dk:"nếu chuyển nhượng một phần dự án",k:"bv"},DOC_UQ],
+ buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Bên nhận không có vốn đầu tư nước ngoài: đã có Giấy chứng nhận thì xử lý như đăng ký biến động; chưa có thì gửi Mẫu 19, hoàn thiện hồ sơ và trình Sở Nông nghiệp và Môi trường cấp Giấy chứng nhận.",f:"m19"},S_NVTC,{w:"vp",t:"Trao Giấy chứng nhận, cập nhật hồ sơ địa chính."}],
+ luu:["Bên nhận là tổ chức kinh tế có vốn đầu tư nước ngoài: thực hiện theo trình tự giao đất, cho thuê đất (Phụ lục II).",KT_COMMON]},
+
+{id:"khac",nhom:"Khác",ten:"Thủ tục khác thuộc Phụ lục IV (chưa lập quy trình chi tiết)",
+ ref:"Phụ lục IV – Phần C.IV, V, IX, XIII, XV–XXIII",td:0,tdText:"Xem từng Phần trong Phụ lục IV",types:[],
+ hs:[DOC_M18,DOC_GCN,DOC_UQ],buoc:[S_NOP,S_TN,S_CH,{w:"vp",t:"Giải quyết theo quy định của Phần tương ứng trong Phụ lục IV."},S_TRA],
+ luu:["Gồm: đăng ký đất được giao để quản lý (IV); xác nhận tiếp tục sử dụng đất nông nghiệp khi hết thời hạn (V); tặng cho đất cho Nhà nước, cộng đồng hoặc mở rộng đường (IX); đất ở một phần cấp trước 01/7/2004 (XIII); thu hồi, hủy Giấy chứng nhận (XV, XVI); toàn bộ diện tích đang sử dụng (XVII, XVIII); đăng ký bằng phương tiện điện tử (XX, XXI); xác định diện tích đất ở (XXII); dồn điền đổi thửa (XXIII).","Thế chấp, xóa thế chấp quyền sử dụng đất không thuộc QĐ 44; thực hiện theo pháp luật về đăng ký biện pháp bảo đảm."]}
+];
+
+/* ===== Tab “Quy trình QĐ 44”: kiểm soát quy trình, thành phần hồ sơ, mẫu đơn ===== */
+const QD_BY=Object.fromEntries(QD44.map(p=>[p.id,p]));
+const QD_DOC_ST=["Thiếu","Đã có","Đã nộp","Không áp dụng"];
+function qdDefault(type){const p=QD44.find(x=>x.types.includes(type));return p?p.id:"bd_chuyenquyen"}
+function qdPid(c){return (c.qd&&c.qd.pid)||qdDefault(c.type)}
+function qdBag(c,pid){const q=c.qd||{};return (q.by&&q.by[pid])||{docs:{},steps:{},tg:0,td:null}}
+function qdEnsure(c){c.qd=c.qd||{pid:"",by:{}};c.qd.by=c.qd.by||{};const pid=qdPid(c);c.qd.pid=pid;c.qd.by[pid]=c.qd.by[pid]||{docs:{},steps:{},tg:0,td:null};return c.qd.by[pid]}
+function qdDocState(p,b,i,c){const s=b.docs[i];if(s)return s;const h=p.hs[i];if(h.k==="uq"&&c&&c.parties&&c.parties.some(x=>x.role==="U"))return "Thiếu";if(h.def)return h.def;return h.dk?"Không áp dụng":"Thiếu"}
+function addBiz(iso,n){if(!iso)return "";const d=new Date(iso+"T00:00:00");let k=0;while(k<n){d.setDate(d.getDate()+1);const w=d.getDay();if(w!==0&&w!==6)k++}return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function qdStat(c){
+  const pid=qdPid(c),p=QD_BY[pid],b=qdBag(c,pid);
+  const act=p.hs.map((h,i)=>qdDocState(p,b,i,c)).filter(s=>s!=="Không áp dụng");
+  const got=act.filter(s=>s!=="Thiếu").length;
+  const stepsDone=p.buoc.filter((s,i)=>b.steps[i]).length;
+  const td=b.td!=null&&b.td!==""?+b.td:p.td,tg=+b.tg||0;
+  const han=c.ngayNop&&td?addBiz(c.ngayNop,td+tg):"";
+  const next=p.buoc.findIndex((s,i)=>!b.steps[i]);
+  return {p,b,total:act.length,got,stepsDone,nSteps:p.buoc.length,td,tg,han,left:han?daysTo(han):null,next};
+}
+const QDF=k=>QD_FORMS[k]||null;
+function qdFormChip(k,inCase){
+  const f=QDF(k);if(!f)return "";
+  const have=f.app&&FORMS[f.app];
+  const lab=k==="m18"?"Mẫu 18":k==="m15"?"Mẫu 15":k.startsWith("m")?"Mẫu "+k.slice(1).toUpperCase():f.n.split(" (")[0].replace(/^Tờ khai /,"");
+  let h=`<span class="chip ${have?"":"r"}" title="${esc(f.n)}">${esc(lab)}${have?" · có trong Điền đơn":(f.who==="cq"?" · cơ quan lập":" · chưa có mẫu điền")}</span>`;
+  if(inCase&&have)h+=` <button data-a="showform" data-f="${f.app}">Xem</button> <button data-a="docx" data-f="${f.app}">Word</button> <button data-a="pdf" data-f="${f.app}">PDF</button>`;
+  return h;
+}
+function qdSteps(p,b,inCase){
+  return p.buoc.map((s,i)=>{
+    const done=!!b.steps[i];
+    return `<li class="qs ${done?"ok":""}">${inCase?`<input type="checkbox" data-q="st" data-i="${i}" ${done?"checked":""}>`:`<b>${i+1}.</b>`}
+     <div><span class="chip">${esc(QD_WHO[s.w]||s.w)}</span>${s.tg?`<span class="chip y">không tính vào thời hạn</span>`:""} ${esc(s.t)} ${s.f?qdFormChip(s.f,false):""}</div></li>`}).join("");
+}
+function qdSl(h){return h.f?"01 bản chính":h.k==="gcn"?"01 bản gốc":h.k==="hd"||h.k==="uq"?"01 bản":"01 bản sao"}
+function qdDocRows(p,b,inCase,c){
+  return p.hs.map((h,i)=>{
+    const s=qdDocState(p,b,i,c),m=(b.meta&&b.meta[i])||{};
+    const sel=inCase?`<select data-q="ds" data-i="${i}">${QD_DOC_ST.map(x=>`<option ${x===s?"selected":""}>${x}</option>`).join("")}</select>`:"";
+    const dk=h.dk?`<div class="hint" style="margin:2px 0 0">${/^(nếu |chỉ khi |trường hợp )/.test(h.dk)?esc("Khi: "+h.dk.replace(/^(nếu |chỉ khi |trường hợp )/,"")):esc(h.dk)}</div>`:"";
+    const meta=inCase?`<td><input data-q="dsl" data-i="${i}" placeholder="${esc(qdSl(h))}" value="${esc(m.sl||"")}" style="width:100%"><input data-q="dgc" data-i="${i}" placeholder="Ghi chú" value="${esc(m.gc||"")}" style="width:100%;margin-top:3px"></td>`:"";
+    return `<tr class="${s==="Không áp dụng"?"na":""}"><td>${inCase?sel:`<b>${i+1}</b>`}</td><td>${esc(h.t)}${dk}</td><td>${h.f?qdFormChip(h.f,inCase):""}</td>${meta}</tr>`}).join("");
+}
+/* ----- Tab trong hộp thoại hồ sơ ----- */
+{const ip=CTABS.findIndex(x=>x[0]==="print");if(ip>=0)CTABS.splice(ip,1);CTABS.push(["qd","4. Thủ tục & thành phần hồ sơ (QĐ 44)"]);CTABS.push(["print","5. In bộ đơn & mục lục"])}
+TABS.qd=()=>{
+  const pid=qdPid(cur),p=QD_BY[pid],st=qdStat(cur),b=st.b;
+  const opts=QD44.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.nhom+" – "+x.ten)}</option>`).join("");
+  const hanTxt=st.han?`${fd(st.han)} <span class="chip ${st.left<0?"r":st.left<=2?"y":""}">${st.left<0?"quá hạn "+(-st.left)+" ngày":st.left===0?"hết hạn hôm nay":"còn "+st.left+" ngày"}</span>`:`<span class="hint">Nhập ngày nộp để tính hạn</span>`;
+  return `<p class="hint" style="margin-top:0">Căn cứ QĐ 44/2026/QĐ-UBND (hiệu lực 01/7/2026). Chọn đúng thủ tục để hệ thống đưa ra thành phần hồ sơ, mẫu đơn và các bước cần theo dõi.</p>
+  <div class="grid"><label class="full">Thủ tục áp dụng<select data-q="pid">${opts}</select></label></div>
+  <div class="qbox"><div><b>${esc(p.ten)}</b></div><div class="hint">${esc(p.ref)}</div>
+   <div class="qk"><div><span>Thời hạn quy định</span><b>${esc(p.tdText)}</b></div>
+   <div><span>Ngày nộp</span><b>${cur.ngayNop?fd(cur.ngayNop):"chưa nhập"}</b></div>
+   <div><span>Hạn dự kiến (ngày làm việc, chưa trừ lễ)</span><b>${hanTxt}</b></div></div>
+   <div class="grid g3" style="margin-top:8px"><label>Số ngày làm việc áp dụng<input type="number" min="0" data-q="td" value="${b.td!=null&&b.td!==""?esc(b.td):p.td}"></label>
+    <label>Cộng thêm ngày (xã đảo, vùng khó khăn: 10)<input type="number" min="0" data-q="tg" value="${st.tg||0}"></label>
+    <label>Ngày nộp hồ sơ<input type="date" data-k="ngayNop" value="${esc(cur.ngayNop||"")}"></label></div>
+   <p class="hint">Hạn chỉ là ước tính. Thời gian thuế, niêm yết, trích đo, giám định không tính vào hạn: khi các bước đó phát sinh, hãy cộng thêm số ngày thực tế vào ô “Cộng thêm ngày”.</p></div>
+  <div class="hd"><h3>Thành phần hồ sơ (${st.got}/${st.total} đã có)</h3><span class="hint" style="margin:0">Mục “tùy trường hợp” mặc định không áp dụng; chuyển sang “Thiếu” nếu hồ sơ này cần.</span></div>
+  <table class="qt"><thead><tr><th style="width:150px">Tình trạng</th><th>Giấy tờ</th><th>Mẫu đơn</th><th style="width:170px">Số lượng · ghi chú (in trên mục lục)</th></tr></thead><tbody>${qdDocRows(p,b,true,cur)}</tbody></table>
+  <div class="hd"><h3>Quy trình (${st.stepsDone}/${st.nSteps} bước)</h3>${st.next>=0?`<span class="chip">Bước tiếp theo: ${st.next+1}</span>`:`<span class="chip g">Đã đủ các bước</span>`}</div>
+  <ol class="qsl">${qdSteps(p,b,true)}</ol>
+  ${p.luu.length?`<div class="hd"><h3>Lưu ý</h3></div><ul class="ql">${p.luu.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}`;
+};
+(function(){
+  const keep=fn=>{const a=$("#cbody").scrollTop,d=$("#cd").scrollTop;fn();$("#cbody").scrollTop=a;$("#cd").scrollTop=d};
+  $("#cbody").addEventListener("change",e=>{
+    const t=e.target;if(t.dataset&&t.dataset.k==="ngayNop"){keep(renderCase);return}const q=t.dataset&&t.dataset.q;if(!q)return;
+    if(q==="pid"){qdEnsure(cur);cur.qd.pid=t.value;qdEnsure(cur);renderCase();return}
+    if(["dsl","dgc","uq","extra"].includes(q))return;
+    if(q==="only"){qdEnsure(cur);cur.qd.only=t.checked;return}
+    const b=qdEnsure(cur);
+    if(q==="ds")b.docs[t.dataset.i]=t.value;
+    else if(q==="st")b.steps[t.dataset.i]=t.checked?today():0;
+    else if(q==="td")b.td=t.value===""?null:+t.value;
+    else if(q==="tg")b.tg=+t.value||0;
+    keep(renderCase);
+  });
+})();
+/* ----- Mục lục thành phần hồ sơ + tab In bộ đơn ----- */
+const QD_SHORT={don:"Đơn đăng ký biến động đất đai, tài sản gắn liền với đất (Mẫu số 18)",gcn:"Giấy chứng nhận quyền sử dụng đất, quyền sở hữu nhà ở và tài sản khác gắn liền với đất",uq:"Giấy ủy quyền (hợp đồng ủy quyền)"};
+const QD_SHORT_F={lptb:"Tờ khai lệ phí trước bạ nhà, đất",tncn:"Tờ khai thuế thu nhập cá nhân (mẫu 03/BDS-TNCN)",pnn:"Tờ khai thuế sử dụng đất phi nông nghiệp"};
+function qdName(c,p,h){
+  if(h.f&&QD_SHORT_F[h.f])return QD_SHORT_F[h.f];
+  if(h.k==="hd"&&p.id==="bd_chuyenquyen")return c.type==="Tặng cho"?"Hợp đồng tặng cho quyền sử dụng đất, quyền sở hữu tài sản gắn liền với đất (đã công chứng, chứng thực)":c.type==="Thừa kế"?"Văn bản khai nhận, phân chia di sản thừa kế (đã công chứng, chứng thực)":"Hợp đồng chuyển nhượng quyền sử dụng đất, quyền sở hữu tài sản gắn liền với đất (đã công chứng, chứng thực)";
+  if(h.k==="don"&&p.id==="cap_lai_mat")return "Đơn đăng ký biến động (Mẫu số 18), thể hiện việc mất Giấy chứng nhận";
+  return QD_SHORT[h.k]||h.t;
+}
+function qdRows(c){
+  const pid=qdPid(c),p=QD_BY[pid],b=qdBag(c,pid),only=!(c.qd&&c.qd.only===false),out=[];
+  p.hs.forEach((h,i)=>{const s=qdDocState(p,b,i,c);if(s==="Không áp dụng"||(only&&s==="Thiếu"))return;const m=(b.meta&&b.meta[i])||{};out.push({t:qdName(c,p,h),sl:m.sl||qdSl(h),gc:m.gc||(s==="Thiếu"?"Chưa có":"")})});
+  String(b.extra||"").split(/\n/).map(x=>x.trim()).filter(Boolean).forEach(t=>out.push({t,sl:"01 bản",gc:""}));
+  return out;
+}
+function qdMucLuc(c){
+  const pid=qdPid(c),p=QD_BY[pid],x=ctx(c),uq=(c.qd&&c.qd.uq)||{},rows=qdRows(c);
+  const A=partyNames(c,"A"),B=partyNames(c,"B"),ud=x.u.name;
+  const q=dparts(uq.ngay);
+  const hasUq=!!(uq.so||uq.ngay);
+  const uqTxt=ud?`Người nộp hồ sơ: <b>${esc(ud)}</b>${hasUq?`, thực hiện theo Giấy ủy quyền số ${v(uq.so,8)} ngày ${q?`<span class="v">${q[0]}/${q[1]}/${q[2]}</span>`:v("",9)}${uq.noi?` (${esc(uq.noi)})`:""}`:""}.`:`Người nộp hồ sơ: ${v("",30)}`;
+  const pr=x.p;
+  return `<div class="mlc"><div class="c b">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div><div class="c b">Độc lập - Tự do - Hạnh phúc</div><div class="c">---------------</div>
+  <h2>MỤC LỤC THÀNH PHẦN HỒ SƠ</h2>
+  <div class="c">${esc(p.ten)}</div><div class="c sm">(${esc(p.ref.replace("Phụ lục IV","Phụ lục IV QĐ số 44/2026/QĐ-UBND"))})</div>
+  <p>Kính gửi: ${c.noiNop==="CN"?"Chi nhánh Văn phòng đăng ký đất đai"+(c.cn&&c.cn.ten?" "+esc(c.cn.ten):""):"Văn phòng đăng ký đất đai "+esc(dest(c))}</p>
+  ${A||B?`<p>Người yêu cầu đăng ký: ${A?`bên chuyển: <b>${esc(A)}</b>`:""}${A&&B?"; ":""}${B?`bên nhận: <b>${esc(B)}</b>`:""}.</p>`:""}
+  <p>${uqTxt}</p>
+  <p>Thửa đất, tài sản: ${v(propAddr(c),40)}${pr.gcnSo?`; Giấy chứng nhận số ${esc(pr.gcnSo)}`:""}${pr.thua?`; thửa đất số ${esc(pr.thua)}`:""}${pr.to?`, tờ bản đồ số ${esc(pr.to)}`:""}.</p>
+  <table><tr><th style="width:36px">STT</th><th>Tên thành phần hồ sơ</th><th style="width:105px">Số lượng</th><th style="width:100px">Ghi chú</th></tr>
+  ${rows.map((r,i)=>`<tr><td class="c">${i+1}</td><td>${esc(r.t)}</td><td class="c">${esc(r.sl)}</td><td>${esc(r.gc)}</td></tr>`).join("")||`<tr><td colspan="4" class="c">(chưa có thành phần nào)</td></tr>`}</table>
+  <p>Tổng cộng: <b>${rows.length}</b> thành phần hồ sơ, nộp <b>01</b> bộ.</p>
+  <div class="sig"><div></div><div>${sdate(c,x.place)}<br><b>NGƯỜI NỘP HỒ SƠ</b><br><i class="sm">(Ký, ghi rõ họ tên)</i><br><br><br><br><b class="v">${esc(ud||"")}</b></div></div></div>`;
+}
+FORMS.mucluc=c=>qdMucLuc(c);FORMS_LAB.mucluc="Mục lục thành phần hồ sơ";
+TABS.print=()=>{
+  const pid=qdPid(cur),p=QD_BY[pid],b=qdBag(cur,pid),x=ctx(cur),uq=(cur.qd&&cur.qd.uq)||{},only=!(cur.qd&&cur.qd.only===false);
+  const apps=[],miss=[];
+  p.hs.forEach((h,i)=>{if(!h.f)return;const f=QDF(h.f);if(!f||f.who==="cq")return;if(qdDocState(p,b,i,cur)==="Không áp dụng")return;
+    if(f.app&&FORMS[f.app]){if(!apps.includes(f.app))apps.push(f.app)}else if(!miss.includes(h.f))miss.push(h.f)});
+  const row=(k,off)=>`<div class="fgrp"><label class="ck tt"><input type="checkbox" class="fsel" value="${k}" ${off?"":"checked"}> ${FORMS_LAB[k]}</label><button class="primary" data-a="docx" data-f="${k}">Xuất Word</button><button data-a="pdf" data-f="${k}">Xuất PDF</button></div>`;
+  const rest=Object.keys(FORMS_LAB).filter(k=>k!=="mucluc"&&!apps.includes(k));
+  const rows=qdRows(cur),thieu=p.hs.filter((h,i)=>qdDocState(p,b,i,cur)==="Thiếu").length;
+  const warn=[];
+  if(!x.u.name)warn.push("Chưa có người nộp hồ sơ. Nếu nộp thay hoặc theo ủy quyền, vào tab 2 và thêm người với vai trò “Người nộp thay / được ủy quyền”; nếu các bên tự nộp thì bỏ qua.");
+  else if(!uq.so&&!uq.ngay)warn.push("Chưa nhập số và ngày Giấy ủy quyền; để trống nếu nộp thay mà không có ủy quyền, mục lục sẽ không ghi câu về ủy quyền.");
+  if(thieu)warn.push(`Còn ${thieu} thành phần ở tình trạng “Thiếu” (tab 4).${only?" Các mục này không in vào mục lục.":" Các mục này in kèm ghi chú “Chưa có”."}`);
+  if(miss.length)warn.push("Thủ tục này cần "+miss.map(k=>QDF(k).n.split(" – ")[0]).join(", ")+" nhưng app chưa có mẫu điền; dùng mẫu của VPĐK hoặc soạn tay.");
+  return `<div class="qbox"><b>${esc(p.ten)}</b><div class="hint">${esc(p.ref)} · đổi thủ tục ở tab 4</div></div>
+  ${warn.length?`<div class="preflight"><h3>Cần kiểm tra trước khi in</h3><ul>${warn.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
+  <div class="hd"><h3>Người nộp hồ sơ</h3></div>
+  <p style="margin:4px 0">${x.u.name?`Người nộp thay / được ủy quyền: <b>${esc(x.u.name)}</b>`:`<span class="hint">Chưa chọn người nộp thay ở tab 2 (bỏ qua nếu các bên tự nộp).</span>`}</p>
+  <div class="grid g3"><label>Giấy ủy quyền số<input data-q="uq" data-f="so" value="${esc(uq.so||"")}"></label>
+   <label>Ngày lập<input type="date" data-q="uq" data-f="ngay" value="${esc(uq.ngay||"")}"></label>
+   <label class="sp2">Công chứng, chứng thực tại<input data-q="uq" data-f="noi" value="${esc(uq.noi||"")}" placeholder="VD: Văn phòng công chứng …"></label>
+   <label>Ngày ghi trên đơn, mục lục<input type="date" data-k="ngayKy" value="${esc(cur.ngayKy||"")}"></label></div>
+  <div class="hd"><h3>Mục lục thành phần hồ sơ (${rows.length} mục)</h3></div>
+  <label class="ck"><input type="checkbox" data-q="only" ${only?"checked":""}> Mục lục chỉ liệt kê giấy tờ đã có hoặc đã nộp</label>
+  <div class="grid"><label class="full">Giấy tờ bổ sung vào mục lục (mỗi dòng một mục)<textarea data-q="extra" rows="2">${esc(b.extra||"")}</textarea></label></div>
+  <div class="foot" style="margin:6px 0"><button class="primary" data-q="allpdf">In trọn bộ: mục lục + các đơn đã chọn</button><button data-q="mlprint">Xem, in mục lục</button><button data-q="mlword">Tải mục lục (Word)</button></div>
+  <div class="hd"><h3>Bộ đơn theo thủ tục</h3></div>
+  ${apps.length?apps.map(k=>k==="tncn"&&x.A.some(isOrg)?`<p class="hint">Bên chuyển là pháp nhân nên không kê khai thuế TNCN.</p>`:row(k)).join(""):`<p class="hint">Thủ tục này chưa có mẫu đơn nào được điền sẵn trong app.</p>`}
+  <details style="margin-top:8px"><summary style="cursor:pointer">Mẫu khác (ngoài thủ tục đã chọn)</summary>${rest.map(k=>row(k,1)).join("")}</details>
+  <div class="foot" style="margin-top:6px"><button class="primary" data-a="docxsel">Xuất Word các mẫu đã chọn</button><button data-a="pdfsel">Xuất PDF các mẫu đã chọn</button></div>
+  <div id="preflightBox">${renderPreflight()}</div>
+  <p class="hint">Word và PDF điền vào đúng mẫu gốc. Với PDF: bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”; bấm vào chữ để sửa trước khi in. Mục lục in trọn bộ nằm ở trang đầu.</p>`;
+};
+(function(){
+  $("#cbody").addEventListener("input",e=>{
+    const t=e.target,q=t.dataset&&t.dataset.q;if(!q)return;
+    if(q==="uq"){qdEnsure(cur);cur.qd.uq=cur.qd.uq||{};cur.qd.uq[t.dataset.f]=t.value;}
+    else if(q==="dsl"||q==="dgc"){const b=qdEnsure(cur);b.meta=b.meta||{};b.meta[t.dataset.i]=b.meta[t.dataset.i]||{};b.meta[t.dataset.i][q==="dsl"?"sl":"gc"]=t.value}
+    else if(q==="extra"){qdEnsure(cur).extra=t.value}
+  });
+  $("#cbody").addEventListener("click",e=>{
+    const b=e.target.closest("[data-q]");if(!b||b.tagName!=="BUTTON")return;
+    const a=b.dataset.q;
+    if(a==="mlprint"){showForms(["mucluc"]);$("#pbody").contentEditable="true";$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”.";return}
+    if(a==="mlword"){const css="body{font-family:'Times New Roman';font-size:13pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:4px 6px;font-size:12pt}.c{text-align:center}.b{font-weight:bold}h2{text-align:center;font-size:15pt}";
+      dl(caseSlug(cur)+"_muc-luc-ho-so.doc","application/msword","\ufeff<html xmlns:w=\"urn:schemas-microsoft-com:office:word\"><head><meta charset=\"utf-8\"><style>"+css+"</style></head><body>"+qdMucLuc(cur).replace(/class=\"v\"/g,"")+"</body></html>");return}
+    if(a==="allpdf"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);
+      if(!l.length){showForms(["mucluc"]);$("#pbody").contentEditable="true";return}
+      window.QD_PRE=qdMucLuc(cur);try{ovExport(l);markNop()}finally{window.QD_PRE=""}}
+  });
+})();
+/* ----- Tab chính “Quy trình” ----- */
+let qdSub="gs",qdSel="bd_chuyenquyen",qdQ="";
+function renderQD(){
+  const box=$("#qdbox");if(!box)return;
+  document.querySelectorAll("#qsub button").forEach(b=>b.classList.toggle("on",b.dataset.s===qdSub));
+  if(qdSub==="gs")box.innerHTML=qdMonitor();else box.innerHTML=qdCatalog();
+}
+function qdMonitor(){
+  const open=db.cases.filter(c=>!["Hoàn thành","Hủy"].includes(c.status));
+  const rows=open.map(c=>({c,s:qdStat(c)})).sort((a,b)=>{const x=a.s.left==null?9999:a.s.left,y=b.s.left==null?9999:b.s.left;return x-y});
+  const late=rows.filter(r=>r.s.left!=null&&r.s.left<0).length,soon=rows.filter(r=>r.s.left!=null&&r.s.left>=0&&r.s.left<=2).length,miss=rows.filter(r=>r.s.total-r.s.got>0).length;
+  const cards=[["Đang theo dõi",rows.length,"var(--brand)"],["Quá hạn",late,"var(--seal)"],["Hạn trong 2 ngày",soon,"var(--warn)"],["Còn thiếu giấy tờ",miss,"var(--seal)"]].map(([t,v,c])=>`<div class="ov-card" style="border-top:3px solid ${c}"><b style="color:${c}">${v}</b><span>${t}</span></div>`).join("");
+  const tr=rows.map(({c,s})=>`<tr data-cid="${c.id}"><td>${esc(c.code||"")}</td><td>${esc(caseTitle(c))}<div class="hint" style="margin:0">${esc(c.status)}${c.client?" · "+esc(c.client):""}</div></td>
+    <td>${esc(s.p.nhom)}<div class="hint" style="margin:0">${esc(s.p.ten.length>70?s.p.ten.slice(0,68)+"…":s.p.ten)}</div></td>
+    <td>${c.ngayNop?fd(c.ngayNop):"—"}</td><td>${s.han?fd(s.han):"—"}</td>
+    <td>${s.left==null?"—":`<span class="chip ${s.left<0?"r":s.left<=2?"y":"g"}">${s.left<0?"quá "+(-s.left)+" ngày":s.left+" ngày"}</span>`}</td>
+    <td><span class="chip ${s.total-s.got?"r":"g"}">${s.got}/${s.total}</span></td>
+    <td>${s.stepsDone}/${s.nSteps}${s.next>=0?`<div class="hint" style="margin:0">Tiếp: ${esc(s.p.buoc[s.next].t.slice(0,60))}…</div>`:""}</td></tr>`).join("");
+  return `<div class="ov-cards">${cards}</div>
+  <p class="hint">Mỗi hồ sơ đang mở được tính hạn theo ngày nộp và thời hạn của thủ tục. Bấm vào dòng để mở hồ sơ, tab 5 hiện danh mục giấy tờ và các bước.</p>
+  <div class="tw"><table class="ov-queue qt"><thead><tr><th>Mã</th><th>Thửa đất</th><th>Thủ tục (QĐ 44)</th><th>Ngày nộp</th><th>Hạn dự kiến</th><th>Còn lại</th><th>Giấy tờ</th><th>Bước</th></tr></thead><tbody>${tr||`<tr><td colspan="8" class="ov-empty">Chưa có hồ sơ đang mở.</td></tr>`}</tbody></table></div>`;
+}
+function qdCatalog(){
+  const q=qdQ.toLowerCase();
+  const list=QD44.filter(p=>!q||(p.nhom+" "+p.ten+" "+p.ref).toLowerCase().includes(q));
+  const groups={};list.forEach(p=>{(groups[p.nhom]=groups[p.nhom]||[]).push(p)});
+  const left=Object.entries(groups).map(([g,ps])=>`<div class="qg">${esc(g)}</div>`+ps.map(p=>`<button class="qi ${p.id===qdSel?"on":""}" data-pid="${p.id}"><span>${esc(p.ten)}</span><small>${esc(p.tdText.split(" (")[0])}</small></button>`).join("")).join("")||`<p class="hint">Không có kết quả.</p>`;
+  const p=QD_BY[qdSel]||QD44[0];
+  const forms=[...new Set(p.hs.map(h=>h.f).concat(p.buoc.map(s=>s.f)).filter(Boolean))];
+  const right=`<h3 style="margin:0 0 2px">${esc(p.ten)}</h3><div class="hint" style="margin:0 0 8px">${esc(p.ref)}</div>
+   <div class="qbox"><div class="qk"><div><span>Thời hạn</span><b>${esc(p.tdText)}</b></div></div></div>
+   <div class="hd"><h3>Thành phần hồ sơ</h3><button class="primary" data-newq="${p.id}">+ Tạo hồ sơ theo thủ tục này</button></div>
+   <table class="qt"><thead><tr><th style="width:36px">#</th><th>Giấy tờ</th><th>Mẫu đơn</th></tr></thead><tbody>${qdDocRows(p,{docs:{}},false,null)}</tbody></table>
+   <div class="hd"><h3>Quy trình</h3></div><ol class="qsl">${qdSteps(p,{steps:{}},false)}</ol>
+   ${p.luu.length?`<div class="hd"><h3>Lưu ý</h3></div><ul class="ql">${p.luu.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:""}`;
+  const gaps=Object.entries(QD_FORMS).filter(([k,f])=>!(f.app&&FORMS[f.app])&&f.who==="ng");
+  const gap=`<div class="qbox" style="margin-top:14px"><b>Mẫu đơn của người nộp mà tab Điền đơn chưa có:</b> ${gaps.map(([k,f])=>`<span class="chip r">${esc(f.n.split(" – ")[0])}</span>`).join("")}
+   <div class="hint">Các mẫu này hiện chỉ được liệt kê trong checklist. Muốn điền và xuất Word ngay trong app thì cần bổ sung từng mẫu như Mẫu 18. Mẫu 16, 17, 19 do cơ quan nhà nước lập nên không cần làm.</div></div>`;
+  return `<div class="qcat"><div class="qleft"><input id="qdq" type="search" placeholder="Tìm thủ tục…" value="${esc(qdQ)}">${left}</div><div class="qright">${right}${gap}</div></div>`;
+}
+(function(){
+  const box=$("#qdbox");
+  box.addEventListener("click",e=>{
+    const r=e.target.closest("tr[data-cid]");if(r){openCase(r.dataset.cid);ctab="qd";renderCase();return}
+    const n=e.target.closest("[data-newq]");if(n){openCase();qdEnsure(cur);cur.qd.pid=n.dataset.newq;qdEnsure(cur);ctab="qd";renderCase();return}
+    const i=e.target.closest("[data-pid]");if(i){qdSel=i.dataset.pid;renderQD()}
+  });
+  box.addEventListener("input",e=>{if(e.target.id==="qdq"){qdQ=e.target.value;const pos=e.target.selectionStart;renderQD();const el=$("#qdq");el.focus();el.setSelectionRange(pos,pos)}});
+  document.querySelectorAll("#qsub button").forEach(b=>b.onclick=()=>{qdSub=b.dataset.s;renderQD()});
+  $("#t5").onclick=()=>setTab(5);
+})();
+
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
 try{renderList()}catch(e){}
 let dsub="hs";
-function setTab(n){if(n===2){n=1;dsub="db"}tab=n;[1,3,4].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});
+function setTab(n){if(n===2){n=1;dsub="db"}tab=n;[1,3,4,5].forEach(i=>{$("#t"+i).classList.toggle("on",n===i);$("#v"+i).hidden=n!==i});
   $("#v2").hidden=!(n===1&&dsub==="db");$("#v1b").hidden=dsub==="db";document.querySelectorAll("#dsub button").forEach(b=>b.classList.toggle("on",b.dataset.d===dsub));
-  if(n===1&&dsub==="db")renderPeople();if(n===3)renderFin();if(n===4)renderTodo()}
+  if(n===1&&dsub==="db")renderPeople();if(n===3)renderFin();if(n===4)renderTodo();if(n===5)renderQD()}
 document.querySelectorAll("#dsub button").forEach(b=>b.onclick=()=>{dsub=b.dataset.d;setTab(1)});
 $("#t1").onclick=()=>setTab(1);$("#t3").onclick=()=>setTab(3);
 try{setTab(4)}catch(e){console.error(e)}
