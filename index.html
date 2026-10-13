@@ -408,6 +408,15 @@ button.qi{text-align:left;display:flex;flex-direction:column;gap:2px;white-space
 .fd .sd{white-space:nowrap}.fd .sig>div:first-child{flex:1 1 40%}.fd .sig>div:last-child{flex:0 0 58%}.fd.dk .sig>div:first-child{flex:1 1 20%}.fd.dk .sig>div:last-child{flex:0 0 75%}
 @media print{#proot .fd.dk .sm,#proot .fd.dk .v.sm{font-size:inherit}}
 .fd table.nb,.fd table.nb td{border:0}.fd.tx h2{margin:12px 0 6px}
+
+/* hồ sơ, bản in, danh bạ… mở ngay trong trang (không bật cửa sổ che màn hình) */
+body.pgmode>nav.tabs,body.pgmode>#v1,body.pgmode>#v2,body.pgmode>#v3,body.pgmode>#v4,body.pgmode>#v5{display:none!important}
+dialog.pg{position:static!important;display:block;width:auto!important;max-width:1120px;margin:0 auto 40px!important;max-height:none!important;height:auto;border-radius:0;box-shadow:none;background:transparent;padding:6px 28px 24px}
+dialog.pg.pg-hide{display:none!important}
+dialog.pg .foot{position:sticky;bottom:0;background:var(--bg,var(--card));padding:10px 0;border-top:1px solid var(--line);z-index:5}
+button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radius:999px;border:0;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer;font:inherit;color:inherit;font-weight:600}
+@media(max-width:700px){dialog.pg{padding:6px 12px 24px}}
+
 </style>
 </head>
 <body>
@@ -3138,6 +3147,30 @@ if(typeof HTML_DOC_NAME!=="undefined")Object.assign(HTML_DOC_NAME,{sddnn1:"to-kh
   .replace(/min-width:([1-6])ch/g,"min-width:7ch")
   .replace(/ngày(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…\s]+)(\s|&nbsp;)*tháng(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…\s]+)(\s|&nbsp;)*năm(\s|&nbsp;)*(<span[^>]*>[^<]*<\/span>|[.…]+)/g,m=>`<span class="sd">${m}</span>`);
  Object.keys(FORMS).forEach(k=>{const f=FORMS[k];if(typeof f==="function"&&k!=="huongdan"&&k!=="mucluc")FORMS[k]=c=>post(f(c))});}
+
+/* ===== Mọi hộp thoại mở ngay trong trang, có nút “← Quay lại”; các tab con vẫn giữ nguyên ===== */
+(function(){
+  const stack=[];
+  const closeBtn=d=>[...d.querySelectorAll("button")].find(b=>/^(Đóng|Hủy|Huỷ)$/.test(b.textContent.trim()));
+  function pgOpen(d){
+    if(!stack.includes(d)){const top=stack[stack.length-1];if(top)top.classList.add("pg-hide");stack.push(d)}
+    d.classList.add("pg");d.classList.remove("pg-hide");document.body.classList.add("pgmode");
+    if(!d.querySelector(":scope>button.pgback")){const b=document.createElement("button");b.type="button";b.className="pgback";b.textContent="← Quay lại";b.onclick=()=>{const c=closeBtn(d);if(c)c.click();else d.close()};d.insertBefore(b,d.firstChild)}
+    if(!d.open)d.show();
+    window.scrollTo(0,0);
+  }
+  HTMLDialogElement.prototype.showModal=function(){pgOpen(this)};
+  document.addEventListener("close",e=>{
+    const d=e.target;if(!(d instanceof HTMLDialogElement))return;
+    const i=stack.indexOf(d);if(i>=0)stack.splice(i,1);d.classList.remove("pg","pg-hide");
+    const top=stack[stack.length-1];if(top){top.classList.remove("pg-hide");window.scrollTo(0,0)}else document.body.classList.remove("pgmode");
+  },true);
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Escape"||!stack.length)return;const d=stack[stack.length-1];
+    if(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&document.activeElement.type!=="checkbox")return;
+    const c=closeBtn(d);if(c)c.click();else d.close();
+  });
+})();
 
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
