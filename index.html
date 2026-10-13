@@ -562,7 +562,7 @@ const num=s=>{const n=Number(String(s==null?"":s).replace(/[^\d]/g,""));return i
 const fmt=n=>(n===""||n==null)?"":Number(n).toLocaleString("vi-VN");
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const fd=iso=>{if(!iso)return "";const m=String(iso).match(/^(\d{4})-(\d\d)-(\d\d)/);return m?m[3]+"/"+m[2]+"/"+m[1]:iso};
-const dparts=iso=>{const m=String(iso||"").match(/^(\d{4})-(\d\d)-(\d\d)/);return m?[+m[3],+m[2],+m[1]]:null};
+const dparts=iso=>{const m=String(iso||"").match(/^(\d{4})-(\d\d)-(\d\d)/);return m?[+m[3]||"",+m[2]||"",+m[1]]:null};
 const daysTo=iso=>{if(!iso)return null;const a=new Date(iso+"T00:00:00"),b=new Date(today()+"T00:00:00");return Math.round((a-b)/864e5)};
 const getp=(o,p)=>p.split(".").reduce((a,k)=>a==null?a:a[k],o);
 const setp=(o,p,v)=>{const a=p.split(".");let t=o;for(let i=0;i<a.length-1;i++){if(t[a[i]]==null)t[a[i]]={};t=t[a[i]]}t[a[a.length-1]]=v};
@@ -695,7 +695,7 @@ const P=id=>db.people.find(p=>p.id===id)||null;
 const typeNames=()=>Object.keys(TYPES);
 
 function newCase(){
-  return {id:uid(),code:"",noiNop:"TP",tp:{},cn:{},ts:{},type:"Chuyển nhượng",status:"Chuẩn bị",client:"",ngayNop:"",bienNhan:"",ngayHen:"",ngayNhan:"",ketQua:"",ngayKy:today(),note:"",
+  return {id:uid(),code:"",noiNop:"TP",tp:{},cn:{},ts:{},type:"Chuyển nhượng",status:"Chuẩn bị",client:"",ngayNop:"",bienNhan:"",ngayHen:"",ngayNhan:"",ketQua:"",ngayKy:new Date().getFullYear()+"-00-00",note:"",
     parties:[],p:{kind:"Căn hộ chung cư"},d:{loai:"capdoi"},docs:[],fees:[],log:[],mst:{pid:"",rows:MST_ROWS0.map(k=>({k,o:"",n:""}))},upd:Date.now()};
 }
 function tplDocs(c){
@@ -2235,7 +2235,7 @@ TABS.qd=()=>{
   const opts=QD44.map(x=>`<option value="${x.id}" ${x.id===pid?"selected":""}>${esc(x.nhom+" – "+x.ten)}</option>`).join("");
   const hanTxt=st.han?`${fd(st.han)} <span class="chip ${st.left<0?"r":st.left<=2?"y":""}">${st.left<0?"quá hạn "+(-st.left)+" ngày":st.left===0?"hết hạn hôm nay":"còn "+st.left+" ngày"}</span>`:`<span class="hint">Nhập ngày nộp để tính hạn</span>`;
   return luongBadge(cur)+`<p class="hint" style="margin-top:0">Căn cứ QĐ 44/2026/QĐ-UBND (hiệu lực 01/7/2026). Chọn đúng thủ tục để hệ thống đưa ra hồ sơ cần chuẩn bị, mẫu đơn và thời hạn giải quyết.</p>
-  <div class="grid"><label class="full">Thủ tục áp dụng<select data-q="pid">${opts}</select></label></div>
+  <div class="grid g3"><label class="sp2">Thủ tục áp dụng<select data-q="pid">${opts}</select></label><label>Ngày ghi trên đơn (để trống ngày/tháng nếu không chọn)<input type="date" data-k="ngayKy" value="${esc(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(cur.ngayKy||"")?cur.ngayKy:"")}"></label></div>
   <div class="qbox"><div><b>${esc(p.ten)}</b></div><div class="hint">${esc(p.ref)}</div>
    <div class="qk"><div><span>Thời hạn quy định</span><b>${esc(p.tdText)}</b></div>
    <div><span>Ngày nộp</span><b>${cur.ngayNop?fd(cur.ngayNop):"chưa nhập"}</b></div>
@@ -2318,13 +2318,6 @@ TABS.print=()=>{
   if(thieu)warn.push(`Còn ${thieu} thành phần ở tình trạng “Thiếu” (tab 4).${only?" Các mục này không in vào mục lục.":" Các mục này in kèm ghi chú “Chưa có”."}`);
   if(miss.length)warn.push("Thủ tục này cần "+miss.map(k=>QDF(k).n.split(" – ")[0]).join(", ")+" nhưng app chưa có mẫu điền; dùng mẫu của VPĐK hoặc soạn tay.");
   return luongBadge(cur)+`<div class="qbox"><b>${esc(p.ten)}</b><div class="hint">${esc(p.ref)} · đổi thủ tục ở tab 4</div></div>
-  ${warn.length?`<div class="preflight"><h3>Cần kiểm tra trước khi in</h3><ul>${warn.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
-  <div class="hd"><h3>Người nộp hồ sơ</h3></div>
-  <p style="margin:4px 0">${x.u.name?`Người nộp thay / được ủy quyền: <b>${esc(x.u.name)}</b>`:`<span class="hint">Chưa chọn người nộp thay ở tab 2 (bỏ qua nếu các bên tự nộp).</span>`}</p>
-  <div class="grid g3"><label>Giấy ủy quyền số<input data-q="uq" data-f="so" value="${esc(uq.so||"")}"></label>
-   <label>Ngày lập<input type="date" data-q="uq" data-f="ngay" value="${esc(uq.ngay||"")}"></label>
-   <label class="sp2">Công chứng, chứng thực tại<input data-q="uq" data-f="noi" value="${esc(uq.noi||"")}" placeholder="VD: Văn phòng công chứng …"></label>
-   <label>Ngày ghi trên đơn, mục lục<input type="date" data-k="ngayKy" value="${esc(cur.ngayKy||"")}"></label></div>
   <div class="hd"><h3>Mục lục thành phần hồ sơ (${rows.length} mục)</h3></div>
   <label class="ck"><input type="checkbox" data-q="only" ${only?"checked":""}> Mục lục chỉ liệt kê giấy tờ đã có hoặc đã nộp</label>
   <div class="grid"><label class="full">Giấy tờ bổ sung vào mục lục (mỗi dòng một mục)<textarea data-q="extra" rows="2">${esc(b.extra||"")}</textarea></label></div>
@@ -3075,7 +3068,7 @@ FORMS.tndn=c=>{
   const y=(dparts(c.ngayKy)||[])[2]||"2026";
   return L.concat(["Phiếu Đo đạc chỉnh lý thửa đất số ^^ ngày ^^ tháng ^^ năm "+y+" do "+(d.pdCQ||"Văn phòng Đăng ký đất đai Thành phố")+" duyệt"])}}
 /* Ngày ký: chỉ điền năm, ngày và tháng để trống điền tay */
-sdate=function(c,place){const q=dparts(c.ngayKy);return `<span class="sd">${esc(place)}, ngày ${v("",6)} tháng ${v("",6)} năm ${q?`<span class="v">${q[2]}</span>`:"………"}</span>`};
+sdate=function(c,place){const q=dparts(c.ngayKy);return `<span class="sd">${esc(place)}, ngày ${v(q&&q[0],6)} tháng ${v(q&&q[1],6)} năm ${q?`<span class="v">${q[2]}</span>`:v(new Date().getFullYear(),6)}</span>`};
 /* Giấy chứng nhận ghi theo cách ghi hiện hành của VPĐK */
 gcnText=function(p){
   if(!p.soVaoSo&&!p.gcnSo)return "";
@@ -3083,7 +3076,7 @@ gcnText=function(p){
   const cq=String(p.gcnCQ||"").replace(/Sở Tài nguyên và Môi trường/i,"Sở TN&MT").replace(/(Thành phố|TP\.?)\s*Hồ Chí Minh/i,"TP HCM");
   return "Giấy chứng nhận quyền sử dụng đất, QSHNỞ & TSKGLVĐ"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?(p.gcnSo?", ":" ")+"số vào sổ cấp GCN "+p.soVaoSo:"")+(cq?" do "+cq+" cấp":"")+(dt?(cq?"":" cấp")+" ngày "+dt:"");
 };
-{const _dv=docxVals;docxVals=function(c,k){const r=_dv(c,k);if(r){r.S_d="";r.S_m="";if(typeof r.kem==="string")r.kem=r.kem.replace(/\^\^/g,"………….")}return r}}
+{const _dv=docxVals;docxVals=function(c,k){const r=_dv(c,k);if(r){if(typeof r.kem==="string")r.kem=r.kem.replace(/\^\^/g,"………….")}return r}}
 
 /* Giấy uỷ quyền dành cho công ty (bên nhận là pháp nhân); cá nhân vẫn dùng mẫu cũ */
 try{PFO.push(["gdkDau","Đăng ký DN lần đầu ngày","date"],["gdkLan","Đăng ký thay đổi lần thứ (số)"])}catch(e){}
@@ -3175,6 +3168,15 @@ if(typeof HTML_DOC_NAME!=="undefined")Object.assign(HTML_DOC_NAME,{sddnn1:"to-kh
     if(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)&&document.activeElement.type!=="checkbox")return;
     const c=closeBtn(d);if(c)c.click();else d.close();
   });
+})();
+
+/* ngày ghi trên đơn: mặc định chỉ có năm hiện tại, ngày/tháng để trống */
+(function(){
+  const yr=()=>new Date().getFullYear()+"-00-00";
+  const fix=()=>{try{(db.cases||[]).forEach(c=>{if(!c.ngayKy)c.ngayKy=yr()})}catch(e){}};
+  const _oc=openCase;openCase=function(id){fix();return _oc.apply(this,arguments)};
+  const _rl=renderList;renderList=function(){fix();return _rl.apply(this,arguments)};
+  document.addEventListener("change",e=>{const t=e.target;if(t&&t.dataset&&t.dataset.k==="ngayKy"&&!t.value&&typeof cur!=="undefined")cur.ngayKy=yr()});
 })();
 
 $("#t4").onclick=()=>setTab(4);
