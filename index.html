@@ -417,6 +417,11 @@ dialog.pg .foot{position:sticky;bottom:0;background:var(--bg,var(--card));paddin
 button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radius:999px;border:0;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer;font:inherit;color:inherit;font-weight:600}
 @media(max-width:700px){dialog.pg{padding:6px 12px 24px}}
 
+
+.fd.hd th,.fd.hd td{font-size:13px;line-height:1.5;padding:5px 7px}.fd.hd th{width:150px}
+@media print{#proot .fd.hd th,#proot .fd.hd td{font-size:12pt;line-height:1.4;padding:4pt 6pt}#proot .fd.hd th{width:38mm}#proot .fd.hd tr{break-inside:auto}}
+.fd.hd>.c{width:auto!important;transform:none!important;position:static!important;left:auto!important;text-align:center}.fd.hd>.c.b{font-size:14pt}
+.fd.hd,#proot .fd.hd{display:block!important}
 </style>
 </head>
 <body>
@@ -2756,8 +2761,8 @@ function huongDan(c){
   const buoc=pr.buoc.map((s,i)=>`${i+1}. ${esc(QD_WHO[s.w]||s.w)}: ${esc(s.t)}`).join("<br>");
   const t2=`<table>${R("I. Bản chính hồ sơ",`1. 01 bộ giấy tờ pháp lý của tài sản (mục III bảng trên), kèm 01 bộ photo.<br>2. Phiếu đo đạc chỉnh lý thửa đất${x.A.length||1?" (nếu có)":""}.`)}${R("II. Bản sao",bsa.concat(cns).map((t,i)=>`${i+1}. ${esc(t)}`).join("<br>")||"Theo yêu cầu của cơ quan tiếp nhận.")}${R("III. Các mẫu đơn <small>(bên nhận chuyển nhượng ký tên"+(bOrg?" và đóng dấu":"")+")</small>",(donTxt||"Theo thủ tục đã chọn.")+`<br><br><u>Dự phòng:</u> 02 bộ để trống không điền.`)}${R("IV. Thời hạn giải quyết",`<i>${esc(pr.ten)}</i>.<br>Thời hạn giải quyết: <b>${esc(pr.tdText)}</b>.`)}${R("Lưu ý",`- Đối với ủy quyền thì phải có thể hiện nội dung “được thay mặt các bên để nhận hoặc nộp bản chính hồ sơ và được phép ký tên lên các biên bản làm việc, biên bản xử phạt của cơ quan nhà nước, đơn vị sự nghiệp chuyên môn có liên quan.”`)}</table>`;
   const tt=l?"Luồng "+l+": "+QD_LUONG_TEN[l]:"";
-  return `<div class="fd"><div class="c b">HƯỚNG DẪN HỒ SƠ VÀ THỦ TỤC CÔNG CHỨNG</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b>${tt?" · "+esc(tt):""}</div>${t1}</div>
-  <div class="fd"><div class="c b">HỒ SƠ NỘP VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b></div>${t2}</div>`;
+  return `<div class="fd tx hd"><div class="c b">HƯỚNG DẪN HỒ SƠ VÀ THỦ TỤC CÔNG CHỨNG</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b>${tt?" · "+esc(tt):""}</div>${t1}</div>
+  <div class="fd tx hd"><div class="c b">HỒ SƠ NỘP VĂN PHÒNG ĐĂNG KÝ ĐẤT ĐAI THÀNH PHỐ HỒ CHÍ MINH</div><div class="c">Mã hồ sơ: <b>${esc(c.code||"")}</b></div>${t2}</div>`;
 }
 FORMS.huongdan=huongDan;
 
