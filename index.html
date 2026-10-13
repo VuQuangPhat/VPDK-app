@@ -405,6 +405,8 @@ button.qi{text-align:left;display:flex;flex-direction:column;gap:2px;white-space
 @media print{#proot .fd.dk{font-size:14pt;line-height:1.35;page:dk}#proot .fd.dk p{margin:5pt 0}#proot .fd.dk h2{font-size:14pt}@page dk{size:A4;margin:20mm 20mm 20mm 25mm}}
 .fd.dk .sec{border:0!important;background:none!important;padding:0!important;border-radius:0!important;box-shadow:none!important;margin:6px 0}.fd.dk .sm,.fd.dk .v.sm{font-size:inherit}.fd.dk .sig b.v{font-size:inherit}
 @media print{#proot .fd.lp{font-size:11pt;line-height:1.28;page:lp}#proot .fd.lp p{margin:1.4pt 0}#proot .fd.lp h2{margin:6pt 0 2pt}#proot .fd.lp .bx{margin-bottom:6pt}#proot .fd.lp .t11 td,#proot .fd.lp .t11 th{font-size:10pt}@page lp{size:A4;margin:11mm 12mm 11mm 18mm}}
+.fd .sd{white-space:nowrap}.fd .sig>div:first-child{flex:1 1 40%}.fd .sig>div:last-child{flex:0 0 58%}.fd.dk .sig>div:first-child{flex:1 1 20%}.fd.dk .sig>div:last-child{flex:0 0 75%}
+@media print{#proot .fd.dk .sm,#proot .fd.dk .v.sm{font-size:inherit}}
 </style>
 </head>
 <body>
@@ -3044,10 +3046,17 @@ FORMS.tndn=c=>{
 {const _k=don18Kem;don18Kem=function(c){const L=_k(c),d=c.d||{};
   if((d.kem&&d.kem.trim())||(d.loai||"capdoi")!=="capdoi"||d.pdSo||L.some(s=>/^Phiếu Đo đạc/i.test(s)))return L;
   const y=(dparts(c.ngayKy)||[])[2]||"2026";
-  return L.concat(["Phiếu Đo đạc chỉnh lý thửa đất số …………….. ngày     /     /"+y+" do "+(d.pdCQ||"Văn phòng Đăng ký đất đai Thành phố")+" duyệt"])}}
+  return L.concat(["Phiếu Đo đạc chỉnh lý thửa đất số ^^ ngày ^^ tháng ^^ năm "+y+" do "+(d.pdCQ||"Văn phòng Đăng ký đất đai Thành phố")+" duyệt"])}}
 /* Ngày ký: chỉ điền năm, ngày và tháng để trống điền tay */
-sdate=function(c,place){const q=dparts(c.ngayKy);return `${esc(place)}, ngày ${v("",4)} tháng ${v("",4)} năm ${q?`<span class="v">${q[2]}</span>`:"………"}`};
-{const _dv=docxVals;docxVals=function(c,k){const r=_dv(c,k);if(r){r.S_d="";r.S_m=""}return r}}
+sdate=function(c,place){const q=dparts(c.ngayKy);return `<span class="sd">${esc(place)}, ngày ${v("",6)} tháng ${v("",6)} năm ${q?`<span class="v">${q[2]}</span>`:"………"}</span>`};
+/* Giấy chứng nhận ghi theo cách ghi hiện hành của VPĐK */
+gcnText=function(p){
+  if(!p.soVaoSo&&!p.gcnSo)return "";
+  const dt=p.gcnNgay?fd(p.gcnNgay):"";
+  const cq=String(p.gcnCQ||"").replace(/Sở Tài nguyên và Môi trường/i,"Sở TN&MT").replace(/(Thành phố|TP\.?)\s*Hồ Chí Minh/i,"TP HCM");
+  return "Giấy chứng nhận quyền sử dụng đất, QSHNỞ & TSKGLVĐ"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?(p.gcnSo?", ":" ")+"số vào sổ cấp GCN "+p.soVaoSo:"")+(cq?" do "+cq+" cấp":"")+(dt?(cq?"":" cấp")+" ngày "+dt:"");
+};
+{const _dv=docxVals;docxVals=function(c,k){const r=_dv(c,k);if(r){r.S_d="";r.S_m="";if(typeof r.kem==="string")r.kem=r.kem.replace(/\^\^/g,"………….")}return r}}
 /* Xuất Word (.doc) cho các mẫu chữ: mở bằng Word sửa được ngay */
 const DOC_CSS="@page Section1{size:21cm 29.7cm;margin:2cm 1.5cm 2cm 2.5cm}div.Section1{page:Section1}body{font-family:'Times New Roman';font-size:13pt;line-height:1.3}p{margin:3pt 0}table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:3pt 4pt;font-size:11pt;vertical-align:top}.c{text-align:center}.r{text-align:right}.b{font-weight:bold}.sm{font-size:11pt}h2{text-align:center;font-size:14pt;margin:10pt 0 2pt}.ss{text-align:center;font-style:italic}.ind{margin-left:20pt}.ind2{margin-left:40pt}.gt{text-indent:24pt}.bx{border:1px solid #000;text-align:center;font-size:11pt}.fn{font-size:11pt}.u{border-bottom:1px solid #000;width:120pt}.ul{text-decoration:underline}";
 htmlDoc=function(c,k){
@@ -3073,7 +3082,7 @@ exportDocx=async function(list){
 };
 
 /* Mẫu 18 bằng chữ thật (theo bản VPĐK/bản bạn chỉnh): không còn nền vector */
-{const f=FORMS.don18;FORMS.don18=c=>f(c).replace('class="fd fd-dkbd"','class="fd tx dk"').replace('<div class="c">---------------</div>','<div class="c">---------------</div>')}
+{const f=FORMS.don18;FORMS.don18=c=>f(c).replace(/\^\^/g,'<span class="bl" style="min-width:6ch"></span>').replace('class="fd fd-dkbd"','class="fd tx dk"').replace('<div class="c">---------------</div>','<div class="c">---------------</div>')}
 ["don18","don18o"].forEach(k=>{try{delete OV[k]}catch(e){}});
 /* bản chữ cho PNN và TMĐN: đánh dấu để in đúng lề */
 ["pnn1","pnn2","tmdn"].forEach(k=>{const f=FORMS[k];FORMS[k]=c=>f(c).replace('<div class="fd">','<div class="fd tx">').replace(/<div class="r sm"><b>Mẫu số: ([^<]+)<\/b><br>\([^<]*\)<\/div>/,(m,n)=>BOX(n))});
