@@ -2287,7 +2287,7 @@ TABS.print=()=>{
   <label class="ck"><input type="checkbox" data-q="only" ${only?"checked":""}> Mục lục chỉ liệt kê giấy tờ đã có hoặc đã nộp</label>
   <div class="grid"><label class="full">Giấy tờ bổ sung vào mục lục (mỗi dòng một mục)<textarea data-q="extra" rows="2">${esc(b.extra||"")}</textarea></label></div>
   <div class="foot" style="margin:6px 0"><button class="primary" data-q="allpdf">In trọn bộ: mục lục + các đơn đã chọn</button><button data-q="mlprint">Xem, in mục lục</button><button data-q="mlword">Tải mục lục (Word)</button></div>
-  <div class="foot" style="margin:6px 0"><button data-q="hdprint">Xem, in hướng dẫn cho khách</button><span class="hint" style="margin:0">Hai bảng: pháp lý và công chứng; hồ sơ nộp VPĐK. Lập tự động theo luồng và loại tài sản.</span></div>
+  <div class="foot" style="margin:6px 0"><button data-q="hdprint">Xem, in hướng dẫn cho khách</button><button data-q="hdword">Tải hướng dẫn (Word)</button><span class="hint" style="margin:0">Hai bảng: pháp lý và công chứng; hồ sơ nộp VPĐK. Lập tự động theo luồng và loại tài sản.</span></div>
   <div class="hd"><h3>Bộ đơn theo thủ tục</h3></div>
   ${apps.length?apps.map(k=>k==="tncn"&&x.A.some(isOrg)?`<p class="hint">Bên chuyển là pháp nhân nên không kê khai thuế TNCN; dùng tờ khai 02/TNDN.</p>`:row(k)).join(""):`<p class="hint">Thủ tục này chưa có mẫu đơn nào được điền sẵn trong app.</p>`}
   ${apps.includes("tndn")?tndPanel():""}
@@ -2313,7 +2313,7 @@ TABS.print=()=>{
     if(a==="blank"){blankExport([b.dataset.f]);return}
     if(a==="blankall"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);if(!l.length)return toast("Chọn ít nhất một mẫu");blankExport(l);return}
     if(a==="hdprint"){showForms(["huongdan"]);$("#pbody").contentEditable="true";$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”.";return}
-    if(a==="hdword"){exportDocx(["huongdan"]);return}
+    if(a==="hdword"){const css="body{font-family:'Times New Roman';font-size:13pt}table{border-collapse:collapse;width:100%}th,td{border:1px solid #000;padding:4px 6px;font-size:12pt}.c{text-align:center}.b{font-weight:bold}h2{text-align:center;font-size:15pt}";dl(caseSlug(cur)+"_huong-dan-ho-so.doc","application/msword","\ufeff<html xmlns:w=\"urn:schemas-microsoft-com:office:word\"><head><meta charset=\"utf-8\"><style>"+css+"</style></head><body>"+FORMS.huongdan(cur).replace(/class=\"v\"/g,"")+"</body></html>");return}
     if(a==="allpdf"){const l=[...document.querySelectorAll(".fsel:checked")].map(x=>x.value);
       if(!l.length){showForms(["mucluc"]);$("#pbody").contentEditable="true";return}
       window.QD_PRE=qdMucLuc(cur);try{ovExport(l);markNop()}finally{window.QD_PRE=""}}
@@ -2811,6 +2811,45 @@ don18Kem=function(c){
   if(!lh)return L;
   return L.map(t=>/^Giấy chứng nhận đăng ký doanh nghiệp/.test(t)?"Giấy chứng nhận đăng ký doanh nghiệp "+lh:t);
 };
+
+/* ===== Chỉnh theo bản xuất thực tế (hồ sơ KCN) ===== */
+/* Giá trị giao dịch chi tiết: giá chưa thuế GTGT (doanh thu TNDN), giá trị QSDĐ và giá trị nhà xưởng (LPTB mục 1.7 và 2.4) */
+const _tdl0=TABS.deal;
+TABS.deal=function(){
+  const h=_tdl0.apply(this,arguments),ex=`<div class="hd"><h3>Giá trị chi tiết (tờ khai LPTB, TNDN)</h3></div><div class="grid g3">
+  ${L("Giá chưa thuế GTGT (đồng) – doanh thu tờ khai TNDN","d.giaCV",{type:"money"})}${L("Giá trị quyền sử dụng đất (đồng) – LPTB mục 1.7","d.giaDat",{type:"money"})}${L("Giá trị nhà xưởng, tài sản gắn liền (đồng) – LPTB mục 2.4","d.giaNha",{type:"money"})}</div>`;
+  return h.replace('<div class="hd"><h3>Đơn 18',ex+'<div class="hd"><h3>Đơn 18');
+};
+const _tc1=tndCalc;
+tndCalc=function(c){
+  const t=c.tnd||{},d=c.d||{},has=t.dt!==""&&t.dt!=null&&String(t.dt).trim()!=="";
+  if(d.giaCV&&!has)return _tc1(Object.assign({},c,{tnd:Object.assign({},t,{dt:d.giaCV})}));
+  return _tc1(c);
+};
+const _dv2=docxVals;
+docxVals=function(c,form){
+  const v=_dv2(c,form);
+  if(form==="lptb"){
+    const d=c.d||{},p=c.p||{},t=String(c.type||"");
+    Object.assign(v,{nhan_cn:/chuyển nhượng/i.test(t),nhan_tk:/thừa kế/i.test(t),nhan_tc:/tặng/i.test(t),
+      d_giaDat:d.giaDat?fmt(num(d.giaDat)):"",d_giaNha:d.giaNha?fmt(num(d.giaNha)):"",
+      lt2:p.gcnSo||p.soVaoSo?"Giấy chứng nhận"+(p.gcnSo?" số "+p.gcnSo:"")+(p.soVaoSo?", số vào sổ "+p.soVaoSo:"")+(p.gcnNgay?" ngày "+fd(p.gcnNgay):""):""});
+  }
+  return v;
+};
+(function(){
+  const L0=OV.lptb;if(L0){
+    L0.pages[0].slots.push([901,"d_giaDat",316,798.9,12,2,36,230,1,14.04,"",null]);
+    L0.pages[1].slots.push([902,"d_giaNha",216,327.9,12,2,36,300,1,14.04,"",null]);
+  }
+  const O=OV.don18o;if(O&&O.pages.length>1){
+    const p0=O.pages[0],p1=O.pages[1],dy=716.7-45.6;
+    p1.words.forEach(w=>{const n=w.slice();n[1]=w[1]+dy;p0.words.push(n)});
+    p1.slots.forEach(s=>{const n=s.slice();n[3]=s[3]+dy;p0.slots.push(n)});
+    O.pages.length=1;
+  }
+})();
+FORMS_LAB.huongdan="Hướng dẫn hồ sơ cho khách (in hoặc gửi khách, không nộp VPĐK)";FORMS_ALL.huongdan=FORMS_LAB.huongdan;
 
 $("#t4").onclick=()=>setTab(4);
 todoBadge();
