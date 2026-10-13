@@ -401,6 +401,9 @@ button.qi{text-align:left;display:flex;flex-direction:column;gap:2px;white-space
 .fd p.b,.fd h2{break-after:avoid;page-break-after:avoid}
 @media print{html,body{background:#fff!important}}
 @media print{#proot .fd table{break-inside:avoid;page-break-inside:avoid}#proot .fd tr{break-inside:avoid}}
+.fd.dk{font-size:15px;line-height:1.5}.fd.dk p{margin:6px 0;text-align:justify}.fd.dk .recipient{text-align:center;font-weight:normal;margin:4px 0 14px}.fd.dk .sec{font-weight:normal}.fd.dk .ind{padding-left:0}.fd.dk h2{font-size:15px;margin:10px 0 4px}.fd.dk .sig{margin-top:14px}.fd.dk .sig>div:first-child{flex:0 0 40%}
+@media print{#proot .fd.dk{font-size:14pt;line-height:1.35;page:dk}#proot .fd.dk p{margin:5pt 0}#proot .fd.dk h2{font-size:14pt}@page dk{size:A4;margin:20mm 20mm 20mm 25mm}}
+.fd.dk .sec{border:0!important;background:none!important;padding:0!important;border-radius:0!important;box-shadow:none!important;margin:6px 0}.fd.dk .sm,.fd.dk .v.sm{font-size:inherit}.fd.dk .sig b.v{font-size:inherit}
 </style>
 </head>
 <body>
@@ -3058,6 +3061,10 @@ exportDocx=async function(list){
   }
   return _exW(rest);
 };
+
+/* Mẫu 18 bằng chữ thật (theo bản VPĐK/bản bạn chỉnh): không còn nền vector */
+{const f=FORMS.don18;FORMS.don18=c=>f(c).replace('class="fd fd-dkbd"','class="fd tx dk"').replace('<div class="c">---------------</div>','<div class="c">---------------</div>')}
+["don18","don18o"].forEach(k=>{try{delete OV[k]}catch(e){}});
 /* bản chữ cho PNN và TMĐN: đánh dấu để in đúng lề */
 ["pnn1","pnn2","tmdn"].forEach(k=>{const f=FORMS[k];FORMS[k]=c=>f(c).replace('<div class="fd">','<div class="fd tx">').replace(/<div class="r sm"><b>Mẫu số: ([^<]+)<\/b><br>\([^<]*\)<\/div>/,(m,n)=>BOX(n))});
 /* bỏ toàn bộ ảnh nền: ovExport/blankExport rơi về mẫu chữ */
