@@ -3399,12 +3399,13 @@ const BDT=[["gia+","Tăng giá (phải thu thêm)"],["gia-","Giảm giá (phải
 function txSet(j,kind,name,d,a){const w=kind==="chi"?name:"",x=(j.cb||[]).find(q=>q.n===name)||{};
   fin.tx=fin.tx.filter(t=>!(t.j===j.id&&t.k===kind&&(kind==="thu"||t.w===name)&&+t.dot===d+1));
   if(a>0)fin.tx.push({id:"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),j:j.id,k:kind,cat:kind==="chi"&&!isW(x)?"hh":"",a,w,dot:d+1,d:today(),n:(kind==="thu"?"Thu":"Trả "+name)+" đợt "+(d+1)});saveJobInline()}
+function srcName(j){return j.truc?(j.chu||j.chot||"Khách"):(j.btn||j.chot||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).to||j.gt||"Trung gian")}
 function flowSec(j,s,L){
   const cb=j.cb||[],pl=s.pl||[],ND=Math.max(1,pl.length),plA=pl.length?pl.map(p=>+p.a||0):[s.tong],qt=j.qt||[],bd=j.bd||[];
   cb.forEach(x=>{if(!Array.isArray(x.p)||x.p.length!==ND)x.p=spl(+x.a||0,plA);x.a=fsum(x.p)});
   const sumTx=(k,n,d)=>fsum(L.filter(t=>t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1).map(t=>t.a)),paid=n=>fsum(L.filter(t=>t.k==="chi"&&t.w===n).map(t=>t.a));
   const total=(+j.gia||0)+(+j.lephi||0),chiAll=fsum(cb.map(x=>x.a)),conL=cb.length?total-chiAll-Math.max(0,s.chiDK-s.cbW)-(s.hhT-fsum(cb.filter(x=>!isW(x)).map(x=>x.a))):null,fm=v=>v==null?"–":fnum(v);
-  const f=v=>v?Number(v).toLocaleString("vi-VN"):"",chotName=j.chot||(j.truc?"Khách":"Chị Thư"),dn=!!(j.gia>0);
+  const f=v=>v?Number(v).toLocaleString("vi-VN"):"",chotName=srcName(j),dn=!!(j.gia>0);
   const H=(n,t,sub,on)=>'<h3 class="flh '+(on?'on':'')+'"><span class="fln">'+n+'</span> '+t+' <span class="lg">'+sub+'</span></h3>';
   // ---- 1. BÁO GIÁ -> CHỐT
   const g1=H(1,"BÁO GIÁ → CHỐT","báo cho ai, giá nào, tiến độ, thời gian; rồi chọn một báo giá để chốt",!dn)+
@@ -3412,7 +3413,7 @@ function flowSec(j,s,L){
    '<div class="filters" style="padding:0;margin-top:6px"><input id="q_to" list="qlist" placeholder="Báo cho ai (tên)" style="min-width:150px"><datalist id="qlist">'+[...new Set(fin.jobs.flatMap(x=>(x.qt||[]).map(q=>q.to)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="q_vt"><option>Chủ nhà</option><option>Trung gian</option><option>Khác</option></select><input id="q_a" inputmode="numeric" placeholder="Giá báo (đ)" style="width:130px"><input id="q_td" value="50/50" title="Tiến độ % các đợt, tối đa 5 đợt: 50/50, 30/40/30…" style="width:110px"><input id="q_tg" placeholder="Thời gian (vd 45 ngày, hạn thu…)" style="width:190px"><input id="q_n" placeholder="Ghi chú" style="flex:1;min-width:110px"><button id="q_ok">+ Thêm báo giá</button></div>'+
    '<div class="filters" style="padding:0;margin-top:6px"><label>Lệ phí / thuế đóng hộ (đ) <input data-fl="lephi" inputmode="numeric" value="'+f(j.lephi)+'" style="width:130px"></label></div>';
   // ---- 2. THU CHI
-  const add='<div class="filters" style="padding:0;margin:4px 0"><input id="cb_n" list="cblist" placeholder="Người nhận chi (anh Nam, chị Thư…)" style="min-width:190px"><datalist id="cblist">'+[...new Set(fin.jobs.flatMap(x=>(x.cb||[]).map(y=>y.n)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="cb_l"><option>Thực hiện công việc</option><option>Chia lợi nhuận</option><option>Giới thiệu</option><option>Khác</option></select><input id="cb_a" inputmode="numeric" placeholder="Tổng số tiền chi" style="width:140px"><button id="cb_ok">+ Thêm người nhận chi</button></div>';
+  const add='<div class="filters" style="padding:0;margin:4px 0"><input id="cb_n" list="cblist" placeholder="Người nhận chi (nhập tên)" style="min-width:190px"><datalist id="cblist">'+[...new Set(fin.jobs.flatMap(x=>(x.cb||[]).map(y=>y.n)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="cb_l"><option>Thực hiện công việc</option><option>Chia lợi nhuận</option><option>Giới thiệu</option><option>Khác</option></select><input id="cb_a" inputmode="numeric" placeholder="Tổng số tiền chi" style="width:140px"><button id="cb_ok">+ Thêm người nhận chi</button></div>';
   const inp=(a,b,attr)=>'<input data-fl="'+attr+'" inputmode="numeric" value="'+f(b)+'" placeholder="'+f(a)+'" style="width:96px;text-align:right"><button class="ghost" data-fl="fill:'+attr+'" title="Đã đủ theo kế hoạch" style="padding:2px 6px">✔</button>';
   let chotL=0,conPhai=0;const DD=[];let head='<tr><th>Đợt</th><th class="num">Phải thu<br><span class="lg">từ '+esc(chotName)+'</span></th><th class="num">Đã thu</th>'+cb.map((x,i)=>'<th class="num">'+esc(x.n)+'<br><span class="lg">'+esc(x.l||"")+' · <a href="#" data-fl="del:'+i+'">xóa</a></span></th>').join("")+'<th class="num">Lãi đợt</th><th>Tình trạng</th></tr>',rows="";
   for(let k=0;k<ND;k++){
@@ -3513,7 +3514,7 @@ function flowEdit(j,fe,redraw){
   const fv=v=>v?Number(v).toLocaleString("vi-VN"):"",inp=(cls,k,v,ph)=>'<input class="'+cls+'" data-k="'+k+'" inputmode="numeric" value="'+fv(v)+'" placeholder="'+fv(ph)+'" style="width:130px;text-align:right">';
   let h="",save;
   if(fe==="src"){
-    h='<h2>'+esc(j.chot||(j.truc?"Khách":"Chị Thư"))+' → tôi</h2><div class="grid"><label>Giá chốt (đ)<input id="f_gia" inputmode="numeric" value="'+fv(j.gia)+'"></label></div><table class="m"><tr><th>Đợt</th><th class="num">Phải thu</th><th class="num">Đã thu</th></tr>'+pl.map((p,k)=>'<tr><td>Đợt '+(k+1)+'</td><td class="num">'+inp("f_pl",k,p.a)+'</td><td class="num">'+inp("f_ac",k,act("thu","",k),p.a)+'</td></tr>').join("")+'</table><p class="hint">Ô “Đã thu” để trống = chưa thu. Bạn nhập số thực nhận của từng đợt.</p>';
+    h='<h2>'+esc(srcName(j))+' → tôi</h2><div class="grid"><label>Giá chốt (đ)<input id="f_gia" inputmode="numeric" value="'+fv(j.gia)+'"></label></div><table class="m"><tr><th>Đợt</th><th class="num">Phải thu</th><th class="num">Đã thu</th></tr>'+pl.map((p,k)=>'<tr><td>Đợt '+(k+1)+'</td><td class="num">'+inp("f_pl",k,p.a)+'</td><td class="num">'+inp("f_ac",k,act("thu","",k),p.a)+'</td></tr>').join("")+'</table><p class="hint">Ô “Đã thu” để trống = chưa thu. Bạn nhập số thực nhận của từng đợt.</p>';
     save=()=>{j.gia=parseAmt(d.querySelector("#f_gia").value);j.pl=pl;pl.forEach((p,k)=>{p.a=parseAmt(d.querySelector('.f_pl[data-k="'+k+'"]').value)});pl.forEach((p,k)=>txSet(j,"thu","",k,parseAmt(d.querySelector('.f_ac[data-k="'+k+'"]').value)))};
   }else{
     const i=+fe.slice(3),x=(j.cb||[])[i];if(!x)return;
