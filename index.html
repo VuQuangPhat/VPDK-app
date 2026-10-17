@@ -452,6 +452,8 @@ button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radiu
 
 #jbody .kp,dialog .kp{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}@media(max-width:800px){#jbody .kp,dialog .kp{grid-template-columns:1fr 1fr}}
 .kin{width:100%;font:inherit;font-size:16px;font-weight:600;border:0;border-bottom:1px dashed #b8c0cc;background:transparent;padding:0;outline:none;font-variant-numeric:tabular-nums}.kin:focus{border-bottom-color:#2563eb}
+
+.kname{font:inherit;font-size:12px;color:inherit;border:0;border-bottom:1px dashed #b8c0cc;background:transparent;padding:0;width:60%;outline:none}.kname:focus{border-bottom-color:#2563eb}
 </style>
 </head>
 <body>
@@ -1853,7 +1855,7 @@ function drawJob(){
   const j=jEdit,T=txIdx(),L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d)),s=jstat(j,T,"");
   const f=(k,l,t)=>'<div><label>'+l+'</label><input data-f="'+k+'" type="'+(t||"text")+'" value="'+esc(j[k]==null?"":j[k])+'"></div>';
   const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
-  const kp=[["Báo khách (đ)",'<input data-fl="gia" inputmode="numeric" placeholder="nhập giá báo khách" value="'+(s.tong?Number(s.tong).toLocaleString("vi-VN"):"")+'" class="kin">',""],["Báo chị Thư (đ)",'<input data-fl="bt" inputmode="numeric" placeholder="nhập giá báo" value="'+((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)?Number((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],["Chi "+(((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||""))[0]||{}).n||"anh Nam")+" (đ)",'<input data-fl="nam" inputmode="numeric" placeholder="nhập số chi" value="'+((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)?Number((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"]];
+  const kp=[['Báo <input class="kname" data-fl="nm:khach" placeholder="khách" value="'+esc((j.chu||(db.cases.find(c=>c.id===j.cid)||{}).chu||""))+'">','<input data-fl="gia" inputmode="numeric" placeholder="nhập giá báo khách" value="'+(s.tong?Number(s.tong).toLocaleString("vi-VN"):"")+'" class="kin">',""],['Báo <input class="kname" data-fl="nm:tg" placeholder="trung gian" value="'+esc((j.btn||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).to||j.gt||""))+'">','<input data-fl="bt" inputmode="numeric" placeholder="nhập giá báo" value="'+((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)?Number((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],['Chi <input class="kname" data-fl="nm:nam" placeholder="người thực hiện" value="'+esc(((((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||""))[0])||{}).n||""))+'">','<input data-fl="nam" inputmode="numeric" placeholder="nhập số chi" value="'+((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)?Number((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"]];
   const si=stIdx(j);
   const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="nobg" class="'+(j.st==="nobg"?"cur":"")+'" style="margin-left:auto">Khách không làm</button><button data-st="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
     (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st==="fail"?"Fail":x.st==="nobg"?"Khách không làm":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
@@ -3443,9 +3445,12 @@ function flowBind(B,j,redraw){
   const sumPl=()=>(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);
   const cur=(k,n,d)=>fsum(fin.tx.filter(t=>t.j===j.id&&t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1).map(t=>t.a));
   B.querySelectorAll("input[data-fl]").forEach(e=>e.onchange=()=>{const a=e.dataset.fl;
-    if(a==="bt"){j.bt=pa(e.value)}
+    if(a.startsWith("nm:")){const k=a.slice(3),v=e.value.trim();
+      if(k==="khach")j.chu=v;else if(k==="tg")j.btn=v;
+      else{const w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(w&&v){fin.tx.forEach(t=>{if(t.j===j.id&&t.w===w.n)t.w=v});w.n=v;saveJobInline()}}}
+    else if(a==="bt"){j.bt=pa(e.value)}
     else if(a==="gia"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
-    else if(a==="nam"){const v=pa(e.value);let w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(!w){if(!v)return;w={n:"Anh Nam",l:"Thực hiện công việc",a:0,p:[]};(j.cb=j.cb||[]).push(w)}
+    else if(a==="nam"){const v=pa(e.value);let w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(!w){if(!v)return;const nm=(prompt("Tên người thực hiện công việc?","")||"").trim();if(!nm)return;w={n:nm,l:"Thực hiện công việc",a:0,p:[]};(j.cb=j.cb||[]).push(w)}
       const pp=(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);w.a=v;w.p=spl(v,pp)}
     else if(a==="lephi"){j.lephi=pa(e.value);applyTd(j)}
     else if(a.startsWith("moc:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].m=e.value}
