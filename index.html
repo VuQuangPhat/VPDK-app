@@ -431,6 +431,9 @@ button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radiu
 .dsh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;padding:8px 2px;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:3}.dsh h3{margin:0}.dsec.m .dsh h3{color:var(--seal)}.dsec.c .dsh h3{color:var(--ok)}
 .dh{cursor:default}.dbal{font-size:18px;margin-right:8px}.dsec.m .dbal{color:var(--seal)}.dsec.c .dbal{color:var(--ok)}
 .dt.dv th,.dt.dv td{padding:4px 6px;border-bottom:1px solid var(--line);font-size:13px}.dt .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.dt .tot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0}.dt.dv td:first-child{color:var(--mute);width:36px}
+
+.fc.tg{background:var(--fill);color:var(--ink)}button.fc.dup{cursor:pointer;color:var(--warn);font:inherit;font-size:11px}
+.dgrp{margin:0 0 18px}.dgc{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:12px;align-items:start}.dgc .dcard{margin:8px 0 0}.dgrp .dsh h3{color:var(--ink)}.dsum+.dsub{margin-top:8px}
 </style>
 </head>
 <body>
@@ -3198,7 +3201,9 @@ function parseMoney(s){s=String(s||"").trim().toLowerCase().replace(/\s+/g,"").r
   m=s.match(/^([\d.,]+)(tỷ|ty)$/);if(m){return Math.round(parseFloat(m[1].replace(/\./g,"").replace(",","."))*1e9)}
   return parseInt(s.replace(/[^\d]/g,""),10)||0}
 const bal=p=>(p.e||[]).reduce((s,x)=>s+(+x.a||0),0);
-let open={},q="",hideDone=false;
+let open={},q="",hideDone=false,view="dir";
+const norm=t=>String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/gi,"d").toLowerCase().replace(/\s+/g," ").trim();
+const dupN=p=>D().list.filter(x=>norm(x.name)===norm(p.name)).length;
 const E=(d,a,n,f)=>({id:uid(),d:d||"",a:parseMoney(a)*(String(a).trim().startsWith("-")?-1:1),n:n||"",q:f?1:0});
 const SEED=[
  ["vay","A Hải","",[["2026-02-01","15tr"],["2026-03-28","2tr"],["2026-06-12","25tr"]]],
@@ -3228,29 +3233,37 @@ const SEED=[
 function seed(){const L=D().list;SEED.forEach(s=>{L.push({id:uid(),dir:s[0],name:s[1],note:s[2],e:s[3].map(x=>E(x[0],x[1],x[2],x[3]))})});persist()}
 function card(p){const b=bal(p),es=p.e||[],done=b===0&&es.length>0,isE=open[p.id],fl=es.some(x=>x.q);
   const add=es.filter(x=>x.a>0).reduce((s,x)=>s+x.a,0),pay=-es.filter(x=>x.a<0).reduce((s,x)=>s+x.a,0);let run=0;
-  const view=es.length?`<table class="dt dv"><thead><tr><th>Đợt</th><th>Ngày</th><th>Nội dung</th><th class="n">${p.dir==="vay"?"Mượn thêm":"Cho mượn"}</th><th class="n">Đã trả</th><th class="n">Còn lại</th></tr></thead><tbody>
+  const tbl=es.length?`<table class="dt dv"><thead><tr><th>Đợt</th><th>Ngày</th><th>Nội dung</th><th class="n">${p.dir==="vay"?"Mượn thêm":"Cho mượn"}</th><th class="n">Đã trả</th><th class="n">Còn lại</th></tr></thead><tbody>
    ${es.map((x,i)=>{run+=+x.a||0;return `<tr><td>${i+1}</td><td>${x.d?fd(x.d):"—"}</td><td>${esc(x.n||"")}${x.q?' <span class="fc r">cần kiểm tra</span>':""}</td><td class="n">${x.a>0?VND(x.a):""}</td><td class="n">${x.a<0?VND(-x.a):""}</td><td class="n"><b>${VND(run)}</b></td></tr>`}).join("")}
    <tr class="tot"><td colspan="3">Cộng</td><td class="n">${VND(add)}</td><td class="n">${VND(pay)}</td><td class="n">${VND(b)}</td></tr></tbody></table>`:'<p class="hint">Chưa có đợt nào — bấm “Sửa” để thêm.</p>';
-  const edit=`<label class="full">Ghi chú<textarea data-f="note" rows="2">${esc(p.note||"")}</textarea></label>
+  const edit=`<div class="grid g3"><label>Tên<input data-f="name" value="${esc(p.name)}"></label><label>Phân biệt (nhóm / nơi / SĐT…)<input data-f="tag" value="${esc(p.tag||"")}" placeholder="vd: Bình Tân, 13F, lớp B"></label><label>Chiều<select data-f="dir"><option value="vay" ${p.dir==="vay"?"selected":""}>Mượn (mình nợ)</option><option value="cho" ${p.dir==="cho"?"selected":""}>Cho mượn (họ nợ mình)</option></select></label></div><label class="full">Ghi chú<textarea data-f="note" rows="2">${esc(p.note||"")}</textarea></label>
    <table class="dt"><thead><tr><th>Ngày</th><th>Số tiền (+ thêm, - trả bớt)</th><th>Nội dung</th><th></th></tr></thead><tbody>
    ${es.map(x=>`<tr data-e="${x.id}"><td><input type="date" data-ef="d" value="${esc(x.d||"")}"></td><td><input data-ef="a" value="${x.a?VND(x.a):""}" placeholder="vd 15tr, -4tr"></td><td><input data-ef="n" value="${esc(x.n||"")}">${x.q?'<label class="ck"><input type="checkbox" data-ef="q" checked> cần kiểm tra</label>':""}</td><td><button data-a="de" class="lk">Xóa</button></td></tr>`).join("")}
    <tr class="add"><td><input type="date" id="nd${p.id}" value="${today()}"></td><td><input id="na${p.id}" placeholder="vd 15tr hoặc -4tr"></td><td><input id="nn${p.id}" placeholder="nội dung (tùy chọn)"></td><td><button data-a="ae" class="primary">Thêm đợt</button></td></tr></tbody></table>
    <div class="foot" style="margin:6px 0"><button data-a="dp" class="lk" style="color:var(--seal)">Xóa người này</button></div>`;
-  return `<div class="dcard" data-id="${p.id}"><div class="dh"><b>${esc(p.name)}</b>${done?' <span class="fc">đã tất toán</span>':""}${fl?' <span class="fc r">cần kiểm tra</span>':""}<span class="dbal">${VND(b)} đ</span><button data-a="tg" class="lk">${isE?"Xong":"Sửa"}</button></div>
-   ${p.note&&!isE?`<div class="hint dn">${esc(p.note)}</div>`:""}${isE?edit:view}</div>`}
+  return `<div class="dcard" data-id="${p.id}"><div class="dh"><b>${esc(p.name)}</b>${p.tag?` <span class="fc tg">${esc(p.tag)}</span>`:""}${dupN(p)>1?` <button class="fc dup" data-a="dup" title="Xem tất cả người cùng tên">trùng tên ×${dupN(p)}</button>`:""}${view==="ppl"?` <span class="fc ${p.dir==="vay"?"r":"ok"}">${p.dir==="vay"?"mình nợ":"họ nợ mình"}</span>`:""}${done?' <span class="fc">đã tất toán</span>':""}${fl?' <span class="fc r">cần kiểm tra</span>':""}<span class="dbal">${VND(b)} đ</span><button data-a="tg" class="lk">${isE?"Xong":"Sửa"}</button></div>
+   ${p.note&&!isE?`<div class="hint dn">${esc(p.note)}</div>`:""}${isE?edit:tbl}</div>`}
+function peopleView(L,ql){
+  const m=new Map();L.forEach(p=>{if(ql&&!(p.name+" "+(p.tag||"")+" "+(p.note||"")).toLowerCase().includes(ql)&&!norm(p.name+" "+(p.tag||"")).includes(norm(ql)))return;if(hideDone&&(p.e||[]).length&&bal(p)===0)return;const k=norm(p.name);(m.get(k)||m.set(k,[]).get(k)).push(p)});
+  const gs=[...m.values()].sort((a,b)=>a[0].name.localeCompare(b[0].name,"vi"));
+  return `<div class="hint" style="margin:0 0 6px">${gs.length} tên · ${gs.filter(g=>g.length>1).length} tên có nhiều người/khoản (xếp chung một nhóm). Ròng = họ nợ mình − mình nợ họ.</div>`+gs.map(g=>{const vay=g.filter(p=>p.dir==="vay").reduce((s,p)=>s+bal(p),0),cho=g.filter(p=>p.dir==="cho").reduce((s,p)=>s+bal(p),0),net=cho-vay;
+    return `<section class="dgrp"><div class="dsh"><h3>${esc(g[0].name)}${g.length>1?` <span class="fc">${g.length} mục</span>`:""}</h3><span>${vay?`mình nợ <b class="r">${VND(vay)}</b> · `:""}${cho?`họ nợ mình <b class="ok">${VND(cho)}</b> · `:""}ròng <b>${VND(net)} đ</b></span></div><div class="dgc">${g.map(card).join("")}</div></section>`}).join("")}
 function render(){const box=$("#debt");if(!box)return;const L=D().list,ql=q.trim().toLowerCase();
   const sum=d=>L.filter(p=>p.dir===d).reduce((s,p)=>s+bal(p),0),vay=sum("vay"),cho=sum("cho");
-  const sec=(d,t,cl)=>{const a=L.filter(p=>p.dir===d&&(!ql||(p.name+" "+(p.note||"")).toLowerCase().includes(ql))&&(!hideDone||!((p.e||[]).length&&bal(p)===0)));
+  const sec=(d,t,cl)=>{const a=L.filter(p=>p.dir===d&&(!ql||(p.name+" "+(p.tag||"")+" "+(p.note||"")).toLowerCase().includes(ql))&&(!hideDone||!((p.e||[]).length&&bal(p)===0)));
     return `<section class="dsec ${cl}"><div class="dsh"><h3>${t}</h3><span>${a.length} người · còn <b>${VND(a.reduce((s,p)=>s+bal(p),0))} đ</b></span></div>${a.map(card).join("")||'<p class="hint">Chưa có.</p>'}</section>`};
   box.innerHTML=`<div class="dsum"><div class="dk"><span>Mình đang nợ</span><b class="r">${VND(vay)} đ</b></div><div class="dk"><span>Người khác đang nợ mình</span><b class="ok">${VND(cho)} đ</b></div><div class="dk"><span>Chênh lệch (phải thu − phải trả)</span><b>${VND(cho-vay)} đ</b></div></div>
+  <div class="tabs dsub" style="margin:8px 0"><button data-a="vw" data-v="dir" class="${view==="dir"?"on":""}">Theo chiều: mượn / cho mượn</button><button data-a="vw" data-v="ppl" class="${view==="ppl"?"on":""}">Theo người (gộp trùng tên)</button></div>
   <div class="foot" style="margin:8px 0;justify-content:flex-start;gap:8px;flex-wrap:wrap"><input id="dq" placeholder="Tìm tên, ghi chú…" value="${esc(q)}" style="max-width:240px"><label class="ck"><input type="checkbox" id="dhide" ${hideDone?"checked":""}> Ẩn đã tất toán</label>
    <select id="dnd"><option value="vay">Mượn</option><option value="cho">Cho mượn</option></select><input id="dnn" placeholder="Tên người mới" style="max-width:200px"><button class="primary" data-a="np">Thêm người</button>${L.length?"":'<button data-a="seed">Nạp dữ liệu từ ảnh đã gửi (kiểm tra lại)</button>'}</div>
-  <div class="dcols">${sec("vay","Mượn — mình nợ","m")}${sec("cho","Cho mượn — người khác nợ mình","c")}</div>
+  ${view==="ppl"?peopleView(L,ql):`<div class="dcols">${sec("vay","Mượn — mình nợ","m")}${sec("cho","Cho mượn — người khác nợ mình","c")}</div>`}
   <p class="hint">Sổ này tách riêng, không tính vào doanh thu. Mỗi dòng là một đợt: cột cộng là mượn/cho mượn thêm, cột trả là đã trả; “Còn lại” là số dư lũy kế sau đợt đó.</p>`}
 document.addEventListener("click",e=>{const box=$("#debt");if(!box||!box.contains(e.target))return;const t=e.target.closest("[data-a]");if(!t)return;
   const c=t.closest(".dcard"),p=c&&D().list.find(x=>x.id===c.dataset.id),a=t.dataset.a;
   if(a==="seed"){seed();render();return}
-  if(a==="np"){const n=$("#dnn").value.trim();if(!n)return toast("Nhập tên");D().list.push({id:uid(),dir:$("#dnd").value,name:n,note:"",e:[]});persist();render();return}
+  if(a==="vw"){view=t.dataset.v;render();return}
+  if(a==="dup"){const pp=D().list.find(x=>x.id===t.closest(".dcard").dataset.id);q=pp.name;render();return}
+  if(a==="np"){const n=$("#dnn").value.trim();if(!n)return toast("Nhập tên");const ex=D().list.filter(x=>norm(x.name)===norm(n));if(ex.length&&!confirm("Đã có "+ex.length+" mục tên “"+ex[0].name+"”. Vẫn tạo thêm một mục trùng tên? (nên điền ô “Phân biệt” sau khi tạo)"))return;D().list.push({id:uid(),dir:$("#dnd").value,name:n,note:"",e:[]});persist();render();return}
   if(!p)return;
   if(a==="tg"){open[p.id]=!open[p.id];render();return}
   if(a==="ae"){const am=parseMoney($("#na"+p.id).value),neg=$("#na"+p.id).value.trim().startsWith("-");if(!am)return toast("Nhập số tiền");(p.e=p.e||[]).push({id:uid(),d:$("#nd"+p.id).value,a:neg?-am:am,n:$("#nn"+p.id).value,q:0});persist();render();return}
@@ -3261,6 +3274,7 @@ document.addEventListener("change",e=>{const box=$("#debt");if(!box||!box.contai
   if(t.id==="dhide"){hideDone=t.checked;render();return}
   const c=t.closest(".dcard");if(!c)return;const p=D().list.find(x=>x.id===c.dataset.id);if(!p)return;
   if(t.dataset.f==="note"){p.note=t.value;persist();return}
+  if(t.dataset.f==="name"||t.dataset.f==="tag"||t.dataset.f==="dir"){p[t.dataset.f]=t.value.trim?t.value.trim():t.value;persist();return}
   const r=t.closest("tr[data-e]");if(!r)return;const x=p.e.find(y=>y.id===r.dataset.e);if(!x)return;const f=t.dataset.ef;
   if(f==="d")x.d=t.value;else if(f==="n")x.n=t.value;else if(f==="q")x.q=t.checked?1:0;
   else if(f==="a"){const neg=t.value.trim().startsWith("-");x.a=(neg?-1:1)*parseMoney(t.value)}
