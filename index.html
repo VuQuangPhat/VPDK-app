@@ -435,9 +435,14 @@ button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radiu
 .fc.tg{background:var(--fill);color:var(--ink)}button.fc.dup{cursor:pointer;color:var(--warn);font:inherit;font-size:11px}
 .dgrp{margin:0 0 18px}.dgc{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:12px;align-items:start}.dgc .dcard{margin:8px 0 0}.dgrp .dsh h3{color:var(--ink)}.dsum+.dsub{margin-top:8px}
 
-.qht{width:100%;border-collapse:collapse;table-layout:fixed;margin:0}.qht th,.qht td{border:1px solid #000;padding:7px 8px;text-align:center;font-size:13.5px;vertical-align:middle;word-break:break-word}.qht th{font-weight:700;background:#e8e8e8}.qht .tl{font-size:16px;background:#d9d9d9;padding:10px}.qht tr.h th{background:#f2f2f2;font-size:12px}.qht tr.v td{font-weight:700;font-size:16px;padding:10px 6px}.qht td.l{text-align:left;font-style:italic;border-left:1px solid #000}
-@media print{#proot .qhf.fd.tx{font-size:12pt}#proot .qht th,#proot .qht td{font-size:11.5pt}#proot .qht .tl{font-size:14pt}#proot .qht tr.v td{font-size:14pt}#proot .qht tr.h th{font-size:10pt}#proot .qht{break-inside:avoid}}
-.qhref{padding:6px 0}
+.qhf{max-width:760px;padding:0;background:transparent;box-shadow:none}
+.qht{width:100%;border-collapse:collapse;table-layout:fixed;font-family:Calibri,Arial,sans-serif;color:#000;background:#fff}
+.qht td{border:1px solid #000;padding:2px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:14pt;word-break:break-word}
+.qht .ttl{background:#FDE9D9;font-size:16pt;height:41px}.qht .in{background:#DCE6F1}.qht .red,.qht .red input,.qht .red textarea,.qht .red span{color:#f00}.qht .navy,.qht .navy textarea,.qht .navy span{color:#1F497D}.qht .dred,.qht .dred textarea,.qht .dred span{color:#C00000}.qht .grn{color:#00B050}.qht .big{font-size:20pt;color:#f00;background:#F2F2F2}
+.qht tr.r13{height:33px}.qht tr.r14{height:58px}.qht tr.r15{height:43px}.qht tr.r16{height:30px}.qht tr.r17,.qht tr.r18{height:26px}.qht tr.r19{height:32px}.qht tr.nr{height:26px}
+.qht textarea{width:100%;border:0;background:transparent;font:inherit;color:inherit;text-align:center;resize:none;overflow:hidden;field-sizing:content;padding:0;outline:0;display:block;min-height:1.2em}.qht .nin{font-size:14pt}.qht textarea:focus{background:#fff8c5}
+.qht .calc{font-size:9pt;font-weight:400;color:#555}
+@media print{#proot .qhf.fd.tx{font-size:12pt;max-width:none}#proot .qht td{font-size:12.5pt}#proot .qht .ttl{font-size:14.5pt}#proot .qht .big{font-size:17pt}#proot .qht{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
 </head>
 <body>
@@ -3292,45 +3297,39 @@ window.renderDebt=render;
 (function(){
 const Q=()=>{db.qh=db.qh&&Array.isArray(db.qh.list)?db.qh:{list:[],sel:""};return db.qh};
 const NOTE="* Lưu ý: Thiết kế phải đảm bảo hệ số sử dụng đất và kiến trúc xung quanh\nKhi thiết kế quy mô tối đa cần kiểm tra các điều kiện và quy định\nchiều cao tối đa tầng 4 là 17.0 m, chiều cao xây dựng tối đa đến mái là 19.0 m";
-const blank=()=>({id:uid(),thua:"",to:"",phuong:"",dt:"",dtqh:"",hs:"",qh:"",tt:"",lui:"",lg:"",qm:"",note:NOTE,ten:""});
+const blank=()=>({id:uid(),thua:"554",to:"85",phuong:"Phú Thuận",dt:"169",dtqh:"169-10.52",hs:"3",qh:"QH XÂY DỰNG MỚI",tt:"CẤP TẠM",lui:"lùi sau 2M",lg:"8,5M",qm:"1 trệt, 2 lầu (có thêm tum thang hoặc lửng)",n1:"* Lưu ý: Thiết kế phải đảm bảo hệ số sử dụng đất và kiến trúc xung quanh",n2:"Khi thiết kế quy mô tối đa cần kiểm tra các điều kiện và quy định",n3:"chiều cao tối đa tầng 4 là 17.0 m, chiều cao xây dựng tối đa đến mái là 19.0 m",ten:""});
 function ev(s){s=String(s==null?"":s).replace(/,/g,".").replace(/\s+/g,"");if(!s)return null;if(!/^[\d.+\-*/()]+$/.test(s))return null;try{const v=Function('"use strict";return ('+s+')')();return isFinite(v)?v:null}catch(e){return null}}
 const mdxd=a=>a<50?100:a<=100?100-(a-50)*10/50:a<=200?90-(a-100)*20/100:a<=300?70-(a-200)*10/100:a<=500?60-(a-300)*10/200:50;
 const f2=n=>n==null?"":(Math.round(n*100)/100).toLocaleString("vi-VN",{maximumFractionDigits:2});
 function calc(r){const dt=ev(r.dt),dq=ev(r.dtqh)!=null?ev(r.dtqh):dt,hs=ev(r.hs);
   const md=dq!=null?mdxd(dq):null;return {dt,dq,hs,md,san:dq!=null&&hs!=null?dq*hs:null,xd:dq!=null?dq*md/100:null}}
-function formHtml(r){const c=calc(r),T=(s)=>esc(s||"");
-  const notes=String(r.note||"").split("\n").filter(x=>x.trim()).map(x=>`<tr><td colspan="6" class="l">${esc(x)}</td></tr>`).join("");
-  return `<div class="fd tx qhf"><table class="qht"><tr><th colspan="6" class="tl">BẢNG THÔNG TIN &amp; CHỈ TIÊU XÂY DỰNG</th></tr>
-  <tr><th>THỬA SỐ</th><td>${T(r.thua)}</td><th>TỜ SỐ</th><td>${T(r.to)}</td><th>PHƯỜNG</th><td>${T(r.phuong)}</td></tr>
-  <tr class="h"><th>DT THỬA ĐẤT</th><th>DT PHÙ HỢP QH</th><th>HỆ SỐ SDĐ</th><th>DT SÀN XD TỐI ĐA CHO PHÉP</th><th>MDXD %</th><th>DTXD CHO PHÉP</th></tr>
-  <tr class="v"><td>${f2(c.dt)}</td><td>${f2(c.dq)}</td><td>${f2(c.hs)}</td><td>${f2(c.san)}</td><td>${f2(c.md)}</td><td>${f2(c.xd)}</td></tr>
-  <tr><th>QUY HOẠCH</th><td colspan="3">${T(r.qh)}</td><td colspan="2">${T(r.tt)}</td></tr>
-  <tr><th>KHOẢNG LÙI</th><td colspan="5">${T(r.lui)}</td></tr>
-  <tr><th>LỘ GIỚI</th><td colspan="5">${T(r.lg)}</td></tr>
-  <tr><th>QUY MÔ XD TỐI ĐA</th><td colspan="5">${T(r.qm)}</td></tr>${notes}</table></div>`}
+function formHtml(r,ed){const c=calc(r);
+  const I=(k,cls,ph)=>ed?`<textarea rows="1" data-qh="${k}" class="${cls||""}" placeholder="${ph||""}">${esc(r[k]||"")}</textarea>`:`<span class="${cls||""}">${esc(r[k]||"")}</span>`;
+  const N=(k,cls)=>`<tr class="nr"><td colspan="6" class="nt ${cls}">${I(k,"nin")}</td></tr>`;
+  return `<div class="fd tx qhf${ed?" ed":""}"><table class="qht"><colgroup><col style="width:17.6%"><col style="width:12.2%"><col style="width:10.7%"><col style="width:17.1%"><col style="width:17.8%"><col style="width:24.6%"></colgroup>
+  <tr class="r12"><td colspan="6" class="ttl">BẢNG THÔNG TIN &amp; CHỈ TIÊU XÂY DỰNG</td></tr>
+  <tr class="r13"><td class="lb">THỬA SỐ</td><td class="in red">${I("thua")}</td><td class="lb">TỜ SỐ</td><td class="in red">${I("to")}</td><td class="lb">PHƯỜNG</td><td class="in red">${I("phuong")}</td></tr>
+  <tr class="r14"><td class="lb">DT THỬA ĐẤT</td><td class="lb">DT PHÙ HỢP QH</td><td class="lb">HỆ SỐ SDĐ</td><td class="lb">DT SÀN XD TỐI ĐA CHO PHÉP</td><td class="lb">MDXD %</td><td class="lb">DTXD CHO PHÉP</td></tr>
+  <tr class="r15"><td class="in">${ed?I("dt"):`<span>${f2(c.dt)}</span>`}</td><td class="in red">${ed?I("dtqh"):`<span>${f2(c.dq)}</span>`}${ed?`<div class="calc" id="qhdq">${c.dq==null?"":"= "+f2(c.dq)}</div>`:""}</td><td class="in">${ed?I("hs"):`<span>${f2(c.hs)}</span>`}</td><td class="red" id="qhsan">${f2(c.san)}</td><td class="grn" id="qhmd">${f2(c.md)}</td><td class="big" id="qhxd">${f2(c.xd)}</td></tr>
+  <tr class="r16"><td colspan="2" class="lb">QUY HOẠCH</td><td colspan="3" class="navy">${I("qh","navy")}</td><td class="navy">${I("tt","navy")}</td></tr>
+  <tr class="r17"><td colspan="2" class="lb">KHOẢNG LÙI</td><td colspan="4" class="in">${I("lui")}</td></tr>
+  <tr class="r18"><td colspan="2" class="lb">LỘ GIỚI</td><td colspan="4" class="in">${I("lg")}</td></tr>
+  <tr class="r19"><td colspan="2" class="lb">QUY MÔ XD TỐI ĐA</td><td colspan="4" class="in">${I("qm")}</td></tr>
+  ${N("n1","dred")}${N("n2","dred")}${N("n3","in")}</table></div>`}
 let sel="",msg=null;
 const cur=()=>{const L=Q().list;return L.find(x=>x.id===sel)||L[0]||null};
-function res(r){const c=calc(r);return `<div class="dsum"><div class="dk"><span>Mật độ xây dựng tối đa (MDXD)</span><b>${c.md==null?"—":f2(c.md)+" %"}</b></div><div class="dk"><span>Diện tích xây dựng cho phép</span><b class="ok">${c.xd==null?"—":f2(c.xd)+" m²"}</b></div><div class="dk"><span>Diện tích sàn xây dựng tối đa</span><b>${c.san==null?"—":f2(c.san)+" m²"}</b></div></div>`}
-const F=(k,l,r,ph,cls)=>`<label class="${cls||""}">${l}<input data-qh="${k}" value="${esc(r[k]||"")}" placeholder="${ph||""}"></label>`;
-function render(){const box=$("#qhbox");if(!box)return;const L=Q().list,r=cur();if(r)sel=r.id;
-  box.innerHTML=`<div class="foot" style="margin:8px 0;justify-content:flex-start;gap:8px;flex-wrap:wrap"><select id="qhsel" style="min-width:260px">${L.map(x=>`<option value="${x.id}" ${x.id===sel?"selected":""}>${esc(x.ten||("Thửa "+(x.thua||"?")+" – tờ "+(x.to||"?")+" – "+(x.phuong||"")))}</option>`).join("")||'<option value="">(chưa có phiếu nào)</option>'}</select>
+function upd(r){const c=calc(r),g=id=>document.getElementById(id);if(g("qhsan"))g("qhsan").textContent=f2(c.san);if(g("qhmd"))g("qhmd").textContent=f2(c.md);if(g("qhxd"))g("qhxd").textContent=f2(c.xd);if(g("qhdq"))g("qhdq").textContent=c.dq==null?"":"= "+f2(c.dq)}
+function render(){const box=$("#qhbox");if(!box)return;if(!Q().list.length){const n=blank();Q().list.push(n);sel=n.id;persist()}const L=Q().list,r=cur();if(r){sel=r.id;["n1","n2","n3"].forEach(k=>{if(r[k]==null){const ln=String(r.note||NOTE).split("\n");r.n1=ln[0]||"";r.n2=ln[1]||"";r.n3=ln[2]||""}})}
+  box.innerHTML=`<div class="foot" style="margin:8px 0;justify-content:flex-start;gap:8px;flex-wrap:wrap"><select id="qhsel" style="min-width:240px">${L.map(x=>`<option value="${x.id}" ${x.id===sel?"selected":""}>${esc(x.ten||("Thửa "+(x.thua||"?")+" – tờ "+(x.to||"?")+" – "+(x.phuong||"")))}</option>`).join("")||'<option value="">(chưa có phiếu nào)</option>'}</select>
    <button class="primary" data-qa="new">+ Phiếu mới</button>${r?'<button data-qa="dup">Nhân bản</button><button data-qa="del" style="color:var(--seal)">Xóa</button><button class="primary" data-qa="pdf">Xem, in / lưu PDF</button>':""}</div>
-  ${r?`<div class="grid g3">${F("ten","Tên phiếu (tùy chọn)",r,"vd Nhà ông A – Phú Thuận","sp2")}${F("thua","Thửa số",r)}${F("to","Tờ số",r)}${F("phuong","Phường",r)}</div>
-  <div class="grid g3">${F("dt","DT thửa đất (m²)",r,"vd 169")}${F("dtqh","DT phù hợp QH (m²) – nhập số hoặc phép tính",r,"vd 169-10.52")}${F("hs","Hệ số sử dụng đất",r,"vd 3")}</div>
-  <div id="qhres">${res(r)}</div>
-  <div class="grid g3">${F("qh","Quy hoạch",r,"vd QH xây dựng mới","sp2")}${F("tt","Tình trạng",r,"vd CẤP TẠM")}${F("lui","Khoảng lùi",r,"vd lùi sau 2M","sp2")}${F("lg","Lộ giới",r,"vd 8,5M")}${F("qm","Quy mô XD tối đa",r,"vd 1 trệt, 2 lầu (có thêm tum thang hoặc lửng)","full")}</div>
-  <div class="grid"><label class="full">Lưu ý (mỗi dòng một ý, in ở cuối bảng)<textarea data-qh="note" rows="4">${esc(r.note||"")}</textarea></label></div>`:'<p class="hint">Bấm “+ Phiếu mới” để lập bảng thông tin và chỉ tiêu xây dựng.</p>'}
-  <details style="margin-top:10px"><summary style="cursor:pointer"><b>Bảng tra mật độ xây dựng (QĐ 56/2021/QĐ-UBND) và khoảng lùi sau</b></summary><div class="qhref">
-  <table class="dt dv"><thead><tr><th>Diện tích lô đất (m²)</th><th>&lt;50</th><th>100</th><th>200</th><th>300</th><th>500</th></tr></thead><tbody><tr><td>Mật độ tối đa (%)</td><td>100</td><td>90</td><td>70</td><td>60</td><td>50</td></tr></tbody></table>
-  <p class="hint">Giữa hai mốc thì nội suy: Nt = Nb − (Nb − Na) × (Ct − Cb)/(Ca − Cb) (Nt: mật độ cần tính; Ct: diện tích cần tính; Ca, Na: cận trên; Cb, Nb: cận dưới). Trên 500 m²: 50%. Mật độ dùng diện tích phù hợp quy hoạch (không phải diện tích thửa gốc).</p>
-  <p class="hint">Khoảng lùi phía sau: chiều dài thửa &lt; 9 m: không lùi · 9 m đến dưới 16 m: lùi 1 m · trên 16 m: lùi 2 m.</p></div></details>`}
-document.addEventListener("input",e=>{const t=e.target,box=$("#qhbox");if(!box||!box.contains(t)||!t.dataset.qh)return;const r=cur();if(!r)return;r[t.dataset.qh]=t.value;persist();const d=$("#qhres");if(d)d.innerHTML=res(r)});
+  ${r?`<div class="hint" style="margin:0 0 6px">Chỉ điền các ô màu xanh nhạt; các ô còn lại tự tính. DT phù hợp QH có thể gõ phép tính, ví dụ 169-10.52.</div>${formHtml(r,true)}`:'<p class="hint">Bấm “+ Phiếu mới” để lập bảng thông tin và chỉ tiêu xây dựng.</p>'}`}
+document.addEventListener("input",e=>{const t=e.target,box=$("#qhbox");if(!box||!box.contains(t)||!t.dataset.qh)return;const r=cur();if(!r)return;r[t.dataset.qh]=t.value;persist();upd(r)});
 document.addEventListener("change",e=>{if(e.target.id==="qhsel"){sel=e.target.value;render()}});
 document.addEventListener("click",e=>{const t=e.target.closest("[data-qa]"),box=$("#qhbox");if(!t||!box||!box.contains(t))return;const a=t.dataset.qa,r=cur();
   if(a==="new"){const n=blank();Q().list.push(n);sel=n.id;persist();render()}
   else if(a==="dup"&&r){const n=Object.assign({},r,{id:uid(),ten:(r.ten||"")+" (bản sao)"});Q().list.push(n);sel=n.id;persist();render()}
   else if(a==="del"&&r){if(!confirm("Xóa phiếu này?"))return;Q().list=Q().list.filter(x=>x.id!==r.id);sel="";persist();render()}
-  else if(a==="pdf"&&r){$("#pbody").classList.remove("ovb");$("#pbody").innerHTML=formHtml(r);$("#pbody").contentEditable="true";$("#pdt").textContent="Thông tin quy hoạch - "+(r.ten||("thửa "+r.thua+" to "+r.to));$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pd").showModal()}
+  else if(a==="pdf"&&r){$("#pbody").classList.remove("ovb");$("#pbody").innerHTML=formHtml(r,false);$("#pbody").contentEditable="true";$("#pdt").textContent="Thông tin quy hoạch - "+(r.ten||("thửa "+r.thua+" to "+r.to));$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pd").showModal()}
 });
 window.renderQH=render;
 })();
