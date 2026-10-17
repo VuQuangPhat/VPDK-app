@@ -3561,19 +3561,24 @@ window.GIA_ADMIN=true;window.GIA_B64="H4sIAPXo0moC/+y9XY8kuZEg+Fcc9ZQJZbbCPyNioF
 (function(){
 "use strict";
 const CITIES=[
-  {id:"hcm",name:"TP.HCM",csv:"",
+  {id:"hcm",name:"TP.HCM",gid:0,csv:"",
    doc:"Nghị quyết 87/2025/NQ-HĐND (bảng giá đất năm 2026)",docUrl:"",updated:"",
    /* quy tắc vị trí 2,3,4 tính từ vị trí 1: [hệ số VT2 so với VT1, VT3 so với VT2, VT4 so với VT3] */
    rule:{k:[0.5,0.8,0.8],only1:["V"],text:"VT2 = 50% VT1; VT3 = 80% VT2; VT4 = 80% VT3 (Điều 6 của quy định kèm bảng giá)"},
    pl:{II:"Phụ lục II – TP.HCM (cũ)",III:"Phụ lục III – Bình Dương (cũ)",IV:"Phụ lục IV – Bà Rịa–Vũng Tàu (cũ)",V:"Phụ lục V – Khu công nghệ cao"},
    embedded:true},
-  {id:"hn",name:"Hà Nội",csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
-  {id:"hp",name:"Hải Phòng",csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
-  {id:"dn",name:"Đà Nẵng",csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
-  {id:"ct",name:"Cần Thơ",csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
-  {id:"hue",name:"Huế",csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}}
+  {id:"hn",name:"Hà Nội",gid:316742021,csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
+  {id:"hp",name:"Hải Phòng",gid:149092462,csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
+  {id:"dn",name:"Đà Nẵng",gid:1980692656,csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
+  {id:"ct",name:"Cần Thơ",gid:792712196,csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}},
+  {id:"hue",name:"Huế",gid:523061201,csv:"",doc:"",docUrl:"",updated:"",rule:null,pl:{}}
 ];
 const ROOT_ID="gia-dat-root";
+/* Google Sheet nguồn (chỉ hiện ở app quản lý, khi window.GIA_ADMIN = true). Mỗi thành phố = 1 trang tính (gid) */
+const SHEET_ID="1AAvG3DZr8wvuOa5BsPTPMNQNFL1MyPnOC8yyZ8tEWb0";
+const sheetUrl=c=>"https://docs.google.com/spreadsheets/d/"+SHEET_ID+"/edit#gid="+c.gid;
+const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return""}},lsSet=(k,v)=>{try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}};
+const csvOf=c=>lsGet("gdx_csv_"+c.id)||c.csv||"";
 const NOTE="Kết quả chỉ để tham khảo. Luôn đối chiếu văn bản gốc và cơ quan có thẩm quyền trước khi sử dụng.";
 
 const fold=s=>String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/đ/g,"d").replace(/Đ/g,"d").toLowerCase();
@@ -3619,7 +3624,7 @@ function init(){
   const cur=()=>CITIES[S.city];
   async function ensure(i){const c=CITIES[i];if(c.id in DATA)return;DATA[c.id]=undefined;SRC[c.id]="";
     if(c.embedded){try{DATA[c.id]=await loadEmbedded();if(DATA[c.id])SRC[c.id]="bản dữ liệu đi kèm trang"}catch(e){}render()}
-    if(c.csv){try{DATA[c.id]=await loadCsv(c.csv);SRC[c.id]="Google Sheet (cập nhật trực tiếp)"}catch(e){if(!DATA[c.id])DATA[c.id]=null;SRC[c.id]=(SRC[c.id]?SRC[c.id]+"; ":"")+"không đọc được Google Sheet"}}
+    if(csvOf(c)){try{DATA[c.id]=await loadCsv(csvOf(c));SRC[c.id]="Google Sheet (cập nhật trực tiếp)"}catch(e){if(!DATA[c.id])DATA[c.id]=null;SRC[c.id]=(SRC[c.id]?SRC[c.id]+"; ":"")+"không đọc được Google Sheet"}}
     else if(!c.embedded)DATA[c.id]=null}
   const D=()=>DATA[cur().id];
   function hits(){const d=D(),qs=fold(S.q).split(/\s+/).filter(Boolean),out=[];
@@ -3639,21 +3644,28 @@ function init(){
     o.innerHTML=u?`Đơn giá <b>${fm(u)}</b> đ/m²`+(dt>0?` × ${dt} m² = <b>${fm(Math.round(u*dt))} đ</b>`:""):"Không có giá cho loại đất / vị trí này"}
   function results(){const box=root.querySelector("[data-r=res]");if(!box)return;const L=hits();
     box.innerHTML=`<div class="hint" style="margin:6px 0">${L.length.toLocaleString("vi-VN")} kết quả${L.length>S.lim?` (hiển thị ${S.lim} dòng đầu – gõ thêm từ khóa để thu hẹp)`:""} · đơn vị bảng: nghìn đồng/m²${cur().rule?" (vị trí "+S.vt+")":" (vị trí 1)"} · bấm một dòng để xem chi tiết và tính thành tiền</div>`+(S.sel>=0?detail(S.sel):"")+(L.length?table(L.slice(0,S.lim)):"");calc()}
+  function adminPanel(c){if(!window.GIA_ADMIN)return"";
+    return `<div class="gdet" style="background:#f6f8fc"><div class="hint"><b>Quản lý nguồn dữ liệu – ${esc(c.name)}</b></div>
+    <div class="bar"><span>Bảng gốc để cập nhật: <a href="${sheetUrl(c)}" target="_blank" rel="noopener">Google Sheet “Bảng giá đất TP.HCM 2026” → trang tính ${esc(c.name)}</a></span></div>
+    <div class="bar"><input data-a="csvurl" placeholder="Liên kết CSV đã xuất bản của trang tính ${esc(c.name)}" value="${esc(lsGet("gdx_csv_"+c.id)||c.csv||"")}" style="flex:1;min-width:260px"><button class="tab" data-a="save">Lưu &amp; tải lại</button></div>
+    <div class="hint">Cách lấy liên kết: mở Google Sheet → chọn trang tính ${esc(c.name)} → Tệp → Chia sẻ → Xuất bản lên web → chọn đúng trang tính, định dạng CSV → Xuất bản → copy liên kết dán vào ô trên. Để trống = dùng bản dữ liệu đi kèm (nếu có).</div></div>`}
   function render(){const c=cur(),d=D();
-    const tabs=`<div class="tabs">${CITIES.map((x,i)=>`<button class="tab ${i===S.city?"on":""}" data-city="${i}">${esc(x.name)}${x.csv||x.embedded?"":" <small>· đang cập nhật</small>"}</button>`).join("")}</div>`;
+    const tabs=`<div class="tabs">${CITIES.map((x,i)=>`<button class="tab ${i===S.city?"on":""}" data-city="${i}">${esc(x.name)}${csvOf(x)||x.embedded?"":" <small>· đang cập nhật</small>"}</button>`).join("")}</div>`;
     let body;
     if(d===undefined)body='<p class="hint">Đang tải bảng giá…</p>';
-    else if(d===null||!d.d.length)body=`<div class="empty"><b>${esc(c.name)}</b>: bảng giá đang được cập nhật.${c.docUrl?`<br><a href="${esc(c.docUrl)}" target="_blank" rel="noopener">Xem văn bản gốc</a>`:""}</div>`;
+    else if(d===null||!d.d.length)body=`<div class="empty"><b>${esc(c.name)}</b>: bảng giá đang được cập nhật.${c.docUrl?`<br><a href="${esc(c.docUrl)}" target="_blank" rel="noopener">Xem văn bản gốc</a>`:""}</div>${adminPanel(c)}`;
     else{const multi=!!c.rule,pls=[...new Set(d.pl)].filter(Boolean).sort();
       body=`<div class="bar"><input class="q" data-a="q" placeholder="Gõ tên đường (không cần dấu), ví dụ: nguyen hue" value="${esc(S.q)}" style="min-width:260px;flex:1">
       <select data-a="w"><option value="">Tất cả phường/xã</option>${d.w.map((w,i)=>`<option value="${i}" ${S.w!==""&&+S.w===i?"selected":""}>${esc(w)}</option>`).join("")}</select>
       ${multi?`<select data-a="vt">${[1,2,3,4].map(k=>`<option value="${k}" ${S.vt===k?"selected":""}>Bảng theo vị trí ${k}</option>`).join("")}</select>`:""}
       ${pls.length>1?`<select data-a="pl"><option value="">Tất cả phụ lục</option>${pls.map(k=>`<option value="${esc(k)}" ${S.pl===k?"selected":""}>${esc(c.pl[k]||"Phụ lục "+k)}</option>`).join("")}</select>`:""}</div>
       <div data-r="res"></div>
-      <div class="hint" style="margin-top:12px">Nguồn: ${esc(c.doc||"văn bản gốc của địa phương")}${c.updated?" · cập nhật "+esc(c.updated):""} · ${d.d.length.toLocaleString("vi-VN")} dòng · đang dùng ${esc(SRC[c.id]||"–")}.<br>${esc(NOTE)}</div>${window.GIA_ADMIN?`<div class="bar"><button class="tab" data-a="imp">Nhập bảng giá từ file CSV…</button><button class="tab" data-a="exp">Tải bảng giá hiện tại (CSV)</button><input type="file" data-a="file" accept=".csv,text/csv" hidden><span class="hint" style="flex-basis:100%">Chỉ có ở app quản lý. Nhập CSV chỉ thay bảng của thành phố đang chọn cho lần mở này; muốn cập nhật lâu dài thì sửa Google Sheet và dán liên kết CSV vào trường csv của thành phố trong CITIES.</span></div>`:""}`}
+      <div class="hint" style="margin-top:12px">Nguồn: ${esc(c.doc||"văn bản gốc của địa phương")}${c.updated?" · cập nhật "+esc(c.updated):""} · ${d.d.length.toLocaleString("vi-VN")} dòng · đang dùng ${esc(SRC[c.id]||"–")}.<br>${esc(NOTE)}</div>${window.GIA_ADMIN?`<div class="bar"><button class="tab" data-a="imp">Nhập bảng giá từ file CSV…</button><button class="tab" data-a="exp">Tải bảng giá hiện tại (CSV)</button><input type="file" data-a="file" accept=".csv,text/csv" hidden><span class="hint" style="flex-basis:100%">Nhập CSV chỉ thay bảng của thành phố đang chọn cho lần mở này.</span></div>`+adminPanel(c):""}`}
     root.innerHTML=tabs+body;if(d&&d.d&&d.d.length)results()}
   root.addEventListener("click",e=>{const t=e.target.closest("[data-city]");
     if(t){S.city=+t.dataset.city;S.sel=-1;S.w="";S.pl="";S.vt=1;render();ensure(S.city).then(render);return}
+    const sv=e.target.closest("[data-a=save]");
+    if(sv){const c=cur(),v=(root.querySelector("[data-a=csvurl]").value||"").trim();lsSet("gdx_csv_"+c.id,v);delete DATA[c.id];render();ensure(S.city).then(render);return}
     const ad=e.target.closest("[data-a=imp],[data-a=exp]");
     if(ad){if(ad.dataset.a==="imp"){root.querySelector("[data-a=file]").click()}else{const d=D(),q=v=>{v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
       const H=["Phụ lục","Phường/xã","STT","Tên đường / khu vực","Từ","Đến","Đất ở (1.000đ/m²)","Đất TMDV (1.000đ/m²)","Đất SXKD (1.000đ/m²)","Trang PDF"];
