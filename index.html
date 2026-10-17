@@ -436,10 +436,10 @@ button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radiu
 .dgrp{margin:0 0 18px}.dgc{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:12px;align-items:start}.dgc .dcard{margin:8px 0 0}.dgrp .dsh h3{color:var(--ink)}.dsum+.dsub{margin-top:8px}
 
 .qhf{max-width:760px;padding:0;background:transparent;box-shadow:none}
-.qht{width:100%;border-collapse:collapse;table-layout:fixed;font-family:Calibri,Arial,sans-serif;color:#000;background:#fff}
+.qht{width:100%;border-collapse:collapse;table-layout:fixed;font-family:"Times New Roman",Times,serif;color:#000;background:#fff;border:2px solid #000}
 .qht td{border:1px solid #000;padding:2px 4px;text-align:center;vertical-align:middle;font-weight:700;font-size:14pt;word-break:break-word}
-.qht .ttl{background:#FDE9D9;font-size:16pt;height:41px}.qht .in{background:#DCE6F1}.qht .red,.qht .red input,.qht .red textarea,.qht .red span{color:#f00}.qht .navy,.qht .navy textarea,.qht .navy span{color:#1F497D}.qht .dred,.qht .dred textarea,.qht .dred span{color:#C00000}.qht .grn{color:#00B050}.qht .big{font-size:20pt;color:#f00;background:#F2F2F2}
-.qht tr.r13{height:33px}.qht tr.r14{height:58px}.qht tr.r15{height:43px}.qht tr.r16{height:30px}.qht tr.r17,.qht tr.r18{height:26px}.qht tr.r19{height:32px}.qht tr.nr{height:26px}
+.qht .ttl{background:#FDE9D9;font-size:16pt;height:52px}.qht .in{background:#C6D9F0}.qht .red,.qht .red input,.qht .red textarea,.qht .red span{color:#f00}.qht .navy,.qht .navy textarea,.qht .navy span{color:#1F497D}.qht .dred,.qht .dred textarea,.qht .dred span{color:#C00000}.qht .grn{color:#00B050;text-align:right;padding-right:16px}.qht .big{font-size:20pt;color:#f00;background:#F2F2F2;text-align:right;padding-right:16px}
+.qht tr.r13{height:38px}.qht tr.r14{height:66px}.qht tr.r15{height:50px}.qht tr.r16{height:34px}.qht tr.r17,.qht tr.r18{height:29px}.qht tr.r19{height:36px}.qht tr.nr{height:32px}
 .qht textarea{width:100%;border:0;background:transparent;font:inherit;color:inherit;text-align:center;resize:none;overflow:hidden;field-sizing:content;padding:0;outline:0;display:block;min-height:1.2em}.qht .nin{font-size:14pt}.qht textarea:focus{background:#fff8c5}
 .qht .calc{font-size:9pt;font-weight:400;color:#555}
 @media print{#proot .qhf.fd.tx{font-size:12pt;max-width:none}#proot .qht td{font-size:12.5pt}#proot .qht .ttl{font-size:14.5pt}#proot .qht .big{font-size:17pt}#proot .qht{break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
@@ -3300,7 +3300,7 @@ const NOTE="* Lưu ý: Thiết kế phải đảm bảo hệ số sử dụng đ
 const blank=()=>({id:uid(),thua:"554",to:"85",phuong:"Phú Thuận",dt:"169",dtqh:"169-10.52",hs:"3",qh:"QH XÂY DỰNG MỚI",tt:"CẤP TẠM",lui:"lùi sau 2M",lg:"8,5M",qm:"1 trệt, 2 lầu (có thêm tum thang hoặc lửng)",n1:"* Lưu ý: Thiết kế phải đảm bảo hệ số sử dụng đất và kiến trúc xung quanh",n2:"Khi thiết kế quy mô tối đa cần kiểm tra các điều kiện và quy định",n3:"chiều cao tối đa tầng 4 là 17.0 m, chiều cao xây dựng tối đa đến mái là 19.0 m",ten:""});
 function ev(s){s=String(s==null?"":s).replace(/,/g,".").replace(/\s+/g,"");if(!s)return null;if(!/^[\d.+\-*/()]+$/.test(s))return null;try{const v=Function('"use strict";return ('+s+')')();return isFinite(v)?v:null}catch(e){return null}}
 const mdxd=a=>a<50?100:a<=100?100-(a-50)*10/50:a<=200?90-(a-100)*20/100:a<=300?70-(a-200)*10/100:a<=500?60-(a-300)*10/200:50;
-const f2=n=>n==null?"":(Math.round(n*100)/100).toLocaleString("vi-VN",{maximumFractionDigits:2});
+const f2=n=>n==null?"":n.toLocaleString("vi-VN",{minimumFractionDigits:2,maximumFractionDigits:2});
 function calc(r){const dt=ev(r.dt),dq=ev(r.dtqh)!=null?ev(r.dtqh):dt,hs=ev(r.hs);
   const md=dq!=null?mdxd(dq):null;return {dt,dq,hs,md,san:dq!=null&&hs!=null?dq*hs:null,xd:dq!=null?dq*md/100:null}}
 function formHtml(r,ed){const c=calc(r);
@@ -3310,7 +3310,7 @@ function formHtml(r,ed){const c=calc(r);
   <tr class="r12"><td colspan="6" class="ttl">BẢNG THÔNG TIN &amp; CHỈ TIÊU XÂY DỰNG</td></tr>
   <tr class="r13"><td class="lb">THỬA SỐ</td><td class="in red">${I("thua")}</td><td class="lb">TỜ SỐ</td><td class="in red">${I("to")}</td><td class="lb">PHƯỜNG</td><td class="in red">${I("phuong")}</td></tr>
   <tr class="r14"><td class="lb">DT THỬA ĐẤT</td><td class="lb">DT PHÙ HỢP QH</td><td class="lb">HỆ SỐ SDĐ</td><td class="lb">DT SÀN XD TỐI ĐA CHO PHÉP</td><td class="lb">MDXD %</td><td class="lb">DTXD CHO PHÉP</td></tr>
-  <tr class="r15"><td class="in">${ed?I("dt"):`<span>${f2(c.dt)}</span>`}</td><td class="in red">${ed?I("dtqh"):`<span>${f2(c.dq)}</span>`}${ed?`<div class="calc" id="qhdq">${c.dq==null?"":"= "+f2(c.dq)}</div>`:""}</td><td class="in">${ed?I("hs"):`<span>${f2(c.hs)}</span>`}</td><td class="red" id="qhsan">${f2(c.san)}</td><td class="grn" id="qhmd">${f2(c.md)}</td><td class="big" id="qhxd">${f2(c.xd)}</td></tr>
+  <tr class="r15"><td class="in">${ed?I("dt"):`<span>${f2(c.dt)}</span>`}</td><td class="in red">${ed?I("dtqh"):`<span>${f2(c.dq)}</span>`}${ed?`<div class="calc" id="qhdq">${c.dq==null?"":"= "+f2(c.dq)}</div>`:""}</td><td class="in">${ed?I("hs"):`<span>${esc(r.hs||"")}</span>`}</td><td class="red" id="qhsan">${f2(c.san)}</td><td class="grn" id="qhmd">${f2(c.md)}</td><td class="big" id="qhxd">${f2(c.xd)}</td></tr>
   <tr class="r16"><td colspan="2" class="lb">QUY HOẠCH</td><td colspan="3" class="navy">${I("qh","navy")}</td><td class="navy">${I("tt","navy")}</td></tr>
   <tr class="r17"><td colspan="2" class="lb">KHOẢNG LÙI</td><td colspan="4" class="in">${I("lui")}</td></tr>
   <tr class="r18"><td colspan="2" class="lb">LỘ GIỚI</td><td colspan="4" class="in">${I("lg")}</td></tr>
@@ -3329,7 +3329,7 @@ document.addEventListener("click",e=>{const t=e.target.closest("[data-qa]"),box=
   if(a==="new"){const n=blank();Q().list.push(n);sel=n.id;persist();render()}
   else if(a==="dup"&&r){const n=Object.assign({},r,{id:uid(),ten:(r.ten||"")+" (bản sao)"});Q().list.push(n);sel=n.id;persist();render()}
   else if(a==="del"&&r){if(!confirm("Xóa phiếu này?"))return;Q().list=Q().list.filter(x=>x.id!==r.id);sel="";persist();render()}
-  else if(a==="pdf"&&r){$("#pbody").classList.remove("ovb");$("#pbody").innerHTML=formHtml(r,false);$("#pbody").contentEditable="true";$("#pdt").textContent="Thông tin quy hoạch - "+(r.ten||("thửa "+r.thua+" to "+r.to));$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pd").showModal()}
+  else if(a==="pdf"&&r){$("#pbody").classList.remove("ovb");$("#pbody").innerHTML=formHtml(r,false);$("#pbody").contentEditable="true";$("#pdt").textContent="Thông tin quy hoạch - "+(r.ten||("thửa "+r.thua+" tờ "+r.to));$("#phint").textContent="Bấm vào chữ để sửa trước khi in. Bấm “In / Lưu PDF”, chọn “Lưu dưới dạng PDF”, lề “Không”, tắt “Đầu trang và chân trang”.";$("#pd").showModal()}
 });
 window.renderQH=render;
 })();
