@@ -3452,7 +3452,7 @@ function flowBind(B,j,redraw){
       if(k==="khach")j.chu=v;else if(k==="tg")j.btn=v;
       else{const w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(w&&v){fin.tx.forEach(t=>{if(t.j===j.id&&t.w===w.n)t.w=v});w.n=v;saveJobInline()}}}
     else if(a==="bt"){j.bt=pa(e.value)}
-    else if(a.startsWith("pla:")){const k=+a.slice(4),am=sumPl();am[k]=pa(e.value);const t=am.reduce((x,y)=>x+y,0);if(t>0&&am.every(v=>v>0)){j.td=am.join("/");j.gia=Math.max(0,t-(+j.lephi||0));applyTd(j)}else alert("Mỗi đợt phải lớn hơn 0. Muốn bỏ đợt thì bấm 'Bớt đợt'.")}
+    else if(a.startsWith("pla:")){const k=+a.slice(4),am=sumPl(),t=am.reduce((x,y)=>x+y,0),n=am.length;am[k]=pa(e.value);if(n<2)alert("Hồ sơ chỉ có 1 đợt: số tiền đợt này chính là giá chốt, sửa ở ô Giá chốt.");else{const ix=k===n-1?k-1:n-1;am[ix]+=t-am.reduce((x,y)=>x+y,0);if(am.every(v=>v>0)){j.td=am.join("/");applyTd(j)}else alert("Số này làm đợt còn lại bị âm hoặc bằng 0. Giá chốt giữ nguyên "+fnum(t)+"đ, các đợt cộng lại phải đúng bằng giá chốt.")}}
     else if(a==="gia2"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
     else if(a==="td"){const v=e.value.trim();if(parseTd(v).length<1){alert("Tiến độ nhập dạng 50/50 hoặc 30/40/30 (tối đa 5 đợt).")}else{j.td=v;applyTd(j)}}
     else if(a==="gia"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
