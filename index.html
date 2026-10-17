@@ -1850,7 +1850,7 @@ function drawJob(){
   const j=jEdit,T=txIdx(),L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d)),s=jstat(j,T,"");
   const f=(k,l,t)=>'<div><label>'+l+'</label><input data-f="'+k+'" type="'+(t||"text")+'" value="'+esc(j[k]==null?"":j[k])+'"></div>';
   const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
-  const kp=[["Báo khách",fnum(s.tong),""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""]];
+  const kp=[["Báo khách",fnum(s.tong),""],["Báo chị Thư (đ)",'<input data-fl="bt" inputmode="numeric" placeholder="nhập giá báo" value="'+(((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a)||"")?Number(j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a).toLocaleString("vi-VN"):"")+'" style="width:100%;font:inherit;font-weight:700;border:0;border-bottom:1px dashed #b8c0cc;background:transparent;padding:0">',""],["Chi "+((((j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""))||{}).n)||"anh Nam"),(j.cb||[]).some(x=>/^Thực hiện/.test(x.l||""))?fnum((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)):"–",""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""]];
   const si=stIdx(j);
   const stg='<div class="stg">'+STAGES.map(([k,n],i)=>'<button data-st="'+k+'" class="'+(j.st===k?"cur":(si>=0&&i<si?"past":""))+'">'+(i+1)+'. '+n+'</button>').join("")+'<button data-st="nobg" class="'+(j.st==="nobg"?"cur":"")+'" style="margin-left:auto">Khách không làm</button><button data-st="fail" class="'+(j.st==="fail"?"cur":"")+'" style="color:var(--seal)">Fail</button><button data-st="huy" class="'+(j.st==="huy"?"cur":"")+'">Hủy</button></div>'+
     (j.stLog&&j.stLog.length?'<div class="lg">'+j.stLog.map(x=>esc((STAGES.find(z=>z[0]===x.st)||[0,x.st==="huy"?"Hủy":x.st==="fail"?"Fail":x.st==="nobg"?"Khách không làm":x.st])[1])+' '+dmy(x.d)).join(" → ")+'</div>':'');
@@ -3421,9 +3421,6 @@ function flowSec(j,s,L){
   }
   const tAll=fsum(L.filter(t=>t.k==="thu").map(t=>t.a)),lg=L.filter(t=>(t.k==="thu"||cb.some(x=>x.n===t.w))&&!(+t.dot>=1&&+t.dot<=ND));
   rows+='<tr style="background:#f4f6fa"><td><b>Tổng</b></td><td class="num"><b>'+fnum(fsum(plA))+'</b></td><td class="num"><b>'+fnum(tAll)+'</b></td>'+cb.map(x=>'<td class="num"><b>'+fnum(x.a)+'</b><br><span class="lg">đã '+fnum(paid(x.n))+'</span></td>').join("")+'<td class="num"><b>'+fm(conL)+'</b><br><span class="lg">lợi nhuận dự kiến</span><br><span class="lg">đã chốt: <b>'+fnum(chotL)+'</b> · còn phải chi: <b>'+fnum(conPhai)+'</b></span></td><td></td></tr>';
-  const T=v=>fnum(v||0),sumT=dn?'<div class="nt"><table class="m flowt" style="background:#fff"><tr><th>Đợt</th><th>Mốc · hạn thu</th><th class="num">Phải thu</th><th class="num">Đã thu</th><th class="num">Còn phải thu</th>'+cb.map(x=>'<th class="num">'+esc(x.n)+'<br><span class="lg">phải chi / đã chi</span></th>').join("")+'<th class="num">Lãi dự kiến</th><th class="num">Lãi đã chốt</th><th>Tình trạng</th></tr>'+
-    DD.map(d=>'<tr><td><b>'+(pl[d.k]?esc(pl[d.k].n):"Toàn bộ")+'</b></td><td>'+esc((pl[d.k]&&pl[d.k].m)||"")+(pl[d.k]&&pl[d.k].han?'<br><span class="lg">'+dmy(pl[d.k].han)+'</span>':'')+'</td><td class="num">'+T(plA[d.k])+'</td><td class="num">'+T(d.aT)+'</td><td class="num">'+T(Math.max(0,plA[d.k]-d.aT))+'</td>'+cb.map((x,i)=>'<td class="num">'+T(d.pc[i])+' / <b>'+T(d.ac[i])+'</b></td>').join("")+'<td class="num">'+(cb.length?T(d.lp):"–")+'</td><td class="num '+(d.dnK?"pos":"")+'">'+(d.dnK?'<b>'+T(d.la)+'</b>':'–')+'</td><td>'+(d.dnK?'<span class="fc b">Đã chốt</span>':(d.aT>0?'<span class="fc y">Đã thu, còn phải chi '+T(Math.max(0,fsum(d.pc)-fsum(d.ac)))+'</span>':'<span class="fc">Chưa thu</span>'))+'</td></tr>').join("")+
-    '<tr style="background:#eef1f6;font-weight:700"><td>Tổng</td><td></td><td class="num">'+T(fsum(plA))+'</td><td class="num">'+T(tAll)+'</td><td class="num">'+T(Math.max(0,fsum(plA)-tAll))+'</td>'+cb.map(x=>'<td class="num">'+T(x.a)+' / '+T(paid(x.n))+'</td>').join("")+'<td class="num">'+fm(conL)+'</td><td class="num">'+T(chotL)+'</td><td>còn phải chi '+T(conPhai)+'</td></tr></table></div>':'<p class="lg">Chốt báo giá ở bước 1 để có bảng tổng hợp.</p>';
   const g2=H(2,"THU CHI THEO TIẾN ĐỘ","theo giá chốt: thu từ "+esc(chotName)+", chi cho từng người",dn&&!0)+(dn?'<p class="lg">Giá chốt <b>'+fnum(total)+'</b> · '+ND+' đợt ('+esc(tdStr(pl)||j.td||"")+'%)</p>':'<p class="lg">Chốt một báo giá ở bước 1 để có giá và tiến độ.</p>')+add+'<div class="nt"><table class="m flowt">'+head+rows+'</table></div>'+(lg.length?'<p class="lg">Có '+lg.length+' khoản cũ chưa gán đợt (xem ở mục Nâng cao), vẫn được tính vào tổng.</p>':'');
   // ---- 3. BIẾN ĐỘNG
   const tdTxt=e=>e.t==="td"?"Đổi tiến độ "+tdStr(e.old||[])+" → "+tdStr(e.nw||[]):(BDT.find(x=>x[0]===e.t)||[0,e.t])[1];
@@ -3433,7 +3430,7 @@ function flowSec(j,s,L){
   const src={t:chotName,s:"chốt "+tr(total),p:tr(total)+(ND>1?" · "+ND+" đợt":"")+"|đã thu "+tr(s.thu),tone:"src",fe:"src"};
   const outs=cb.map((x,i)=>({t:x.n,s:x.l||"",p:tr(x.a)+"|đã trả "+tr(paid(x.n)),tone:isW(x)?"nam":"thu",fe:"out"+i}));outs.push({t:"Lãi của tôi",s:"dự kiến",p:(conL==null?"chưa nhập chi":tr(conL))+"|đã chốt "+tr(chotL),tone:"lai"});
   const locked=!!(dn&&(j.chotQt||j.xong||L.length)),sum1='Đã chốt '+tr(total)+' với '+esc(chotName)+' · '+ND+' đợt'+(cb.length?' · chi '+cb.map(x=>esc(x.n)+' '+tr(x.a)).join(', '):'');
-  return '<h4 style="margin:6px 0 4px">Bảng tổng hợp tiến độ thu chi và lợi nhuận</h4>'+sumT+'<details'+(locked&&!FO[j.id]?'':' open')+' class="flowset"><summary><b>'+(locked?'① '+sum1+' <span class="lg">(bấm để xem / sửa báo giá)</span>':'① Báo giá → chốt')+'</b></summary>'+g1+'</details>'+g2+g3+
+  return '<details'+(locked&&!FO[j.id]?'':' open')+' class="flowset"><summary><b>'+(locked?'① '+sum1+' <span class="lg">(bấm để xem / sửa báo giá)</span>':'① Báo giá → chốt')+'</b></summary>'+g1+'</details>'+g2+g3+
    '<h4 style="margin:12px 0 4px">Sơ đồ tiền đi <span class="lg">(bấm vào ô hoặc mũi tên để chỉnh)</span></h4>'+drawFlow({src:[src],mid:{t:"Tôi",s:"nhận "+tr(total)+" · đã thu "+tr(s.thu)},outs,edit:true});
 }
 function flowBind(B,j,redraw){
@@ -3443,7 +3440,8 @@ function flowBind(B,j,redraw){
   const sumPl=()=>(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);
   const cur=(k,n,d)=>fsum(fin.tx.filter(t=>t.j===j.id&&t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1).map(t=>t.a));
   B.querySelectorAll("input[data-fl]").forEach(e=>e.onchange=()=>{const a=e.dataset.fl;
-    if(a==="lephi"){j.lephi=pa(e.value);applyTd(j)}
+    if(a==="bt"){j.bt=pa(e.value)}
+    else if(a==="lephi"){j.lephi=pa(e.value);applyTd(j)}
     else if(a.startsWith("moc:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].m=e.value}
     else if(a.startsWith("han:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].han=e.value}
     else if(a.startsWith("thu:")){tx("thu","",+a.slice(4),pa(e.value))}
