@@ -3615,7 +3615,7 @@ function init(){
   const root=document.getElementById(ROOT_ID);if(!root)return;
   if(!document.getElementById("gdx-css")){const s=document.createElement("style");s.id="gdx-css";s.textContent=CSS;document.head.appendChild(s)}
   root.classList.add("gdx");
-  const S={city:0,q:"",w:"",pl:"",vt:1,sel:-1,loai:0,dt:"",lim:150},DATA={},SRC={};
+  const S={city:0,q:"",w:"",pl:"",vt:1,sel:-1,loai:0,dt:"",lim:20},DATA={},SRC={};
   const cur=()=>CITIES[S.city];
   async function ensure(i){const c=CITIES[i];if(c.id in DATA)return;DATA[c.id]=undefined;SRC[c.id]="";
     if(c.embedded){try{DATA[c.id]=await loadEmbedded();if(DATA[c.id])SRC[c.id]="bản dữ liệu đi kèm trang"}catch(e){}render()}
