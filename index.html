@@ -3393,13 +3393,14 @@ const FO={};
 const parseTd=t=>String(t||"").split(/[\/\-+,;\s]+/).map(x=>parseFloat(String(x).replace(",","."))).filter(x=>x>0).slice(0,5);
 const spl=(a,arr)=>{const tot=arr.reduce((p,q)=>p+q,0),r=arr.map(v=>tot?Math.round(a*v/tot):Math.round(a/arr.length));r[r.length-1]+=a-r.reduce((p,q)=>p+q,0);return r};
 const tdStr=pl=>{const t=pl.reduce((a,p)=>a+(+p.a||0),0);return t?pl.map(p=>Math.round((+p.a||0)/t*1000)/10).join("/"):""};
-function applyTd(j){if(!j.td)j.td="50/50";const p=parseTd(j.td),tot=(+j.gia||0)+(+j.lephi||0);if(!p.length||!(tot>0))return;const r=spl(tot,p),old=j.pl||[];
-  j.pl=r.map((a,k)=>({n:"Đợt "+(k+1),a,tr:(old[k]&&old[k].tr)||"",han:(old[k]&&old[k].han)||"",m:(old[k]&&old[k].m!=null)?old[k].m:(r.length===2?["Sau khi ký hồ sơ","Sau khi xong hồ sơ"][k]:"")}));(j.cb||[]).forEach(x=>{x.p=spl(+x.a||0,r)})}
+function applyTd(j,keep){if(!j.td)j.td="50/50";const p=parseTd(j.td),tot=(+j.gia||0)+(+j.lephi||0);if(!p.length||!(tot>0))return;const r=spl(tot,p),old=j.pl||[];
+  j.pl=r.map((a,k)=>({n:"Đợt "+(k+1),a,tr:(old[k]&&old[k].tr)||"",han:(old[k]&&old[k].han)||"",m:(old[k]&&old[k].m!=null)?old[k].m:(r.length===2?["Sau khi ký hồ sơ","Sau khi xong hồ sơ"][k]:"")}));if(!keep)(j.cb||[]).forEach(x=>{x.p=spl(+x.a||0,r)})}
 const BDT=[["gia+","Tăng giá (phải thu thêm)"],["gia-","Giảm giá (phải thu bớt)"],["ung","Ứng thêm (nhận thêm tiền)"],["hoan","Hoàn trả tiền cho bên chốt"],["thuhoi","Thu lại khoản đã chi của người"],["chi+","Chi thêm: tăng khoản phải trả"],["tra+","Trả thêm cho người nhận chi"]];
 function txSet(j,kind,name,d,a){const w=kind==="chi"?name:"",x=(j.cb||[]).find(q=>q.n===name)||{};
   fin.tx=fin.tx.filter(t=>!(t.j===j.id&&t.k===kind&&(kind==="thu"||t.w===name)&&+t.dot===d+1));
   if(a>0)fin.tx.push({id:"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),j:j.id,k:kind,cat:kind==="chi"&&!isW(x)?"hh":"",a,w,dot:d+1,d:today(),n:(kind==="thu"?"Thu":"Trả "+name)+" đợt "+(d+1)});saveJobInline()}
 function srcName(j){return j.truc?(j.chu||j.chot||"Khách"):(j.btn||j.chot||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).to||j.gt||"Trung gian")}
+const fixTot=(nw,old,tot)=>{let ix=-1;for(let k=nw.length-1;k>=0;k--)if(nw[k]===old[k]){ix=k;break}if(ix<0)ix=nw.length-1;nw[ix]+=tot-fsum(nw);return nw.every(v=>v>=0)};
 function flowPre(j){if((+j.gia||0)>0&&!(j.pl&&j.pl.length)&&((j.cb&&j.cb.length)||(j.qt&&j.qt.length)||j.truc||j.chotQt))applyTd(j)}
 window.flowPre=flowPre;
 function flowSec(j,s,L){
@@ -3452,23 +3453,23 @@ function flowBind(B,j,redraw){
       if(k==="khach")j.chu=v;else if(k==="tg")j.btn=v;
       else{const w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(w&&v){fin.tx.forEach(t=>{if(t.j===j.id&&t.w===w.n)t.w=v});w.n=v;saveJobInline()}}}
     else if(a==="bt"){j.bt=pa(e.value)}
-    else if(a.startsWith("pla:")){const k=+a.slice(4),am=sumPl(),t=am.reduce((x,y)=>x+y,0),n=am.length;am[k]=pa(e.value);if(n<2)alert("Hồ sơ chỉ có 1 đợt: số tiền đợt này chính là giá chốt, sửa ở ô Giá chốt.");else{const ix=k===n-1?k-1:n-1;am[ix]+=t-am.reduce((x,y)=>x+y,0);if(am.every(v=>v>0)){j.td=am.join("/");applyTd(j)}else alert("Số này làm đợt còn lại bị âm hoặc bằng 0. Giá chốt giữ nguyên "+fnum(t)+"đ, các đợt cộng lại phải đúng bằng giá chốt.")}}
-    else if(a==="gia2"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
+    else if(a.startsWith("pla:")){const k=+a.slice(4),old=sumPl(),nw=old.slice(),t=fsum(old);nw[k]=pa(e.value);if(old.length<2)alert("Hồ sơ chỉ có 1 đợt: số tiền đợt này chính là giá chốt, sửa ở ô Giá chốt.");else if(fixTot(nw,old,t)&&nw.every(v=>v>0)){j.td=nw.join("/");applyTd(j,1)}else alert("Số này làm đợt còn lại bị âm hoặc bằng 0. Giá chốt giữ nguyên "+fnum(t)+"đ.")}
+    else if(a==="gia2"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j,1)}
     else if(a==="td"){const v=e.value.trim();if(parseTd(v).length<1){alert("Tiến độ nhập dạng 50/50 hoặc 30/40/30 (tối đa 5 đợt).")}else{j.td=v;applyTd(j)}}
-    else if(a==="gia"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
+    else if(a==="gia"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j,1)}
     else if(a==="nam"){const v=pa(e.value);let w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(!w){if(!v)return;const nm=(prompt("Tên người thực hiện công việc?","")||"").trim();if(!nm)return;w={n:nm,l:"Thực hiện công việc",a:0,p:[]};(j.cb=j.cb||[]).push(w)}
       const pp=(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);w.a=v;w.p=spl(v,pp)}
-    else if(a==="lephi"){j.lephi=pa(e.value);applyTd(j)}
+    else if(a==="lephi"){j.lephi=pa(e.value);applyTd(j,1)}
     else if(a.startsWith("moc:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].m=e.value}
     else if(a.startsWith("han:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].han=e.value}
     else if(a.startsWith("thu:")){tx("thu","",+a.slice(4),pa(e.value))}
     else if(a.startsWith("chi:")){const[i,k]=a.slice(4).split(",").map(Number);tx("chi",j.cb[i].n,k,pa(e.value))}
-    else if(a.startsWith("plan:")){const[i,k]=a.slice(5).split(",").map(Number),x=j.cb[i];x.p[k]=pa(e.value);x.a=fsum(x.p)}
+    else if(a.startsWith("plan:")){const[i,k]=a.slice(5).split(",").map(Number),x=j.cb[i],old=(x.p||[]).slice(),nw=old.slice();nw[k]=pa(e.value);if(old.length<2)alert("Chỉ có 1 đợt: số chi đợt này là tổng chi, sửa ở thẻ Chi.");else if(fixTot(nw,old,+x.a||fsum(old)))x.p=nw;else alert("Số này làm đợt còn lại bị âm. Tổng chi "+esc(x.n)+" giữ nguyên "+fnum(x.a)+"đ.")}
     redraw()});
   B.querySelectorAll("button[data-fl^=fill]").forEach(b=>b.onclick=()=>{const a=b.dataset.fl.slice(5);
     if(a.startsWith("thu:")){const k=+a.slice(4);tx("thu","",k,sumPl()[k])}
     else{const[i,k]=a.slice(4).split(",").map(Number);tx("chi",j.cb[i].n,k,(j.cb[i].p||[])[k]||0)}redraw()});
-  const setAm=am=>{j.td=am.join("/");j.gia=Math.max(0,am.reduce((x,y)=>x+y,0)-(+j.lephi||0));applyTd(j);redraw()};
+  const setAm=am=>{j.td=am.join("/");j.gia=Math.max(0,am.reduce((x,y)=>x+y,0)-(+j.lephi||0));applyTd(j,1);redraw()};
   B.querySelectorAll("button[data-fl=dadd]").forEach(b=>b.onclick=()=>{const am=sumPl();if(am.length>=5){alert("Tối đa 5 đợt.");return}if(!(am[am.length-1]>1)){alert("Nhập giá chốt trước.");return}const l=am.pop(),h=Math.round(l/2);am.push(h,l-h);setAm(am)});
   B.querySelectorAll("button[data-fl=ddel]").forEach(b=>b.onclick=()=>{const am=sumPl();if(am.length<2)return;if(fin.tx.some(t=>t.j===j.id&&+t.dot>=am.length)&&!confirm("Đợt cuối đã có thu chi. Gộp vào đợt trước?"))return;const l=am.pop();am[am.length-1]+=l;setAm(am)});
   B.querySelectorAll("a[data-fl^=del]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const i=+a.dataset.fl.slice(4);if(confirm("Xóa người nhận chi này khỏi hồ sơ?")){j.cb.splice(i,1);redraw()}});
@@ -3523,12 +3524,12 @@ function flowEdit(j,fe,redraw){
   let h="",save;
   if(fe==="src"){
     h='<h2>'+esc(srcName(j))+' → tôi</h2><div class="grid"><label>Giá chốt (đ)<input id="f_gia" inputmode="numeric" value="'+fv(j.gia)+'"></label></div><table class="m"><tr><th>Đợt</th><th class="num">Phải thu</th><th class="num">Đã thu</th></tr>'+pl.map((p,k)=>'<tr><td>Đợt '+(k+1)+'</td><td class="num">'+inp("f_pl",k,p.a)+'</td><td class="num">'+inp("f_ac",k,act("thu","",k),p.a)+'</td></tr>').join("")+'</table><p class="hint">Ô “Đã thu” để trống = chưa thu. Bạn nhập số thực nhận của từng đợt.</p>';
-    save=()=>{j.gia=parseAmt(d.querySelector("#f_gia").value);j.pl=pl;pl.forEach((p,k)=>{p.a=parseAmt(d.querySelector('.f_pl[data-k="'+k+'"]').value)});pl.forEach((p,k)=>txSet(j,"thu","",k,parseAmt(d.querySelector('.f_ac[data-k="'+k+'"]').value)))};
+    save=()=>{const ng=parseAmt(d.querySelector("#f_gia").value),old=pl.map(p=>+p.a||0),nw=pl.map((_,k)=>parseAmt(d.querySelector('.f_pl[data-k="'+k+'"]').value)),tot=ng+(+j.lephi||0);if(nw.length===1)nw[0]=tot;else if(!fixTot(nw,old,tot)||!nw.every(v=>v>0)){alert("Các đợt phải cộng đúng giá chốt "+fnum(tot)+"đ và đều lớn hơn 0.");return false}j.gia=ng;j.pl=pl;pl.forEach((p,k)=>{p.a=nw[k]});if(nw.length>1)j.td=nw.join("/");pl.forEach((p,k)=>txSet(j,"thu","",k,parseAmt(d.querySelector('.f_ac[data-k="'+k+'"]').value)))};
   }else{
     const i=+fe.slice(3),x=(j.cb||[])[i];if(!x)return;
     if(!Array.isArray(x.p)||x.p.length!==ND)x.p=spl(+x.a||0,pl.map(p=>+p.a||0));
     h='<h2>Tôi → '+esc(x.n)+'</h2><div class="grid"><label>Người nhận<input id="f_n" value="'+esc(x.n)+'"></label><label>Lý do<select id="f_l">'+["Thực hiện công việc","Chia lợi nhuận","Giới thiệu","Khác"].map(o=>'<option'+(o===x.l?" selected":"")+'>'+o+'</option>').join("")+'</select></label></div><table class="m"><tr><th>Đợt</th><th class="num">Phải chi</th><th class="num">Đã chi</th></tr>'+x.p.map((a,k)=>'<tr><td>Đợt '+(k+1)+'</td><td class="num">'+inp("f_pl",k,a)+'</td><td class="num">'+inp("f_ac",k,act("chi",x.n,k),a)+'</td></tr>').join("")+'</table><p class="hint">Ô “Đã chi” để trống = chưa trả. Bạn nhập số thực đã trả của từng đợt.</p>';
-    save=()=>{const on=x.n,nn=d.querySelector("#f_n").value.trim()||on;x.l=d.querySelector("#f_l").value;x.p=x.p.map((_,k)=>parseAmt(d.querySelector('.f_pl[data-k="'+k+'"]').value)||0);x.a=fsum(x.p);
+    save=()=>{const on=x.n,nn=d.querySelector("#f_n").value.trim()||on;x.l=d.querySelector("#f_l").value;{const old=x.p.slice(),nw=old.map((_,k)=>parseAmt(d.querySelector('.f_pl[data-k="'+k+'"]').value)||0);if(old.length>1&&!fixTot(nw,old,+x.a||fsum(old))){alert("Các đợt phải cộng đúng tổng chi "+fnum(x.a)+"đ.");return false}if(old.length===1)x.a=nw[0];x.p=nw}
       const ac=x.p.map((_,k)=>parseAmt(d.querySelector('.f_ac[data-k="'+k+'"]').value)||0);if(nn!==on){fin.tx.forEach(t=>{if(t.j===j.id&&t.k==="chi"&&t.w===on)t.w=nn});x.n=nn}
       ac.forEach((a,k)=>txSet(j,"chi",x.n,k,a))};
     d.dataset.del=i;
@@ -3537,7 +3538,7 @@ function flowEdit(j,fe,redraw){
   document.body.appendChild(d);
   d.querySelectorAll('input[inputmode="numeric"]').forEach(e=>e.oninput=()=>{const n=parseAmt(e.value);e.value=n?n.toLocaleString("vi-VN"):""});
   d.querySelector("#f_x").onclick=()=>d.close();
-  d.querySelector("#f_ok").onclick=()=>{save();saveJobInline();d.close();redraw()};
+  d.querySelector("#f_ok").onclick=()=>{if(save()===false)return;saveJobInline();d.close();redraw()};
   if(d.querySelector("#f_del"))d.querySelector("#f_del").onclick=()=>{if(confirm("Xóa người này khỏi hồ sơ?")){j.cb.splice(+d.dataset.del,1);d.close();redraw()}};
   d.showModal()}
 window.flowEdit=flowEdit;
