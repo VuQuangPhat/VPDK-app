@@ -1852,7 +1852,7 @@ function openJobForCase(c){
 function finChip(c){try{const j=fin.jobs.find(x=>x.cid===c.id);if(!j)return"";const T=txIdx(),s=jstat(j,T,"");return' <span class="fc b" title="Thẻ doanh thu của thửa đất">'+esc(stName(j))+' · thu '+fshort(s.thu)+'/'+fshort(s.tong)+(s.no?' · nợ '+fshort(s.no):'')+'</span>'}catch(e){return""}}
 function drawJob(){
   if(jEdit&&jEdit.gc){jEdit.nd=[jEdit.nd,jEdit.gc].filter(Boolean).join(" — ");jEdit.gc=""}
-  const j=jEdit,T=txIdx(),L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d)),s=jstat(j,T,"");
+  const j=jEdit;if(window.flowPre)flowPre(j);const T=txIdx(),L=fin.tx.filter(t=>t.j===j.id).sort((a,b)=>a.d.localeCompare(b.d)),s=jstat(j,T,"");
   const f=(k,l,t)=>'<div><label>'+l+'</label><input data-f="'+k+'" type="'+(t||"text")+'" value="'+esc(j[k]==null?"":j[k])+'"></div>';
   const ca=db.cases.slice().sort((a,b)=>caseTitle(a).localeCompare(caseTitle(b),"vi"));
   const kp=[['Báo <input class="kname" data-fl="nm:khach" placeholder="khách" value="'+esc((j.chu||(db.cases.find(c=>c.id===j.cid)||{}).chu||""))+'">','<input data-fl="gia" inputmode="numeric" placeholder="nhập giá báo khách" value="'+(s.tong?Number(s.tong).toLocaleString("vi-VN"):"")+'" class="kin">',""],['Báo <input class="kname" data-fl="nm:tg" placeholder="trung gian" value="'+esc((j.btn||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).to||j.gt||""))+'">','<input data-fl="bt" inputmode="numeric" placeholder="nhập giá báo" value="'+((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)?Number((j.bt||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).a||0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],['Chi <input class="kname" data-fl="nm:nam" placeholder="người thực hiện" value="'+esc(((((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||""))[0])||{}).n||""))+'">','<input data-fl="nam" inputmode="numeric" placeholder="nhập số chi" value="'+((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)?Number((j.cb||[]).filter(x=>/^Thực hiện/.test(x.l||"")).reduce((t,x)=>t+(+x.a||0),0)).toLocaleString("vi-VN"):"")+'" class="kin">',""],["Lãi dự kiến khi xong",fnum(s.laiDK),s.laiDK<0?"neg":""],["Đã thu",fnum(s.thu),"pos"],["Còn nợ",fnum(s.no),s.no?"neg":""],["Chi thực tế",fnum(s.chi)+(s.hhP?" (HH "+fnum(s.hhP)+")":""),""],["Lãi tạm tính (thu − chi)",fnum(s.lai),s.lai<0?"neg":"pos"]];
@@ -3400,6 +3400,8 @@ function txSet(j,kind,name,d,a){const w=kind==="chi"?name:"",x=(j.cb||[]).find(q
   fin.tx=fin.tx.filter(t=>!(t.j===j.id&&t.k===kind&&(kind==="thu"||t.w===name)&&+t.dot===d+1));
   if(a>0)fin.tx.push({id:"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),j:j.id,k:kind,cat:kind==="chi"&&!isW(x)?"hh":"",a,w,dot:d+1,d:today(),n:(kind==="thu"?"Thu":"Trả "+name)+" đợt "+(d+1)});saveJobInline()}
 function srcName(j){return j.truc?(j.chu||j.chot||"Khách"):(j.btn||j.chot||((j.qt||[]).find(q=>q.vt==="Trung gian")||{}).to||j.gt||"Trung gian")}
+function flowPre(j){if((+j.gia||0)>0&&!(j.pl&&j.pl.length)&&((j.cb&&j.cb.length)||(j.qt&&j.qt.length)||j.truc||j.chotQt))applyTd(j)}
+window.flowPre=flowPre;
 function flowSec(j,s,L){
   const cb=j.cb||[],pl=s.pl||[],ND=Math.max(1,pl.length),plA=pl.length?pl.map(p=>+p.a||0):[s.tong],qt=j.qt||[],bd=j.bd||[];
   cb.forEach(x=>{if(!Array.isArray(x.p)||x.p.length!==ND)x.p=spl(+x.a||0,plA);x.a=fsum(x.p)});
@@ -3427,7 +3429,7 @@ function flowSec(j,s,L){
   }
   const tAll=fsum(L.filter(t=>t.k==="thu").map(t=>t.a)),lg=L.filter(t=>(t.k==="thu"||cb.some(x=>x.n===t.w))&&!(+t.dot>=1&&+t.dot<=ND));
   rows+='<tr style="background:#f4f6fa"><td><b>Tổng</b></td><td class="num"><b>'+fnum(fsum(plA))+'</b></td><td class="num"><b>'+fnum(tAll)+'</b></td>'+cb.map(x=>'<td class="num"><b>'+fnum(x.a)+'</b><br><span class="lg">đã '+fnum(paid(x.n))+'</span></td>').join("")+'<td class="num"><b>'+fm(conL)+'</b><br><span class="lg">lợi nhuận dự kiến</span><br><span class="lg">đã chốt: <b>'+fnum(chotL)+'</b> · còn phải chi: <b>'+fnum(conPhai)+'</b></span></td><td></td></tr>';
-  const g2=H(2,"THU CHI THEO TIẾN ĐỘ","theo giá chốt: thu từ "+esc(chotName)+", chi cho từng người",dn&&!0)+(dn?'<p class="lg">Giá chốt <b>'+fnum(total)+'</b> · '+ND+' đợt ('+esc(tdStr(pl)||j.td||"")+'%)</p>':'<p class="lg">Chốt một báo giá ở bước 1 để có giá và tiến độ.</p>')+add+'<div class="nt"><table class="m flowt">'+head+rows+'</table></div>'+(lg.length?'<p class="lg">Có '+lg.length+' khoản cũ chưa gán đợt (xem ở mục Nâng cao), vẫn được tính vào tổng.</p>':'');
+  const g2=H(2,"THU CHI THEO TIẾN ĐỘ","theo giá chốt: thu từ "+esc(chotName)+", chi cho từng người",dn&&!0)+'<div class="filters" style="padding:0;margin:4px 0;align-items:center"><label>Giá chốt (đ) <input data-fl="gia2" inputmode="numeric" placeholder="nhập giá chốt" value="'+f(total)+'" style="width:140px;font-weight:700"></label><label>Tiến độ (%) <input data-fl="td" value="'+esc(tdStr(pl)||j.td||"50/50")+'" title="Ví dụ 50/50, 30/40/30… tối đa 5 đợt" style="width:110px"></label><span class="lg">'+ND+' đợt · sửa giá hoặc tiến độ thì các đợt và khoản chi chia lại</span></div>'+add+'<div class="nt"><table class="m flowt">'+head+rows+'</table></div>'+(lg.length?'<p class="lg">Có '+lg.length+' khoản cũ chưa gán đợt (xem ở mục Nâng cao), vẫn được tính vào tổng.</p>':'');
   // ---- 3. BIẾN ĐỘNG
   const tdTxt=e=>e.t==="td"?"Đổi tiến độ "+tdStr(e.old||[])+" → "+tdStr(e.nw||[]):(BDT.find(x=>x[0]===e.t)||[0,e.t])[1];
   const g3=H(3,"BIẾN ĐỘNG","tăng giảm giá, hoàn trả, thu lại hoặc chi thêm cho ai, đổi tiến độ",false)+
@@ -3450,6 +3452,8 @@ function flowBind(B,j,redraw){
       if(k==="khach")j.chu=v;else if(k==="tg")j.btn=v;
       else{const w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(w&&v){fin.tx.forEach(t=>{if(t.j===j.id&&t.w===w.n)t.w=v});w.n=v;saveJobInline()}}}
     else if(a==="bt"){j.bt=pa(e.value)}
+    else if(a==="gia2"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
+    else if(a==="td"){const v=e.value.trim();if(parseTd(v).length<1){alert("Tiến độ nhập dạng 50/50 hoặc 30/40/30 (tối đa 5 đợt).")}else{j.td=v;applyTd(j)}}
     else if(a==="gia"){j.gia=Math.max(0,pa(e.value)-(+j.lephi||0));applyTd(j)}
     else if(a==="nam"){const v=pa(e.value);let w=(j.cb||[]).find(x=>/^Thực hiện/.test(x.l||""));if(!w){if(!v)return;const nm=(prompt("Tên người thực hiện công việc?","")||"").trim();if(!nm)return;w={n:nm,l:"Thực hiện công việc",a:0,p:[]};(j.cb=j.cb||[]).push(w)}
       const pp=(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);w.a=v;w.p=spl(v,pp)}
