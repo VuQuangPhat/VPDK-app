@@ -447,6 +447,8 @@ button.pgback{display:inline-block;margin:0 0 10px;padding:8px 16px;border-radiu
 @media print{.fd.gp .gt{font-size:10pt}}
 
 .flowbox{background:#f8f9fb;border:1px solid #e1e5ec;border-radius:12px;padding:8px;overflow:auto;margin:4px 0}.flowt td,.flowt th{vertical-align:top}.flowt input{padding:3px 5px}details.sec>summary{cursor:pointer;margin:0 0 6px}
+
+.flh{margin:14px 0 6px;font-size:15px}.flh .fln{display:inline-flex;width:24px;height:24px;border-radius:50%;background:#2f3e57;color:#fff;align-items:center;justify-content:center;font-size:13px;margin-right:4px}
 </style>
 </head>
 <body>
@@ -1865,28 +1867,25 @@ function drawJob(){
    '<div><label>Người giới thiệu</label><input data-f="gt" list="rlist" value="'+esc(j.gt||"")+'"><datalist id="rlist">'+[...new Set(fin.jobs.map(x=>canon(x.gt)).filter(Boolean))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist></div>'+
    f("chu","Chủ sử dụng đất")+'<div><label>Liên kết thửa đất (tab Điền đơn)</label><select data-f="cid"><option value="">— chưa liên kết —</option>'+ca.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===j.cid?' selected':'')+'>'+esc(caseTitle(c))+'</option>').join("")+'</select></div>'+
    '<div><label>Xóa nợ</label><label style="color:var(--ink)"><input type="checkbox" data-f="mien" style="width:auto" '+(j.mien?"checked":"")+'> Không thu thêm nữa</label></div><div style="grid-column:1/-1"><label>Nội dung / ghi chú</label><textarea data-f="nd" rows="4" style="width:100%;resize:vertical" placeholder="Nội dung công việc, ghi chú, tình hình xử lý…">'+esc(j.nd||"")+'</textarea></div></div>'+(j.cid&&db.cases.some(c=>c.id===j.cid)?'<p><button id="gocase">Mở hồ sơ thửa đất / in đơn →</button></p>':'')+'</div>'+
-   '<div class="sec"><h4>Báo khách</h4><div class="jg"><div><label>'+(j.truc?"Khách trả tôi (đ) – giá chị Thư báo khách":"Phí dịch vụ chốt (đ) – chị Thư / trung gian trả tôi")+'</label><input data-f="gia" inputmode="numeric" value="'+(j.gia?Number(j.gia).toLocaleString("vi-VN"):"")+'"></div><div><label>Lệ phí / thuế khách đóng hộ (đ)</label><input data-f="lephi" inputmode="numeric" value="'+(j.lephi?Number(j.lephi).toLocaleString("vi-VN"):"")+'"></div><div><label>Giá anh Nam báo tôi (đ)</label><input data-f="giaNam" inputmode="numeric" value="'+(j.giaNam?Number(j.giaNam).toLocaleString("vi-VN"):"")+'"></div><div><label>Luồng nhận tiền</label><select data-f="truc"><option value="">Qua trung gian (chị Thư trả tôi)</option><option value="1"'+(j.truc?" selected":"")+'>Trực tiếp: khách chuyển thẳng cho tôi</option></select></div>'+(j.truc?'<div><label>Giá tôi báo chị Thư / trung gian (đ)</label><input data-f="goc" inputmode="numeric" value="'+(j.goc?Number(j.goc).toLocaleString("vi-VN"):"")+'"></div>':"")+'</div>'+
+   '<div class="sec"><h4>Tiền của hồ sơ: báo giá, thu chi, biến động</h4>'+flowSec(j,s,L)+'</div>'+
+   '<details class="sec"'+((j.cp.length||j.hh||canon(j.gt))?" open":"")+'><summary><b>Nâng cao: lịch sử báo giá, đợt thu thủ công, chi phí khác, hoa hồng người giới thiệu, sổ thu/chi chi tiết</b></summary>'+
+   '<div class="sec"><h4>Báo khách</h4><div class="jg"><div><label>'+(j.truc?"Khách trả tôi (đ) – giá chị Thư báo khách":"Phí dịch vụ chốt (đ) – chị Thư / trung gian trả tôi")+'</label><input data-f="gia" inputmode="numeric" value="'+(j.gia?Number(j.gia).toLocaleString("vi-VN"):"")+'"></div><div><label>Lệ phí / thuế khách đóng hộ (đ)</label><input data-f="lephi" inputmode="numeric" value="'+(j.lephi?Number(j.lephi).toLocaleString("vi-VN"):"")+'"></div></div>'+
    '<p class="lg">Lịch sử báo giá: '+(j.bg.length?j.bg.map((b,i)=>dmy(b.d)+" · <b>"+fnum(b.a)+"</b>"+(b.n?" ("+esc(b.n)+")":"")+' <a href="#" data-bgc="'+i+'">chốt</a> <a href="#" data-bgd="'+i+'">xóa</a>').join(" &nbsp;|&nbsp; "):"chưa có")+'</p>'+
    '<div class="filters" style="padding:0"><input type="date" id="b_d" value="'+today()+'"><input id="b_a" inputmode="numeric" placeholder="Số tiền báo" style="width:130px"><input id="b_n" placeholder="Ghi chú (báo lần 1, khách trả giá…)" style="flex:1;min-width:140px"><button id="b_ok">Thêm báo giá</button></div></div>'+
    '<div class="sec"><h4>Kế hoạch các đợt thu</h4>'+(j.pl.length?'<div class="nt"><table class="m"><tr><th>Đợt</th><th class="num">Số tiền</th><th>Đến hạn khi</th><th>Hạn thu</th><th>Tình trạng</th><th></th></tr>'+s.pl.map((p,i)=>'<tr><td>'+esc(p.n)+'</td><td class="num">'+fnum(p.a)+'</td><td>'+(p.tr?esc(STAGES.find(x=>x[0]===p.tr)[1]):"Ngay khi nhận")+'</td><td>'+dmy(p.han)+'</td><td>'+(p.cov>=p.a?'<span class="fc g">Đã thu đủ</span>':p.ov?'<span class="fc r">Quá hạn · thiếu '+fnum(p.a-p.cov)+'</span>':p.due?'<span class="fc y">Đến hạn · thiếu '+fnum(p.a-p.cov)+'</span>':'<span class="fc">Chưa đến hạn</span>')+(p.cov&&p.cov<p.a?' <span class="lg">đã thu '+fnum(p.cov)+'</span>':'')+'</td><td><button class="link" data-pd="'+i+'">Xóa</button></td></tr>').join("")+'</table></div>'+(plSum!==s.tong?'<p class="lg" style="color:var(--warn)">Tổng các đợt ('+fnum(plSum)+') khác tổng báo khách ('+fnum(s.tong)+').</p>':''):'<p class="lg">Chưa chia đợt. Ví dụ: Đợt 1 – 50% khi ký hợp đồng; đợt 2 – 50% khi nhận kết quả.</p>')+
    '<div class="filters" style="padding:0"><input id="p_n" placeholder="Tên đợt" style="width:120px" value="Đợt '+(j.pl.length+1)+'"><input id="p_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><select id="p_t">'+trOpts("")+'</select><input type="date" id="p_h" title="Hạn thu (không bắt buộc)"><button id="p_ok">Thêm đợt</button></div><p class="lg">Số đã thu tự phân bổ lần lượt vào các đợt theo thứ tự.</p></div>'+
-   '<div class="sec"><h4>Dòng tiền của hồ sơ</h4>'+flowSec(j,s,L)+'</div>'+
-   '<details class="sec"'+((j.cp.length||j.hh||canon(j.gt))?" open":"")+'><summary><b>Chi phí khác &amp; hoa hồng người giới thiệu (nếu có)</b></summary>'+
    '<div class="sec"><h4>Kế hoạch chi (dự kiến)</h4>'+(j.cp.length?'<div class="nt"><table class="m"><tr><th>Hạng mục</th><th class="num">Dự kiến</th><th></th></tr>'+j.cp.map((c,i)=>'<tr><td>'+esc(c.n)+'</td><td class="num">'+fnum(c.a)+'</td><td><button class="link" data-cd="'+i+'">Xóa</button></td></tr>').join("")+'<tr><td><b>Tổng dự kiến</b></td><td class="num"><b>'+fnum(s.cpDK)+'</b></td><td></td></tr></table></div><p class="lg">Chi thực tế (không tính hoa hồng): '+fnum(s.chiN)+' — '+(s.chiN>s.cpDK?'<span class="neg">vượt dự kiến '+fnum(s.chiN-s.cpDK)+'</span>':'còn trong dự kiến '+fnum(s.cpDK-s.chiN))+'</p>':'<p class="lg">Chưa có dự kiến chi.</p>')+
    '<div class="filters" style="padding:0"><input id="c_n" placeholder="Hạng mục (lệ phí, đo đạc, đi lại…)" style="flex:1;min-width:160px"><input id="c_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><button id="c_ok">Thêm</button></div></div>'+
    '<div class="sec"><h4>Hoa hồng người giới thiệu: '+esc(canon(j.gt)||"(chưa ghi người giới thiệu)")+'</h4>'+
    '<p class="lg">'+(r?'Đang áp dụng: <b>'+esc(HHMODE.find(x=>x[0]===r.mode)[1])+' '+(r.mode==="cd"?fnum(r.v)+" đ":r.v+"%")+'</b>, '+(r.khi==="du"?"trả khi thu đủ":"trả theo từng đợt thu")+(j.hh&&j.hh.mode?" (mức riêng của hồ sơ)":" (mặc định của người giới thiệu)"):'Chưa có mức hoa hồng cho hồ sơ này. Đặt mức mặc định ở tab “Người giới thiệu”, hoặc ghi đè riêng bên dưới.')+'</p>'+
    '<div class="jg"><div><label>Mức riêng của hồ sơ</label><select data-h="mode">'+HHMODE.map(([k,t])=>'<option value="'+k+'"'+(hhO.mode===k?' selected':'')+'>'+(k===""?"Dùng mặc định":t)+'</option>').join("")+'</select></div><div><label>Giá trị (% hoặc đ)</label><input data-h="v" value="'+esc(hhO.v||"")+'"></div><div><label>Thời điểm trả</label><select data-h="khi"><option value="dot"'+(hhO.khi!=="du"?' selected':'')+'>Theo từng đợt thu</option><option value="du"'+(hhO.khi==="du"?' selected':'')+'>Khi thu đủ</option></select></div></div>'+
    '<div class="kp" style="margin-top:8px"><div><span>Tổng hoa hồng</span><b style="font-size:16px">'+fnum(s.hhT)+'</b></div><div><span>Đến hạn trả</span><b style="font-size:16px">'+fnum(s.hhOwe+s.hhP)+'</b></div><div><span>Đã trả</span><b style="font-size:16px">'+fnum(s.hhP)+'</b></div><div><span>Còn phải trả</span><b class="'+(s.hhOwe?'neg':'')+'" style="font-size:16px">'+fnum(s.hhOwe)+'</b></div></div></div>'+
-   '</details>'+
    '<div class="sec"><h4>Thu / chi thực tế</h4><div class="filters" style="padding:0 0 8px"><select id="x_k"><option value="thu">+ Thu</option><option value="chi">+ Chi (trả người thực hiện, chi phí khác)</option><option value="hh">+ Trả hoa hồng / chia</option></select><select id="x_o" title="Đợt"><option value="">Đợt…</option>'+Array.from({length:Math.max(1,(s.pl||[]).length)},(_,k)=>'<option value="'+(k+1)+'">Đợt '+(k+1)+'</option>').join("")+'</select><select id="x_w" title="Trả cho"><option value="">Trả cho…</option>'+(j.cb||[]).map(x=>'<option>'+esc(x.n)+'</option>').join("")+'</select><input id="x_a" inputmode="numeric" placeholder="Số tiền" style="width:130px"><input type="date" id="x_d" value="'+today()+'"><input id="x_n" placeholder="Ghi chú (tự đặt: Thu đợt …)" style="flex:1;min-width:140px"><button class="primary" id="x_ok">Thêm</button></div>'+
-   (L.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Ghi chú</th><th></th></tr>'+L.map(t=>'<tr><td>'+dmy(t.d)+(t.est?' <span class="lg" title="Ngày ước tính, chưa có ngày thật">~</span>':'')+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":t.cat==="hh"?"Chi · hoa hồng":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td style="white-space:nowrap"><button data-xe="'+t.id+'">Sửa</button> <button class="link" data-xd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div><p class="lg">Dấu ~ là ngày ước tính (dữ liệu cũ chưa có ngày từng đợt). Bấm Sửa để nhập ngày thật.</p>':'<p class="lg">Chưa có khoản thu/chi.</p>')+'</div>';
+   (L.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Loại</th><th class="num">Số tiền</th><th>Ghi chú</th><th></th></tr>'+L.map(t=>'<tr><td>'+dmy(t.d)+(t.est?' <span class="lg" title="Ngày ước tính, chưa có ngày thật">~</span>':'')+'</td><td class="'+(t.k==="thu"?"pos":"neg")+'">'+(t.k==="thu"?"Thu":t.cat==="hh"?"Chi · hoa hồng":"Chi")+'</td><td class="num">'+fnum(t.a)+'</td><td>'+esc(t.n)+'</td><td style="white-space:nowrap"><button data-xe="'+t.id+'">Sửa</button> <button class="link" data-xd="'+t.id+'">Xóa</button></td></tr>').join("")+'</table></div><p class="lg">Dấu ~ là ngày ước tính (dữ liệu cũ chưa có ngày từng đợt). Bấm Sửa để nhập ngày thật.</p>':'<p class="lg">Chưa có khoản thu/chi.</p>')+'</div></details>';
   const B=$("#jbody"),amt=e=>{const n=parseAmt(e.target.value);e.target.value=n?n.toLocaleString("vi-VN"):""};
   ["#x_a","#b_a","#p_a","#c_a","#cb_a"].forEach(i=>$(i).oninput=amt);
-  $("#cb_ok").onclick=()=>{const a=parseAmt($("#cb_a").value),n=$("#cb_n").value.trim();if(!a||!n){alert("Nhập người nhận và số tiền.");return}(j.cb=j.cb||[]).push({n,l:$("#cb_l").value,a});drawJob()};
-  B.querySelectorAll("[data-cbp]").forEach(e=>e.onchange=()=>{const[i,k]=e.dataset.cbp.split(",").map(Number),x=j.cb[i];x.p[k]=parseAmt(e.value)||0;x.a=fsum(x.p);drawJob()});
-  B.querySelectorAll("[data-fe]").forEach(e=>e.onclick=()=>flowEdit(j,e.dataset.fe,drawJob));
-  B.querySelectorAll("[data-cbd]").forEach(b=>b.onclick=()=>{j.cb.splice(+b.dataset.cbd,1);drawJob()});
+  flowBind(B,j,drawJob);
+  B.querySelectorAll("input[data-fl][inputmode=numeric]").forEach(e=>e.oninput=amt);
   B.querySelectorAll("[data-f]").forEach(e=>e.onchange=()=>{const k=e.dataset.f;j[k]=k==="truc"?e.value==="1":e.type==="checkbox"?e.checked:(k==="gia"||k==="lephi"||k==="goc"||k==="giaNam")?parseAmt(e.value):e.value;if(["gia","lephi","mien","gt","cid","goc","giaNam","truc"].includes(k))drawJob()});
   B.querySelectorAll("[data-h]").forEach(e=>e.onchange=()=>{const h=j.hh||{mode:"",v:0,khi:"dot"};h[e.dataset.h]=e.dataset.h==="v"?(+String(e.value).replace(",",".")||0):e.value;j.hh=h.mode?h:null;drawJob()});
   B.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>{if(j.st===b.dataset.st)return;j.st=b.dataset.st;{const m={kyhd:"dKy",nop:"dNop",nhan:"dNhan",bangiao:"dBg"}[j.st];if(m&&!j[m])j[m]=today()}j.stLog=(j.stLog||[]).concat([{st:j.st,d:today()}]);drawJob()});
@@ -3385,35 +3384,118 @@ function drawFlow(c){
   c.outs.forEach((d,i)=>{o+=node(X[2],O[i],d,d.tone||"oth")});
   return '<div class="flowbox">'+o+'</svg></div>'}
 const isW=x=>/^Thực hiện/.test(x.l||"");
+const FO={};
+const parseTd=t=>String(t||"").split(/[\/\-+,;\s]+/).map(x=>parseFloat(String(x).replace(",","."))).filter(x=>x>0).slice(0,5);
+const spl=(a,arr)=>{const tot=arr.reduce((p,q)=>p+q,0),r=arr.map(v=>tot?Math.round(a*v/tot):Math.round(a/arr.length));r[r.length-1]+=a-r.reduce((p,q)=>p+q,0);return r};
+const tdStr=pl=>{const t=pl.reduce((a,p)=>a+(+p.a||0),0);return t?pl.map(p=>Math.round((+p.a||0)/t*1000)/10).join("/"):""};
+function applyTd(j){if(!j.td)j.td="50/50";const p=parseTd(j.td),tot=(+j.gia||0)+(+j.lephi||0);if(!p.length||!(tot>0))return;const r=spl(tot,p),old=j.pl||[];
+  j.pl=r.map((a,k)=>({n:"Đợt "+(k+1),a,tr:(old[k]&&old[k].tr)||"",han:(old[k]&&old[k].han)||""}));(j.cb||[]).forEach(x=>{x.p=spl(+x.a||0,r)})}
+const BDT=[["gia+","Tăng giá (phải thu thêm)"],["gia-","Giảm giá (phải thu bớt)"],["ung","Ứng thêm (nhận thêm tiền)"],["hoan","Hoàn trả tiền cho bên chốt"],["thuhoi","Thu lại khoản đã chi của người"],["chi+","Chi thêm: tăng khoản phải trả"],["tra+","Trả thêm cho người nhận chi"]];
 function flowSec(j,s,L){
-  const cb=j.cb||[],pl=s.pl||[],ND=Math.max(1,pl.length),plA=pl.length?pl.map(p=>+p.a||0):[s.tong],cov=pl.length?pl.map(p=>+p.cov||0):[s.thu];
-  const sp=a=>{const tot=fsum(plA);let r=plA.map(v=>tot?Math.round(a*v/tot):Math.round(a/ND));r[r.length-1]+=a-fsum(r);return r};
-  cb.forEach(x=>{if(!Array.isArray(x.p)||x.p.length!==ND)x.p=sp(+x.a||0);x.a=fsum(x.p)});
-  const paidK=(n,k)=>fsum(L.filter(t=>t.k==="chi"&&t.w===n&&+t.dot===k+1).map(t=>t.a)),paid=n=>fsum(L.filter(t=>t.k==="chi"&&t.w===n).map(t=>t.a));
-  const total=(+j.gia||0)+(+j.lephi||0),chiAll=fsum(cb.map(x=>x.a)),other=s.chiDK-s.cbW,conL=total-chiAll-Math.max(0,other)-(s.hhT-fsum(cb.filter(x=>!isW(x)).map(x=>x.a)));
-  const kpi=(l,v,c)=>'<div><span>'+l+'</span><b class="'+(c||"")+'" style="font-size:16px">'+v+'</b></div>';
-  const ladder='<div class="kp" style="margin-top:4px">'+kpi("① Anh Nam báo tôi",j.giaNam?fnum(j.giaNam):"–")+(j.truc?kpi("② Tôi báo chị Thư",j.goc?fnum(j.goc):"–")+kpi("③ Chị Thư báo khách (khách trả)",fnum(total)):kpi("② Tôi báo chị Thư (chị Thư trả tôi)",fnum(total)))+kpi("Lãi của tôi theo giá",(j.giaNam&&(j.truc?j.goc:total))?fnum((j.truc?j.goc:total)-j.giaNam):"–","pos")+(j.truc?kpi("Lãi của chị Thư theo giá",j.goc&&j.gia?fnum(j.gia-j.goc):"–"):"")+'</div>';
-  const colH=pl.length?pl.map((p,k)=>'<th class="num">Đợt '+(k+1)+(p.han?'<br><span class="lg">hạn '+dmy(p.han)+'</span>':'')+'</th>').join(""):'<th class="num">Toàn bộ</th>';
-  const cell=(a,b)=>'<td class="num">'+fnum(a)+'<br><span class="lg">đã '+fnum(b)+'</span></td>';
-  let rows='<tr><td><b>THU về tài khoản tôi</b><br><span class="lg">'+(j.truc?"khách chuyển":"chị Thư chuyển")+'</span></td>'+plA.map((a,k)=>cell(a,cov[k])).join("")+cell(fsum(plA),fsum(cov))+'<td></td></tr>';
-  cb.forEach((x,i)=>{rows+='<tr><td><b>CHI '+esc(x.n)+'</b><br><span class="lg">'+esc(x.l||"")+'</span></td>'+x.p.map((a,k)=>'<td class="num"><input data-cbp="'+i+','+k+'" inputmode="numeric" value="'+(a?Number(a).toLocaleString("vi-VN"):"")+'" style="width:100px;text-align:right"><br><span class="lg">đã '+fnum(paidK(x.n,k))+'</span></td>').join("")+cell(x.a,paid(x.n))+'<td><button class="link" data-cbd="'+i+'">Xóa</button></td></tr>'});
-  const laiP=plA.map((a,k)=>a-fsum(cb.map(x=>x.p[k]||0))),laiA=cov.map((a,k)=>a-fsum(cb.map(x=>paidK(x.n,k))));
-  rows+='<tr style="background:var(--bg2,#f4f6fa)"><td><b>LÃI GIỮ LẠI</b><br><span class="lg">thu − chi</span></td>'+laiP.map((a,k)=>'<td class="num '+(a<0?"neg":"pos")+'"><b>'+fnum(a)+'</b><br><span class="lg">thực tế '+fnum(laiA[k])+'</span></td>').join("")+'<td class="num '+(fsum(laiP)<0?"neg":"pos")+'"><b>'+fnum(fsum(laiP))+'</b><br><span class="lg">thực tế '+fnum(fsum(laiA))+'</span></td><td></td></tr>';
-  const tbl='<div class="nt"><table class="m flowt"><tr><th>Dòng tiền</th>'+colH+'<th class="num">Tổng</th><th></th></tr>'+rows+'</table></div>';
-  const add='<div class="filters" style="padding:0;margin-top:6px"><input id="cb_n" list="cblist" placeholder="Người nhận (anh Nam, chị Thư…)" style="min-width:170px"><datalist id="cblist">'+[...new Set(fin.jobs.flatMap(x=>(x.cb||[]).map(y=>y.n)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="cb_l"><option>Thực hiện công việc</option><option>Chia lợi nhuận</option><option>Giới thiệu</option><option>Khác</option></select><input id="cb_a" inputmode="numeric" placeholder="Tổng số tiền" style="width:130px"><button id="cb_ok">+ Thêm người nhận</button></div><p class="lg">Số tiền tự chia theo tỉ lệ các đợt thu (vd anh Nam 90tr, hai đợt 50/50 = 45 + 45); bấm vào ô để sửa từng đợt. Khi trả tiền, ghi ở mục Thu/chi thực tế, chọn “Trả cho” và “Đợt”.</p>';
-  const src=j.truc?{t:"Khách (chủ nhà)",s:"chị Thư báo "+tr(total),p:tr(total)+(ND>1?" · "+ND+" đợt":"")+"|đã thu "+tr(s.thu),tone:"src",fe:"src"}:{t:"Chị Thư",s:"trả tôi theo giá tôi báo",p:tr(total)+(ND>1?" · "+ND+" đợt":"")+"|đã thu "+tr(s.thu),tone:"src",fe:"src"};
-  const outs=cb.map((x,i)=>({t:x.n,s:x.l||"",p:tr(x.a)+"|đã trả "+tr(paid(x.n)),tone:isW(x)?"nam":"thu",fe:"out"+i}));
-  outs.push({t:"Lãi của tôi",s:"sau khi trả hết",p:tr(conL),tone:"lai"});
-  return ladder+tbl+add+'<h4 style="margin:12px 0 4px">Sơ đồ tiền đi <span class="lg">(bấm vào ô hoặc mũi tên để chỉnh)</span></h4>'+drawFlow({src:[src],mid:{t:"Tôi",s:"nhận "+tr(total)+" · đã thu "+tr(s.thu),fe:"mid"},outs,edit:true});
+  const cb=j.cb||[],pl=s.pl||[],ND=Math.max(1,pl.length),plA=pl.length?pl.map(p=>+p.a||0):[s.tong],qt=j.qt||[],bd=j.bd||[];
+  cb.forEach(x=>{if(!Array.isArray(x.p)||x.p.length!==ND)x.p=spl(+x.a||0,plA);x.a=fsum(x.p)});
+  const sumTx=(k,n,d)=>fsum(L.filter(t=>t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1).map(t=>t.a)),paid=n=>fsum(L.filter(t=>t.k==="chi"&&t.w===n).map(t=>t.a));
+  const total=(+j.gia||0)+(+j.lephi||0),chiAll=fsum(cb.map(x=>x.a)),conL=total-chiAll-Math.max(0,s.chiDK-s.cbW)-(s.hhT-fsum(cb.filter(x=>!isW(x)).map(x=>x.a)));
+  const f=v=>v?Number(v).toLocaleString("vi-VN"):"",chotName=j.chot||(j.truc?"Khách":"Chị Thư"),dn=!!(j.gia>0);
+  const H=(n,t,sub,on)=>'<h3 class="flh '+(on?'on':'')+'"><span class="fln">'+n+'</span> '+t+' <span class="lg">'+sub+'</span></h3>';
+  // ---- 1. BÁO GIÁ -> CHỐT
+  const g1=H(1,"BÁO GIÁ → CHỐT","báo cho ai, giá nào, tiến độ, thời gian; rồi chọn một báo giá để chốt",!dn)+
+   (qt.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Báo cho</th><th class="num">Giá báo</th><th>Tiến độ (%)</th><th>Thời gian</th><th>Ghi chú</th><th></th></tr>'+qt.map((q,i)=>'<tr'+(j.chotQt===q.id?' style="background:#eaf6ee"':'')+'><td>'+dmy(q.d)+'</td><td><b>'+esc(q.to)+'</b><br><span class="lg">'+esc(q.vt)+'</span></td><td class="num">'+fnum(q.a)+'</td><td>'+esc(q.td||"50/50")+'</td><td>'+esc(q.tg||"")+'</td><td>'+esc(q.n||"")+'</td><td style="white-space:nowrap">'+(j.chotQt===q.id?'<span class="fc b">Đã chốt</span>':'<button class="primary" data-fl="chot:'+i+'">Chốt báo giá này</button>')+' <a href="#" data-fl="qdel:'+i+'">xóa</a></td></tr>').join("")+'</table></div>':'<p class="lg">Chưa có báo giá nào.</p>')+
+   '<div class="filters" style="padding:0;margin-top:6px"><input id="q_to" list="qlist" placeholder="Báo cho ai (tên)" style="min-width:150px"><datalist id="qlist">'+[...new Set(fin.jobs.flatMap(x=>(x.qt||[]).map(q=>q.to)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="q_vt"><option>Chủ nhà</option><option>Trung gian</option><option>Khác</option></select><input id="q_a" inputmode="numeric" placeholder="Giá báo (đ)" style="width:130px"><input id="q_td" value="50/50" title="Tiến độ % các đợt, tối đa 5 đợt: 50/50, 30/40/30…" style="width:110px"><input id="q_tg" placeholder="Thời gian (vd 45 ngày, hạn thu…)" style="width:190px"><input id="q_n" placeholder="Ghi chú" style="flex:1;min-width:110px"><button id="q_ok">+ Thêm báo giá</button></div>'+
+   '<div class="filters" style="padding:0;margin-top:6px"><label>Lệ phí / thuế đóng hộ (đ) <input data-fl="lephi" inputmode="numeric" value="'+f(j.lephi)+'" style="width:130px"></label></div>';
+  // ---- 2. THU CHI
+  const add='<div class="filters" style="padding:0;margin:4px 0"><input id="cb_n" list="cblist" placeholder="Người nhận chi (anh Nam, chị Thư…)" style="min-width:190px"><datalist id="cblist">'+[...new Set(fin.jobs.flatMap(x=>(x.cb||[]).map(y=>y.n)))].sort().map(n=>'<option value="'+esc(n)+'">').join("")+'</datalist><select id="cb_l"><option>Thực hiện công việc</option><option>Chia lợi nhuận</option><option>Giới thiệu</option><option>Khác</option></select><input id="cb_a" inputmode="numeric" placeholder="Tổng số tiền chi" style="width:140px"><button id="cb_ok">+ Thêm người nhận chi</button></div>';
+  const inp=(a,b,attr)=>'<input data-fl="'+attr+'" inputmode="numeric" value="'+f(b)+'" placeholder="'+f(a)+'" style="width:96px;text-align:right"><button class="ghost" data-fl="fill:'+attr+'" title="Đã đủ theo kế hoạch" style="padding:2px 6px">✔</button>';
+  let head='<tr><th>Đợt</th><th class="num">Phải thu<br><span class="lg">từ '+esc(chotName)+'</span></th><th class="num">Đã thu</th>'+cb.map((x,i)=>'<th class="num">'+esc(x.n)+'<br><span class="lg">'+esc(x.l||"")+' · <a href="#" data-fl="del:'+i+'">xóa</a></span></th>').join("")+'<th class="num">Lãi đợt</th><th>Tình trạng</th></tr>',rows="";
+  for(let k=0;k<ND;k++){
+    const aT=sumTx("thu","",k),pc=cb.map(x=>x.p[k]||0),ac=cb.map(x=>sumTx("chi",x.n,k)),lp=plA[k]-fsum(pc),la=aT-fsum(ac);
+    const lack=cb.filter((x,i)=>aT>0&&ac[i]<pc[i]).map(x=>x.n);
+    const st=aT<plA[k]?(aT>0?'<span class="fc y">Thu thiếu '+fnum(plA[k]-aT)+'</span>':'<span class="fc">Chưa thu</span>'):(lack.length?'<span class="fc y">Cần trả '+esc(lack.join(", "))+'</span>':'<span class="fc b">Xong</span>');
+    rows+='<tr><td><b>'+(pl[k]?esc(pl[k].n):"Toàn bộ")+'</b>'+(pl[k]?'<br><input type="date" data-fl="han:'+k+'" value="'+esc(pl[k].han||"")+'" title="Hạn thu" style="width:128px">':'')+'</td><td class="num">'+fnum(plA[k])+'</td><td class="num">'+inp(plA[k],aT,"thu:"+k)+'</td>'+
+      cb.map((x,i)=>'<td class="num"><span class="lg">phải chi </span><input data-fl="plan:'+i+','+k+'" inputmode="numeric" value="'+f(pc[i])+'" title="Số phải chi đợt này (sửa được)" style="width:88px;text-align:right;background:#f4f6fa"><br><span class="lg">đã chi </span>'+inp(pc[i],ac[i],"chi:"+i+","+k)+'</td>').join("")+
+      '<td class="num '+(lp<0?"neg":"pos")+'"><b>'+fnum(lp)+'</b><br><span class="lg">thực '+fnum(la)+'</span></td><td>'+st+'</td></tr>';
+  }
+  const tAll=fsum(L.filter(t=>t.k==="thu").map(t=>t.a)),lg=L.filter(t=>(t.k==="thu"||cb.some(x=>x.n===t.w))&&!(+t.dot>=1&&+t.dot<=ND));
+  rows+='<tr style="background:#f4f6fa"><td><b>Tổng</b></td><td class="num"><b>'+fnum(fsum(plA))+'</b></td><td class="num"><b>'+fnum(tAll)+'</b></td>'+cb.map(x=>'<td class="num"><b>'+fnum(x.a)+'</b><br><span class="lg">đã '+fnum(paid(x.n))+'</span></td>').join("")+'<td class="num '+(conL<0?"neg":"pos")+'"><b>'+fnum(conL)+'</b><br><span class="lg">lãi dự kiến</span></td><td></td></tr>';
+  const g2=H(2,"THU CHI THEO TIẾN ĐỘ","theo giá chốt: thu từ "+esc(chotName)+", chi cho từng người",dn&&!0)+(dn?'<p class="lg">Giá chốt <b>'+fnum(total)+'</b> · '+ND+' đợt ('+esc(tdStr(pl)||j.td||"")+'%)</p>':'<p class="lg">Chốt một báo giá ở bước 1 để có giá và tiến độ.</p>')+add+'<div class="nt"><table class="m flowt">'+head+rows+'</table></div>'+(lg.length?'<p class="lg">Có '+lg.length+' khoản cũ chưa gán đợt (xem ở mục Nâng cao), vẫn được tính vào tổng.</p>':'');
+  // ---- 3. BIẾN ĐỘNG
+  const tdTxt=e=>e.t==="td"?"Đổi tiến độ "+tdStr(e.old||[])+" → "+tdStr(e.nw||[]):(BDT.find(x=>x[0]===e.t)||[0,e.t])[1];
+  const g3=H(3,"BIẾN ĐỘNG","tăng giảm giá, hoàn trả, thu lại hoặc chi thêm cho ai, đổi tiến độ",false)+
+   (bd.length?'<div class="nt"><table class="m"><tr><th>Ngày</th><th>Biến động</th><th>Đợt</th><th>Người</th><th class="num">Số tiền</th><th>Ghi chú</th><th></th></tr>'+bd.map((e,i)=>'<tr><td>'+dmy(e.d)+'</td><td>'+esc(tdTxt(e))+'</td><td>'+(e.dot||"")+'</td><td>'+esc(e.w||"")+'</td><td class="num">'+(e.t==="td"?"":fnum(e.a))+'</td><td>'+esc(e.n||"")+'</td><td><a href="#" data-fl="bdd:'+i+'">xóa</a></td></tr>').join("")+'</table></div>':'<p class="lg">Chưa có biến động.</p>')+
+   '<div class="filters" style="padding:0;margin-top:6px"><input type="date" id="bd_d" value="'+today()+'"><select id="bd_t">'+BDT.map(x=>'<option value="'+x[0]+'">'+x[1]+'</option>').join("")+'</select><select id="bd_k">'+Array.from({length:ND},(_,k)=>'<option value="'+(k+1)+'">Đợt '+(k+1)+'</option>').join("")+'</select><select id="bd_w"><option value="">Người (nếu là chi)…</option>'+cb.map(x=>'<option>'+esc(x.n)+'</option>').join("")+'</select><input id="bd_a" inputmode="numeric" placeholder="Số tiền" style="width:120px"><input id="bd_n" placeholder="Ghi chú" style="flex:1;min-width:120px"><button id="bd_ok">+ Ghi biến động</button><button id="td_edit">Đổi tiến độ…</button></div>';
+  const src={t:chotName,s:"chốt "+tr(total),p:tr(total)+(ND>1?" · "+ND+" đợt":"")+"|đã thu "+tr(s.thu),tone:"src",fe:"src"};
+  const outs=cb.map((x,i)=>({t:x.n,s:x.l||"",p:tr(x.a)+"|đã trả "+tr(paid(x.n)),tone:isW(x)?"nam":"thu",fe:"out"+i}));outs.push({t:"Lãi của tôi",s:"sau khi trả hết",p:tr(conL),tone:"lai"});
+  const locked=!!(dn&&(j.chotQt||j.xong||L.length)),sum1='Đã chốt '+tr(total)+' với '+esc(chotName)+' · '+ND+' đợt'+(cb.length?' · chi '+cb.map(x=>esc(x.n)+' '+tr(x.a)).join(', '):'');
+  return '<details'+(locked&&!FO[j.id]?'':' open')+' class="flowset"><summary><b>'+(locked?'① '+sum1+' <span class="lg">(bấm để xem / sửa báo giá)</span>':'① Báo giá → chốt')+'</b></summary>'+g1+'</details>'+g2+g3+
+   '<h4 style="margin:12px 0 4px">Sơ đồ tiền đi <span class="lg">(bấm vào ô hoặc mũi tên để chỉnh)</span></h4>'+drawFlow({src:[src],mid:{t:"Tôi",s:"nhận "+tr(total)+" · đã thu "+tr(s.thu)},outs,edit:true});
 }
+function flowBind(B,j,redraw){
+  const pa=v=>parseAmt(v)||0,isWn=n=>isW((j.cb||[]).find(x=>x.n===n)||{});
+  const tx=(k,n,d,a)=>{fin.tx=fin.tx.filter(t=>!(t.j===j.id&&t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1));
+    if(a>0)fin.tx.push({id:"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),j:j.id,k,cat:k==="chi"&&!isWn(n)?"hh":"",a,w:k==="chi"?n:"",dot:d+1,d:today(),n:(k==="thu"?"Thu":"Trả "+n)+" đợt "+(d+1)});saveJobInline()};
+  const sumPl=()=>(j.pl&&j.pl.length?j.pl.map(p=>+p.a||0):[(+j.gia||0)+(+j.lephi||0)]);
+  const cur=(k,n,d)=>fsum(fin.tx.filter(t=>t.j===j.id&&t.k===k&&(k==="thu"||t.w===n)&&+t.dot===d+1).map(t=>t.a));
+  B.querySelectorAll("input[data-fl]").forEach(e=>e.onchange=()=>{const a=e.dataset.fl;
+    if(a==="lephi"){j.lephi=pa(e.value);applyTd(j)}
+    else if(a.startsWith("han:")){const k=+a.slice(4);if(j.pl&&j.pl[k])j.pl[k].han=e.value}
+    else if(a.startsWith("thu:")){tx("thu","",+a.slice(4),pa(e.value))}
+    else if(a.startsWith("chi:")){const[i,k]=a.slice(4).split(",").map(Number);tx("chi",j.cb[i].n,k,pa(e.value))}
+    else if(a.startsWith("plan:")){const[i,k]=a.slice(5).split(",").map(Number),x=j.cb[i];x.p[k]=pa(e.value);x.a=fsum(x.p)}
+    redraw()});
+  B.querySelectorAll("button[data-fl^=fill]").forEach(b=>b.onclick=()=>{const a=b.dataset.fl.slice(5);
+    if(a.startsWith("thu:")){const k=+a.slice(4);tx("thu","",k,sumPl()[k])}
+    else{const[i,k]=a.slice(4).split(",").map(Number);tx("chi",j.cb[i].n,k,(j.cb[i].p||[])[k]||0)}redraw()});
+  B.querySelectorAll("a[data-fl^=del]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const i=+a.dataset.fl.slice(4);if(confirm("Xóa người nhận chi này khỏi hồ sơ?")){j.cb.splice(i,1);redraw()}});
+  const amtIn=el=>{if(el)el.oninput=ev=>{const n=parseAmt(ev.target.value);ev.target.value=n?n.toLocaleString("vi-VN"):""}};
+  // báo giá
+  amtIn(B.querySelector("#q_a"));
+  const qk=B.querySelector("#q_ok");if(qk)qk.onclick=()=>{const a=parseAmt(B.querySelector("#q_a").value),to=B.querySelector("#q_to").value.trim();if(!a||!to){alert("Nhập báo cho ai và giá báo.");return}
+    const td=B.querySelector("#q_td").value.trim()||"50/50";if(parseTd(td).length<1){alert("Tiến độ nhập dạng 50/50 hoặc 30/40/30 (tối đa 5 đợt).");return}
+    (j.qt=j.qt||[]).push({id:"q"+Date.now().toString(36),d:today(),to,vt:B.querySelector("#q_vt").value,a,td,tg:B.querySelector("#q_tg").value.trim(),n:B.querySelector("#q_n").value.trim()});
+    j.bg=j.bg||[];j.bg.push({d:today(),a,n:"Báo "+to});redraw()};
+  B.querySelectorAll("button[data-fl^=chot]").forEach(b=>b.onclick=()=>{const q=j.qt[+b.dataset.fl.slice(5)];if(!q)return;
+    if(fin.tx.some(t=>t.j===j.id)&&!confirm("Đổi giá chốt sẽ tính lại các đợt thu; các khoản đã thu/chi giữ nguyên. Tiếp tục?"))return;
+    j.gia=q.a;j.chot=q.to;j.truc=q.vt==="Chủ nhà";j.td=q.td||"50/50";j.bao=q.a;j.chotQt=q.id;j.xong=true;FO[j.id]=false;applyTd(j);redraw()});
+  B.querySelectorAll("a[data-fl^=qdel]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const i=+a.dataset.fl.slice(5);if(confirm("Xóa báo giá này?")){j.qt.splice(i,1);redraw()}});
+  B.querySelectorAll("details.flowset").forEach(d=>{d.addEventListener("toggle",()=>{FO[j.id]=d.open});d.addEventListener("change",()=>{FO[j.id]=true},true);d.addEventListener("click",ev=>{if(ev.target.closest("button,a"))FO[j.id]=true},true)});
+  // biến động
+  const apply=(e,sg)=>{const k=(+e.dot||1)-1,a=(+e.a||0)*sg;
+    if(e.t==="td"){if(sg>0){j.pl=JSON.parse(JSON.stringify(e.nw));e.cbOld=(j.cb||[]).map(x=>x.p.slice());const r=j.pl.map(p=>+p.a||0);(j.cb||[]).forEach(x=>{x.p=spl(+x.a||0,r)});j.td=tdStr(j.pl)}else{j.pl=JSON.parse(JSON.stringify(e.old));(j.cb||[]).forEach((x,i)=>{if(e.cbOld&&e.cbOld[i]){x.p=e.cbOld[i].slice();x.a=fsum(x.p)}});j.td=tdStr(j.pl)}return}
+    if(e.t==="gia+"||e.t==="gia-"){const d=e.t==="gia+"?a:-a;j.gia=(+j.gia||0)+d;if(j.pl&&j.pl[k])j.pl[k].a=(+j.pl[k].a||0)+d}
+    else if(e.t==="ung"){tx("thu","",k,Math.max(0,cur("thu","",k)+a))}
+    else if(e.t==="hoan"){tx("thu","",k,Math.max(0,cur("thu","",k)-a))}
+    else if(e.t==="thuhoi"){tx("chi",e.w,k,Math.max(0,cur("chi",e.w,k)-a))}
+    else if(e.t==="chi+"){const x=(j.cb||[]).find(q=>q.n===e.w);if(x){x.p[k]=(x.p[k]||0)+a;x.a=fsum(x.p)}}
+    else if(e.t==="tra+"){tx("chi",e.w,k,Math.max(0,cur("chi",e.w,k)+a))}};
+  B.querySelectorAll("a[data-fl^=bdd]").forEach(a=>a.onclick=ev=>{ev.preventDefault();const i=+a.dataset.fl.slice(4),e=j.bd[i];if(confirm("Xóa biến động này (hoàn lại ảnh hưởng của nó)?")){apply(e,-1);j.bd.splice(i,1);saveJobInline();redraw()}});
+  const bk=B.querySelector("#bd_ok");if(bk){const bam=B.querySelector("#bd_a");amtIn(bam);
+    bk.onclick=()=>{const a=parseAmt(bam.value),t=B.querySelector("#bd_t").value,w=B.querySelector("#bd_w").value,needW=["thuhoi","chi+","tra+"].includes(t);if(!a){alert("Nhập số tiền.");return}if(needW&&!w){alert("Chọn người nhận chi.");return}
+      const e={id:"b"+Date.now().toString(36),d:B.querySelector("#bd_d").value||today(),t,dot:+B.querySelector("#bd_k").value,w:needW?w:"",a,n:B.querySelector("#bd_n").value.trim()};
+      (j.bd=j.bd||[]).push(e);apply(e,1);saveJobInline();redraw()}}
+  const te=B.querySelector("#td_edit");if(te)te.onclick=()=>tdDialog(j,(nw,note)=>{const e={id:"b"+Date.now().toString(36),d:today(),t:"td",dot:0,w:"",a:0,n:note,old:JSON.parse(JSON.stringify(j.pl||[])),nw};(j.bd=j.bd||[]).push(e);apply(e,1);saveJobInline();redraw()},redraw);
+  const ok=B.querySelector("#cb_ok");if(ok){amtIn(B.querySelector("#cb_a"));ok.onclick=()=>{const a=parseAmt(B.querySelector("#cb_a").value),n=B.querySelector("#cb_n").value.trim();if(!a||!n){alert("Nhập người nhận và số tiền.");return}(j.cb=j.cb||[]).push({n,l:B.querySelector("#cb_l").value,a,p:spl(a,sumPl())});redraw()}}
+  B.querySelectorAll("[data-fe]").forEach(e=>e.onclick=()=>flowEdit(j,e.dataset.fe,redraw));
+}
+function tdDialog(j,onSave){
+  let d=document.getElementById("td_dlg");if(d)d.remove();d=document.createElement("dialog");d.id="td_dlg";d.style.width="min(520px,95vw)";
+  const total=(+j.gia||0)+(+j.lephi||0),old=JSON.parse(JSON.stringify(j.pl&&j.pl.length?j.pl:[{n:"Đợt 1",a:total,tr:"",han:""}]));let n=old.length;
+  const draw=()=>{const cur=Array.from({length:n},(_,k)=>old[k]||{n:"Đợt "+(k+1),a:0,tr:"",han:""});
+    d.innerHTML='<h2>Đổi tiến độ thu</h2><div class="grid"><label>Số đợt<select id="t_n">'+[1,2,3,4,5].map(x=>'<option'+(x===n?" selected":"")+'>'+x+'</option>').join("")+'</select></label>'+cur.map((p,k)=>'<label>Đợt '+(k+1)+' (đ)<input class="t_a" inputmode="numeric" value="'+(p.a?Number(p.a).toLocaleString("vi-VN"):"")+'"></label><label>Hạn thu đợt '+(k+1)+'<input class="t_h" type="date" value="'+esc(p.han||"")+'"></label>').join("")+'<label style="grid-column:1/-1">Lý do đổi<input id="t_note" placeholder="vd khách xin chia 3 đợt"></label></div><p class="hint" id="t_chk"></p><div class="foot"><button id="t_x">Hủy</button><button class="primary" id="t_ok">Lưu tiến độ mới</button></div>';
+    const chk=()=>{const s=[...d.querySelectorAll(".t_a")].reduce((a,e)=>a+(parseAmt(e.value)||0),0);d.querySelector("#t_chk").innerHTML='Tổng các đợt: <b>'+fnum(s)+'</b> / giá chốt <b>'+fnum(total)+'</b>'+(s!==total?' <span class="neg">lệch '+fnum(s-total)+'</span>':'');};
+    d.querySelectorAll(".t_a").forEach(e=>e.oninput=()=>{const v=parseAmt(e.value);e.value=v?v.toLocaleString("vi-VN"):"";chk()});chk();
+    d.querySelector("#t_n").onchange=ev=>{const keep=[...d.querySelectorAll(".t_a")].map((e,k)=>Object.assign({},cur[k],{a:parseAmt(e.value)||0,han:d.querySelectorAll(".t_h")[k].value}));keep.forEach((p,k)=>old[k]=p);n=+ev.target.value;if(n>old.length)for(let k=old.length;k<n;k++)old[k]={n:"Đợt "+(k+1),a:0,tr:"",han:""};old.length=Math.max(old.length,n);draw()};
+    d.querySelector("#t_x").onclick=()=>d.close();
+    d.querySelector("#t_ok").onclick=()=>{const nw=cur.map((p,k)=>({n:"Đợt "+(k+1),a:parseAmt(d.querySelectorAll(".t_a")[k].value)||0,tr:p.tr||"",han:d.querySelectorAll(".t_h")[k].value||""}));const s=nw.reduce((a,p)=>a+p.a,0);if(s!==total&&!confirm("Tổng các đợt lệch giá chốt "+fnum(s-total)+". Vẫn lưu?"))return;d.close();onSave(nw,d.querySelector("#t_note").value.trim())};};
+  document.body.appendChild(d);draw();d.showModal()}
+window.flowBind=flowBind;
 
 function flowEdit(j,fe,redraw){
   let d=document.getElementById("fe");if(d)d.remove();d=document.createElement("dialog");d.id="fe";d.style.width="min(480px,95vw)";
   const pl=j.pl||[],ND=Math.max(1,pl.length),inp=(id,l,v,t)=>'<label>'+l+'<input id="'+id+'" '+(t==="n"?'inputmode="numeric" value="'+(v?Number(v).toLocaleString("vi-VN"):"")+'"':'value="'+esc(v||"")+'"')+'></label>';
   let h="",save;
   if(fe==="src"){
-    h='<h2>'+(j.truc?"Khách trả tôi":"Chị Thư trả tôi")+'</h2><div class="grid">'+inp("f_gia","Số tiền "+(j.truc?"khách trả tôi (giá chị Thư báo khách)":"chị Thư trả tôi (giá tôi báo chị Thư)")+" (đ)",j.gia,"n")+(j.truc?inp("f_goc","Giá tôi báo chị Thư (đ)",j.goc,"n"):"")+pl.map((p,k)=>inp("f_p"+k,"Đợt thu "+(k+1)+" (đ)",p.a,"n")).join("")+'</div><p class="hint">Muốn thêm/bớt đợt thu, dùng mục “Kế hoạch đợt thu” ở phần Báo khách.</p>';
-    save=()=>{j.gia=parseAmt(d.querySelector("#f_gia").value);if(j.truc)j.goc=parseAmt(d.querySelector("#f_goc").value);pl.forEach((p,k)=>{p.a=parseAmt(d.querySelector("#f_p"+k).value)})};
+    h='<h2>'+(j.truc?"Khách trả tôi":"Chị Thư trả tôi")+'</h2><div class="grid">'+inp("f_gia","Số tiền "+(j.truc?"khách trả tôi (giá chị Thư báo khách)":"chị Thư trả tôi (giá tôi báo chị Thư)")+" (đ)",j.gia,"n")+pl.map((p,k)=>inp("f_p"+k,"Đợt thu "+(k+1)+" (đ)",p.a,"n")).join("")+'</div><p class="hint">Muốn thêm/bớt đợt thu, dùng mục “Kế hoạch đợt thu” ở phần Báo khách.</p>';
+    save=()=>{j.gia=parseAmt(d.querySelector("#f_gia").value);pl.forEach((p,k)=>{p.a=parseAmt(d.querySelector("#f_p"+k).value)})};
   }else if(fe==="mid"){
     h='<h2>Tôi</h2><div class="grid">'+inp("f_nam","Giá anh Nam báo tôi (đ)",j.giaNam,"n")+'<label>Luồng nhận tiền<select id="f_truc"><option value="">Qua trung gian (chị Thư trả tôi)</option><option value="1"'+(j.truc?" selected":"")+'>Trực tiếp: khách chuyển thẳng cho tôi</option></select></label></div>';
     save=()=>{j.giaNam=parseAmt(d.querySelector("#f_nam").value);j.truc=d.querySelector("#f_truc").value==="1"};
